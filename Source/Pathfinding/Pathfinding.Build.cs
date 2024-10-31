@@ -11,9 +11,16 @@ public class Pathfinding : ModuleRules
 	
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem" });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
+		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
-		PublicIncludePaths.AddRange(new string[] { Path.Combine(ModuleDirectory), Path.Combine(ModuleDirectory, "Gameplay"), Path.Combine(ModuleDirectory, "Pawn") });
+		PublicIncludePaths.AddRange(new string[] 
+		{ 
+			Path.Combine(ModuleDirectory), 
+			Path.Combine(ModuleDirectory, "Gameplay"), 
+			Path.Combine(ModuleDirectory, "Pawn"), 
+			Path.Combine(ModuleDirectory, "Network"), 
+			Path.Combine(ModuleDirectory, "Widget") 
+		});
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

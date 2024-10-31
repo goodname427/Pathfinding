@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "PFGameModeBase.generated.h"
+#include "PFGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PATHFINDING_API APFGameModeBase : public AGameModeBase
+class PATHFINDING_API APFGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	
