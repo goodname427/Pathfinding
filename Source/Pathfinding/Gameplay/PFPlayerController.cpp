@@ -7,6 +7,6 @@ void APFPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	//SetInputMode(FInputModeGameAndUI().SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways));
+	SetInputMode(FInputModeGameAndUI().SetLockMouseToViewportBehavior(EMouseLockMode::LockAlways));
 	SetShowMouseCursor(true);
 }

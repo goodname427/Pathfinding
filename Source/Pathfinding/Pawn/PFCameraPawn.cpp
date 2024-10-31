@@ -9,7 +9,7 @@
 APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
@@ -26,19 +26,24 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	// Camera
 	InitDefaultSubobject(Camera);
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	
-	// Camera Scale
-	MinTargetArmLength = 3000.f;
-	MaxTargetArmLength = 5000.f; 
-	CameraScaleSpeed = 0.1f;
-	CameraScaleValue = 0.5f;
 
 	// Movement
 	Movement = CreateDefaultSubobject<UPawnMovementComponent, UPFCameraPawnMovementComponent>("Movement");
 	Movement->UpdatedComponent = RootComponent;
-	
+
+	// Camera Scale
+	MinTargetArmLength = 3000.f;
+	MaxTargetArmLength = 5000.f;
+	CameraScaleSpeed = 0.1f;
+	CameraScaleValue = 0.5f;
+
 	// Mouse Move
 	bEnableMouseMove = true;
+
+	// Camera Rotate
+	bUseControllerRotationYaw = true;
+	CameraRotateSpeed = 100.f;
+	bControlPressed = false;
 
 	// Flag
 	InitDefaultSubobject(StaticMesh);
@@ -49,7 +54,7 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 void APFCameraPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SpringArm->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
 	CameraScaleValue = 0.5f;
 }
@@ -81,6 +86,8 @@ void APFCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	FastBindAxis(MoveVertical);
 	FastBindAxis(MoveHorizontal);
 	FastBindAxis(CameraScale);
+	FastBindAction(Control);
+	FastBindAxis(MouseHorizontal);
 }
 
 bool APFCameraPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
@@ -93,8 +100,8 @@ bool APFCameraPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
 	// UE_LOG_TEMP(TEXT("Viewport Size: (%.2f, %.2f), Mouse Position: (%.2f, %.2f)"), ViewportSize.X, ViewportSize.Y, MousePosition.X, MousePosition.Y);
 
 	OutMousePositionOnEdge.X = OutMousePositionOnEdge.Y = 0;
-	OutMousePositionOnEdge.X = MousePosition.Y == 0 ? 1 : (FMath::IsNearlyEqual(MousePosition.Y, ViewportSize.Y - 1) ? -1 : 0);
-	OutMousePositionOnEdge.Y = MousePosition.X == 0 ? -1 : (FMath::IsNearlyEqual(MousePosition.X, ViewportSize.X - 1) ? 1 : 0);
+	OutMousePositionOnEdge.X = MousePosition.Y == 0 ? 1 : (MousePosition.Y >= ViewportSize.Y - 1 ? -1 : 0);
+	OutMousePositionOnEdge.Y = MousePosition.X == 0 ? -1 : (MousePosition.X >= ViewportSize.X - 1 ? 1 : 0);
 
 	return OutMousePositionOnEdge.X != 0 || OutMousePositionOnEdge.Y != 0;
 }
@@ -120,10 +127,29 @@ void APFCameraPawn::MoveHorizontal(float Value)
 	Move(Value, EAxis::Y);
 }
 
+void APFCameraPawn::ControlPressed()
+{
+	bControlPressed = true;
+}
+
+void APFCameraPawn::ControlReleased()
+{
+	bControlPressed = false;
+}
+
+void APFCameraPawn::MouseHorizontal(float Value)
+{
+	if (bControlPressed)
+	{
+		// UE_LOG_TEMP(TEXT("Mouse Horizontal: %f"), Value);
+		AddControllerYawInput(Value * CameraRotateSpeed * GetWorld()->GetDeltaSeconds());
+	}
+}
+
 void APFCameraPawn::CameraScale(float Value)
 {
 	// UE_LOG_TEMP(TEXT("Camera Scale: %f"), Value);
 	CameraScaleValue = FMath::Clamp(CameraScaleValue + Value * CameraScaleSpeed, 0.f, 1.f);
-	
+
 }
 

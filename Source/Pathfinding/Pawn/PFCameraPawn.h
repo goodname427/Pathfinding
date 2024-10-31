@@ -31,22 +31,23 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	// Camera
-	void CameraScale(float Value);
-
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
 	class UCameraComponent* Camera;
 	
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
 	class USpringArmComponent* SpringArm;
 
-	UPROPERTY(Category = "Camera", EditDefaultsOnly)
+protected:
+	// Camera Scale
+	void CameraScale(float Value);
+
+	UPROPERTY(Category = "Control|CameraScale", EditDefaultsOnly)
 	float MinTargetArmLength;
 
-	UPROPERTY(Category = "Camera", EditDefaultsOnly)
+	UPROPERTY(Category = "Control|CameraScale", EditDefaultsOnly)
 	float MaxTargetArmLength;
 
-	UPROPERTY(Category = "Camera", EditDefaultsOnly)
+	UPROPERTY(Category = "Control|CameraScale", EditDefaultsOnly)
 	float CameraScaleSpeed;
 
 private:
@@ -61,11 +62,24 @@ protected:
 
 	virtual UPawnMovementComponent* GetMovementComponent() const override { return Movement; }
 
-	UPROPERTY(Category = "Move", VisibleAnywhere)
+	UPROPERTY(Category = "Control|Move", VisibleAnywhere)
 	UPawnMovementComponent* Movement;
 	
-	UPROPERTY(Category = "Move", EditDefaultsOnly)
+	UPROPERTY(Category = "Control|Move", EditDefaultsOnly)
 	uint32 bEnableMouseMove : 1;
+
+protected:
+	// Camera Rotate
+	void ControlPressed();
+	void ControlReleased();
+	void MouseHorizontal(float Value);
+
+	UPROPERTY(Category = "Control|CameraRotate", EditDefaultsOnly)
+	float CameraRotateSpeed;
+
+private:
+	UPROPERTY(Category = "Control|CameraRotate", VisibleAnywhere)
+	uint32 bControlPressed : 1;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
