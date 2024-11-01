@@ -2,36 +2,34 @@
 
 
 #include "WidgetSubsystem.h"
-#include "PFGameInstance.h"
 #include "PFUtils.h"
 #include "Blueprint/UserWidget.h"
 
 void UWidgetSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+	Super::Initialize(Collection);
+	
+	CurrentWidget = nullptr;
 	GameInstance = Cast<UPFGameInstance>(GetGameInstance());
 }
 
-UUserWidget* UWidgetSubsystem::TryGetWidget(FString InWidgetName)
+UUserWidget* UWidgetSubsystem::TryGetWidget(const FString& InWidgetName)
 {
 	NULL_CHECK_RET(GameInstance, nullptr);
-
-	UUserWidget** TargetWidgetPtr = LoadedWidgets.Find(InWidgetName);
+	// UE_LOG_TEMP(TEXT("%s"), *InWidgetName);
 	
-	if (TargetWidgetPtr == nullptr)
-	{ 
+	UUserWidget*& TargetWidgetRef = LoadedWidgets.FindOrAdd(InWidgetName);
+	if (!TargetWidgetRef)
+	{
+		// 创建并初始化小部件
 		TSubclassOf<UUserWidget>* TargetWidgetClassPtr = GameInstance->WidgetSettings.Find(InWidgetName);
 		if (TargetWidgetClassPtr)
 		{
-			UUserWidget* TargetWidget = CreateWidget(GetWorld(), *TargetWidgetClassPtr);
-			TargetWidgetPtr = &TargetWidget;
-			if (TargetWidget != nullptr)
-			{
-				LoadedWidgets.Add(InWidgetName, TargetWidget);
-			}
+			TargetWidgetRef = CreateWidget(GetWorld(), *TargetWidgetClassPtr);
 		}
 	}
 
-	return TargetWidgetPtr ? *TargetWidgetPtr : nullptr;
+	return TargetWidgetRef;
 }
 
 void UWidgetSubsystem::Show(UUserWidget* InTargetWidget)
@@ -44,18 +42,17 @@ void UWidgetSubsystem::Show(UUserWidget* InTargetWidget)
 
 	if (InTargetWidget != nullptr)
 	{
-		// InTargetWidget->PreAddToViewport();
 		InTargetWidget->AddToViewport();
 		CurrentWidget = InTargetWidget;
 		return;
 	}
 }
 
-void UWidgetSubsystem::Show(FString InWidgetName)
+void UWidgetSubsystem::Show(const FString& InWidgetName)
 {
-	UE_LOG_TEMP(TEXT("Show"));
+	// UE_LOG_TEMP(TEXT("Show"));
 	UUserWidget* TargetWidget = TryGetWidget(InWidgetName);
-	UE_LOG_TEMP(TEXT("%s"), TargetWidget ? *TargetWidget->GetFName().ToString() : TEXT("NULL"));
+	// UE_LOG_TEMP(TEXT("%s"), TargetWidget ? *TargetWidget->GetFName().ToString() : TEXT("NULL"));
 	Show(TargetWidget);
 }
 
@@ -64,7 +61,7 @@ void UWidgetSubsystem::Clear()
 	Show(nullptr);
 }
 
-void UWidgetSubsystem::ShowErrorDialog(FString ErrorText)
+void UWidgetSubsystem::ShowErrorDialog(const FString& ErrorText)
 {
-	Show(TEXT("ErrorDialog"));
+	// Show(TEXT("ErrorDialog"));
 }

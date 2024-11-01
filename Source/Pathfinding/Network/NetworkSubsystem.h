@@ -6,18 +6,6 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "NetworkSubsystem.generated.h"
 
-UENUM(BlueprintType)
-enum class EGameNetworkState : uint8
-{
-	Startup UMETA(DisplayName = "Startup"),
-	MainMenu UMETA(DisplayName = "MainMenu"),
-	ServerList UMETA(DisplayName = "ServerList"),
-	LoadingScreen UMETA(DisplayName = "LoadingScreen"),
-	ErrorDialog UMETA(DisplayName = "ErrorDialog"),
-	Playing UMETA(DisplayName = "Playing"),
-	Unknown UMETA(DisplayName = "Unknown")
-};
-
 /**
  * 
  */
@@ -30,25 +18,10 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection);
 
 public:
-	// State
-	EGameNetworkState GetCurrentState() const { return CurrentState; }
-
-	bool IsCurrentState(EGameNetworkState InState) const { return CurrentState == InState; }
-	
-	bool TransitionToState(EGameNetworkState InDesiredState);
-
-private:
-	EGameNetworkState CurrentState;
-
-public:
-	// Widget
-	UFUNCTION(BlueprintCallable)
-	void ShowMainMenu();
-
-private:
-	class UWidgetSubsystem* WidgetSubsystem;
-
-public:
 	// Network
+	UFUNCTION(BlueprintCallable)
 	void DestorySession();
+
+	UFUNCTION(BlueprintCallable)
+	void HostGame();
 };

@@ -19,7 +19,8 @@ public class Pathfinding : ModuleRules
 			Path.Combine(ModuleDirectory, "Gameplay"), 
 			Path.Combine(ModuleDirectory, "Pawn"), 
 			Path.Combine(ModuleDirectory, "Network"), 
-			Path.Combine(ModuleDirectory, "Widget") 
+			Path.Combine(ModuleDirectory, "Widget"), 
+			Path.Combine(ModuleDirectory, "GameManage") 
 		});
 
 		// Uncomment if you are using Slate UI

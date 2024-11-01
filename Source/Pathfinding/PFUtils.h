@@ -1,5 +1,9 @@
 #pragma once
 
+//
+// MACRO
+//
+
 #define DOWHILE_WRAP_OPEN \
 do \
 { \
@@ -8,9 +12,21 @@ do \
 } \
 while(0) \
 
+//
+// LOG
+//
+
 #define UE_LOG_TEMP(Format, ...) UE_LOG(LogTemp, Log, Format, __VA_ARGS__)
 
+//
+// INIT
+//
+
 #define InitDefaultSubobject(Comp) Comp = CreateDefaultSubobject<std::remove_pointer<decltype(Comp)>::type>(TEXT(#Comp))
+
+//
+// BIND
+//
 
 #define FastBindAxis(AxisName) PlayerInputComponent->BindAxis(#AxisName, this, &ThisClass::##AxisName)
 
@@ -19,6 +35,10 @@ DOWHILE_WRAP_OPEN \
 	PlayerInputComponent->BindAction(#ActionName, IE_Pressed, this, &ThisClass::ActionName##Pressed); \
 	PlayerInputComponent->BindAction(#ActionName, IE_Released, this, &ThisClass::ActionName##Released); \
 DOWHILE_WRAP_CLOSE \
+
+//
+// CHECK
+// 
 
 #define SAFE_CHECK(Expr, CategoryName, Format, ...) \
 DOWHILE_WRAP_OPEN \
@@ -45,3 +65,18 @@ DOWHILE_WRAP_CLOSE \
 #define NULL_CHECK(Ptr) SAFE_CHECK_TEMP(Ptr, TEXT("%s Is Null"), #Ptr)
 
 #define NULL_CHECK_RET(Ptr, Ret) SAFE_CHECK_RET_TEMP(Ptr, Ret, TEXT("%s Is Null"), #Ptr)
+
+//
+// ???
+//
+
+#define LAZY_LOAD(Class, MemberName, LoadFunc) \
+Class* Get##MemberName() \
+{ \
+	if (MemberName == nullptr) \
+	{ \
+		MemberName = LoadFunc; \
+	} \
+	return MemberName; \
+} \
+Class* MemberName \
