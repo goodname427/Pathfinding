@@ -15,13 +15,16 @@ class PATHFINDING_API UNetworkSubsystem : public UGameInstanceSubsystem
 	GENERATED_BODY()
 
 public:
-	virtual void Initialize(FSubsystemCollectionBase& Collection);
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
 	// Network
 	UFUNCTION(BlueprintCallable)
-	void DestorySession();
+	void DestroySession();
+	
+	UFUNCTION(BlueprintCallable)
+	void HostRoom();
 
 	UFUNCTION(BlueprintCallable)
-	void HostGame();
+	void JoinRoom();	
 };

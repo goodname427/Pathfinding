@@ -21,10 +21,11 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 private:
+	UPROPERTY()
 	UPFGameInstance* GameInstance;
 
 protected:
-	// Try Get Widget Of The Specified Name
+	// Try To Get Widget Of The Specified Name
 	UUserWidget* TryGetWidget(const FString& InWidgetName);
 	// Show The Specified Widget And Hide The Current Widget
 	void Show(UUserWidget* InTargetWidget);
@@ -38,7 +39,10 @@ public:
 	void ShowErrorDialog(const FString& ErrorText);
 
 private:
+	UPROPERTY()
 	UUserWidget* CurrentWidget;
+	
 	// The Cache of All Loaded Widgets
-	TMap<const FString, UUserWidget*> LoadedWidgets;
+	UPROPERTY()
+	TMap<FString, UUserWidget*> LoadedWidgets;
 };

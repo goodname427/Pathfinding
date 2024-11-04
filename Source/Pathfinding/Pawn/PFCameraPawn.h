@@ -17,7 +17,7 @@ class PATHFINDING_API APFCameraPawn : public APawn
 
 public:
 	// Sets default values for this pawn's properties
-	APFCameraPawn(const FObjectInitializer& ObjectInitializer);
+	explicit APFCameraPawn(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned

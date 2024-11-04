@@ -13,12 +13,19 @@ void UNetworkSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 }
 
-void UNetworkSubsystem::DestorySession()
+void UNetworkSubsystem::DestroySession()
 {
+	// todo
 	// APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 }
 
-void UNetworkSubsystem::HostGame()
+void UNetworkSubsystem::HostRoom()
 {
-	// 
+	// todo
+}
+
+void UNetworkSubsystem::JoinRoom()
+{
+	// todo
+	UE_LOG_TEMP(TEXT("Join Room ____"));
 }

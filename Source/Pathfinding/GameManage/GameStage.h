@@ -20,12 +20,12 @@ public:
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) = 0;
 
 public:
-	static bool IsSameStage(TSharedPtr<IGameStage> InStage1, TSharedPtr<IGameStage> InStage2);
+	static bool IsSameStage(const TSharedPtr<IGameStage>& InStage1, const TSharedPtr<IGameStage>& InStage2);
 
 	template<typename TGameStage>
-	static bool IsSameStage(TSharedPtr<IGameStage> InStage) { return dynamic_cast<TGameStage>(InStage.Get()); }
+	static bool IsSameStage(const TSharedPtr<IGameStage> InStage) { return dynamic_cast<TGameStage>(InStage.Get()); }
 
-	static bool IsSameStage(TSharedPtr<IGameStage> InStage, const FString& InStageName);
+	static bool IsSameStage(const TSharedPtr<IGameStage>& InStage, const FString& InStageName);
 
 	static TSharedPtr<IGameStage> NameToStage(const FString& InStageName);
 };

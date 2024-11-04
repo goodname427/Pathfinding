@@ -22,15 +22,15 @@ while(0) \
 // INIT
 //
 
-#define InitDefaultSubobject(Comp) Comp = CreateDefaultSubobject<std::remove_pointer<decltype(Comp)>::type>(TEXT(#Comp))
+#define INIT_DEFAULT_SUBOBJECT(Comp) Comp = CreateDefaultSubobject<std::remove_pointer<decltype(Comp)>::type>(TEXT(#Comp))
 
 //
 // BIND
 //
 
-#define FastBindAxis(AxisName) PlayerInputComponent->BindAxis(#AxisName, this, &ThisClass::##AxisName)
+#define FAST_BIND_AXIS(AxisName) PlayerInputComponent->BindAxis(#AxisName, this, &ThisClass::##AxisName)
 
-#define FastBindAction(ActionName) \
+#define FAST_BIND_ACTION(ActionName) \
 DOWHILE_WRAP_OPEN \
 	PlayerInputComponent->BindAction(#ActionName, IE_Pressed, this, &ThisClass::ActionName##Pressed); \
 	PlayerInputComponent->BindAction(#ActionName, IE_Released, this, &ThisClass::ActionName##Released); \

@@ -16,12 +16,12 @@ void UPFGameInstance::Init()
 	CurrentStage = MakeShared<FStartupGameStage>();
 }
 
-inline bool UPFGameInstance::IsCurrentStage(TSharedPtr<IGameStage> InStage) const
+inline bool UPFGameInstance::IsCurrentStage(const TSharedPtr<IGameStage>& InStage) const
 {
 	return IGameStage::IsSameStage(CurrentStage, InStage);
 }
 
-bool UPFGameInstance::TransitionToStage(TSharedPtr<IGameStage> InDesiredStage)
+bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& InDesiredStage)
 {
 	if (!InDesiredStage.IsValid())
 	{

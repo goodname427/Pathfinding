@@ -15,7 +15,7 @@ class PATHFINDING_API UPFCameraPawnMovementComponent : public UPawnMovementCompo
 	GENERATED_BODY()
 
 public:
-	UPFCameraPawnMovementComponent(const FObjectInitializer& ObjectInitializer);
+	explicit UPFCameraPawnMovementComponent(const FObjectInitializer& ObjectInitializer);
 
 private:
 	//Begin UActorComponent Interface

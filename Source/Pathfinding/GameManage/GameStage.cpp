@@ -9,7 +9,7 @@
 if (InStageName == #StageName) \
 	return MakeShared<F##StageName##GameStage>() \
 
-bool IGameStage::IsSameStage(TSharedPtr<IGameStage> InStage1, TSharedPtr<IGameStage> InStage2)
+bool IGameStage::IsSameStage(const TSharedPtr<IGameStage>& InStage1, const TSharedPtr<IGameStage>& InStage2)
 {
 	if (!InStage1.IsValid() || !InStage2.IsValid())
 		return false;
@@ -17,7 +17,7 @@ bool IGameStage::IsSameStage(TSharedPtr<IGameStage> InStage1, TSharedPtr<IGameSt
 	return InStage1->GetStageName() == InStage2->GetStageName();
 }
 
-bool IGameStage::IsSameStage(TSharedPtr<IGameStage> InStage, const FString& InStageName)
+bool IGameStage::IsSameStage(const TSharedPtr<IGameStage>& InStage, const FString& InStageName)
 {
 	return InStage.IsValid() && InStage->GetStageName() == InStageName;
 }

@@ -14,7 +14,7 @@ APFPawn::APFPawn()
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	RootComponent = InitDefaultSubobject(StaticMesh);
+	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMesh);
 }
 
 // Called when the game starts or when spawned

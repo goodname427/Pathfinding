@@ -13,10 +13,10 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
-	InitDefaultSubobject(RootComponent);
+	INIT_DEFAULT_SUBOBJECT(RootComponent);
 
 	// Spring Arm
-	InitDefaultSubobject(SpringArm);
+	INIT_DEFAULT_SUBOBJECT(SpringArm);
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-60.0f, 0.0f, 0.0f));
 	SpringArm->TargetArmLength = 3000.f;
@@ -24,7 +24,7 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	SpringArm->CameraLagSpeed = 3.0f;
 
 	// Camera
-	InitDefaultSubobject(Camera);
+	INIT_DEFAULT_SUBOBJECT(Camera);
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	// Movement
@@ -46,7 +46,7 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	bControlPressed = false;
 
 	// Flag
-	InitDefaultSubobject(StaticMesh);
+	INIT_DEFAULT_SUBOBJECT(StaticMesh);
 	StaticMesh->SetupAttachment(RootComponent);
 }
 
@@ -83,11 +83,11 @@ void APFCameraPawn::Tick(float DeltaTime)
 void APFCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	FastBindAxis(MoveVertical);
-	FastBindAxis(MoveHorizontal);
-	FastBindAxis(CameraScale);
-	FastBindAction(Control);
-	FastBindAxis(MouseHorizontal);
+	FAST_BIND_AXIS(MoveVertical);
+	FAST_BIND_AXIS(MoveHorizontal);
+	FAST_BIND_AXIS(CameraScale);
+	FAST_BIND_ACTION(Control);
+	FAST_BIND_AXIS(MouseHorizontal);
 }
 
 bool APFCameraPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
