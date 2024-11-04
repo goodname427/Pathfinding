@@ -17,4 +17,7 @@ public:
 	virtual FString GetStageName() const override { return TEXT("MainMenu"); }
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override;
+
+private:
+	// FDelegateHandle DelegateHandle;
 };

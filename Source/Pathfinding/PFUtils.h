@@ -80,3 +80,20 @@ Class* Get##MemberName() \
 	return MemberName; \
 } \
 Class* MemberName \
+
+#include <functional>
+
+template<typename HandleType>
+struct THandleHolder
+{
+	THandleHolder()
+	{}
+	THandleHolder(HandleType InHandle)
+		: Handle(InHandle)
+	{}
+	
+	void SetHandle(HandleType InHandle) { Handle = InHandle; }
+	
+private:
+	HandleType Handle;
+};
