@@ -65,35 +65,3 @@ DOWHILE_WRAP_CLOSE \
 #define NULL_CHECK(Ptr) SAFE_CHECK_TEMP(Ptr, TEXT("%s Is Null"), #Ptr)
 
 #define NULL_CHECK_RET(Ptr, Ret) SAFE_CHECK_RET_TEMP(Ptr, Ret, TEXT("%s Is Null"), #Ptr)
-
-//
-// ???
-//
-
-#define LAZY_LOAD(Class, MemberName, LoadFunc) \
-Class* Get##MemberName() \
-{ \
-	if (MemberName == nullptr) \
-	{ \
-		MemberName = LoadFunc; \
-	} \
-	return MemberName; \
-} \
-Class* MemberName \
-
-#include <functional>
-
-template<typename HandleType>
-struct THandleHolder
-{
-	THandleHolder()
-	{}
-	THandleHolder(HandleType InHandle)
-		: Handle(InHandle)
-	{}
-	
-	void SetHandle(HandleType InHandle) { Handle = InHandle; }
-	
-private:
-	HandleType Handle;
-};
