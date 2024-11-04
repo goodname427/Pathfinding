@@ -12,15 +12,10 @@ void FMainMenuGameStage::OnExitStage(UPFGameInstance* GameInstance)
 
 void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
-	if (GameInstance->IsCurrentStage("Playing"))
+	if (GameInstance->GetWorld()->PersistentLevel->GetFName() != TEXT("L_MainMenu"))
 	{
 		UGameplayStatics::OpenLevel(GameInstance, TEXT("L_MainMenu"));
 	}
 	
-	UWidgetSubsystem* WidgetSubsystem = GameInstance->GetSubsystem<UWidgetSubsystem>();
-
-	if (WidgetSubsystem)
-	{
-		WidgetSubsystem->Show(TEXT("MainMenu"));
-	}
+	GameInstance->GetSubsystem<UWidgetSubsystem>()->Show(TEXT("MainMenu"));
 }
