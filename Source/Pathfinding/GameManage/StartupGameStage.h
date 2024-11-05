@@ -9,7 +9,7 @@
 /**
  * 
  */
-class PATHFINDING_API FStartupGameStage : public IGameStage
+class PATHFINDING_API FStartupGameStage final : public IGameStage
 {
 public:
 	FStartupGameStage() {}

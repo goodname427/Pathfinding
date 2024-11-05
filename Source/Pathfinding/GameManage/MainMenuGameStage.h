@@ -9,7 +9,7 @@
 /**
  * 
  */
-class PATHFINDING_API FMainMenuGameStage : public IGameStage
+class PATHFINDING_API FMainMenuGameStage final : public IGameStage
 {
 public:
 	FMainMenuGameStage() {}
