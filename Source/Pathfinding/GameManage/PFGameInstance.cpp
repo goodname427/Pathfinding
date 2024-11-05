@@ -25,13 +25,13 @@ bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredSta
 {
 	if (!DesiredStage.IsValid())
 	{
-		GetSubsystem<UWidgetSubsystem>()->ShowErrorDialog("Error: The Desired State Is Not Valid");
+		Error(TEXT("Error: The Desired State Is Not Valid"));
 		return false;
 	}
 
 	if (IsCurrentStage(DesiredStage))
 	{
-		GetSubsystem<UWidgetSubsystem>()->ShowErrorDialog("Error: Can Not Transition To The Same State");
+		Error(TEXT("Error: Can Not Transition To The Same State"));
 		return false;
 	}
 
@@ -51,4 +51,9 @@ bool UPFGameInstance::IsCurrentStage(const FString& InStageName) const
 bool UPFGameInstance::TransitionToStage(const FString& DesiredStageName)
 {
 	return TransitionToStage(IGameStage::NameToStage(DesiredStageName));
+}
+
+void UPFGameInstance::Error(const FString& ErrorMessage)
+{
+	UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
 }

@@ -28,13 +28,13 @@ public:
 protected:
 	// Return True If The Current Stage Equal The In Stage
 	inline bool IsCurrentStage(const TSharedPtr<IGameStage>& InStage) const;
-	
+
 	// Transition To Desired Stage
 	bool TransitionToStage(const TSharedPtr<IGameStage>& DesiredStage);
 
 public:
 	// Return True If The Current Stage Equal The In Stage
-	template<typename TGameStage>
+	template <typename TGameStage>
 	inline bool IsCurrentStage() const;
 
 	// Return True If The Current Stage Equal The Stage Of Specified Name
@@ -42,7 +42,7 @@ public:
 	bool IsCurrentStage(const FString& InStageName) const;
 
 	// Transition To Desired Stage
-	template<typename TGameStage>
+	template <typename TGameStage>
 	bool TransitionToStage() { return TransitionToStage(MakeShared<TGameStage>()); }
 
 	// Transition To Desired Stage
@@ -51,9 +51,12 @@ public:
 
 private:
 	TSharedPtr<IGameStage> CurrentStage;
+
+public:
+	void Error(const FString& ErrorMessage);
 };
 
-template<typename TGameStage>
+template <typename TGameStage>
 inline bool UPFGameInstance::IsCurrentStage() const
 {
 	return IGameStage::IsSameStage<TGameStage>(CurrentStage);

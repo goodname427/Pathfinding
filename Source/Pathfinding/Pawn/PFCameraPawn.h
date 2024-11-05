@@ -6,7 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include <PFCameraPawnMovementComponent.h>
+#include "Movement/PFCameraPawnMovementComponent.h"
 #include "PFCameraPawn.generated.h"
 
 
