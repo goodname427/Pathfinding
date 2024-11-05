@@ -1,24 +1,32 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+#include "UObject/Interface.h"
 #include "PFUserWidget.generated.h"
+
+// This class does not need to be modified.
+UINTERFACE(Blueprintable)
+class UPFUserWidget : public UInterface
+{
+	GENERATED_BODY()
+};
 
 /**
  * 
  */
-UCLASS()
-class PATHFINDING_API UPFUserWidget : public UUserWidget
+class PATHFINDING_API IPFUserWidget
 {
 	GENERATED_BODY()
 
+	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent)
-	void PreAddToViewport();
-
-protected:
-	UPROPERTY(EditDefaultsOnly)
-	uint32 bSetInputModeUIOnly : 1;
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnAddToViewport();
+	void OnAddToViewport_Implementation() {}
+	
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnRemoveFromViewport();
+	void OnRemoveFromViewport_Implementation() {}
 };
