@@ -15,6 +15,4 @@ public:
 	FStartupGameStage() {}
 
 	virtual FString GetStageName() const override { return TEXT("Startup"); }
-	virtual void OnExitStage(class UPFGameInstance* GameInstance) override {};
-	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override {};
 };

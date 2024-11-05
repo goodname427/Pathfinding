@@ -16,8 +16,8 @@ protected:
 
 public:
 	virtual FString GetStageName() const = 0;
-	virtual void OnExitStage(class UPFGameInstance* GameInstance) = 0;
-	virtual void OnEnterStage(class UPFGameInstance* GameInstance) = 0;
+	virtual void OnExitStage(class UPFGameInstance* GameInstance) {};
+	virtual void OnEnterStage(class UPFGameInstance* GameInstance) {};
 
 public:
 	static bool IsSameStage(const TSharedPtr<IGameStage>& InStage1, const TSharedPtr<IGameStage>& InStage2);
