@@ -4,8 +4,7 @@
 #include "PFGameInstance.h"
 #include "WidgetSubsystem.h"
 #include "NetworkSubsystem.h"
-#include "StartupGameStage.h"
-#include "MainMenuGameStage.h"
+#include "GameStage/StartupGameStage.h"
 #include "PFUtils.h"
 #include "Kismet/GameplayStatics.h"
 

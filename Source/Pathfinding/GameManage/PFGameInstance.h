@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "GameStage.h"
+#include "GameStage/GameStage.h"
 #include "PFGameInstance.generated.h"
 
 class IGameStage;
