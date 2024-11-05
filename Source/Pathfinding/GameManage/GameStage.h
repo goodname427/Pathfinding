@@ -1,8 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "CoreMinimal.h"
 #include "PFGameInstance.h"
 
 /**
@@ -20,12 +17,12 @@ public:
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) {};
 
 public:
-	static bool IsSameStage(const TSharedPtr<IGameStage>& InStage1, const TSharedPtr<IGameStage>& InStage2);
+	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage1, const TSharedPtr<IGameStage>& Stage2);
 
 	template<typename TGameStage>
-	static bool IsSameStage(const TSharedPtr<IGameStage> InStage) { return dynamic_cast<TGameStage>(InStage.Get()); }
+	static bool IsSameStage(const TSharedPtr<IGameStage> Stage) { return dynamic_cast<TGameStage>(Stage.Get()); }
 
-	static bool IsSameStage(const TSharedPtr<IGameStage>& InStage, const FString& InStageName);
+	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage, const FString& StageName);
 
 	static TSharedPtr<IGameStage> NameToStage(const FString& InStageName);
 };

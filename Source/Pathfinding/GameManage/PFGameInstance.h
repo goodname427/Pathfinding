@@ -30,7 +30,7 @@ protected:
 	inline bool IsCurrentStage(const TSharedPtr<IGameStage>& InStage) const;
 	
 	// Transition To Desired Stage
-	bool TransitionToStage(const TSharedPtr<IGameStage>& InDesiredStage);
+	bool TransitionToStage(const TSharedPtr<IGameStage>& DesiredStage);
 
 public:
 	// Return True If The Current Stage Equal The In Stage
@@ -47,7 +47,7 @@ public:
 
 	// Transition To Desired Stage
 	UFUNCTION(BlueprintCallable)
-	bool TransitionToStage(const FString& InStageName);
+	bool TransitionToStage(const FString& DesiredStageName);
 
 private:
 	TSharedPtr<IGameStage> CurrentStage;

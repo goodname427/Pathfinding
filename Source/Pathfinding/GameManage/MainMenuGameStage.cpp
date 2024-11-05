@@ -1,13 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "MainMenuGameStage.h"
 #include "WidgetSubsystem.h"
 #include "Kismet/GameplayStatics.h"
-
-void FMainMenuGameStage::OnExitStage(UPFGameInstance* GameInstance)
-{
-}
 
 void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
@@ -15,16 +8,13 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 
 	if (GameInstance->GetWorld()->GetName() != TEXT("L_MainMenu"))
 	{
-		UGameplayStatics::OpenLevel(GameInstance, TEXT("L_MainMenu"));
-
-		TSharedPtr<FTimerHandle> DelegateHandle = MakeShared<FTimerHandle>();
-		GameInstance->GetWorld()->GetTimerManager().SetTimer(*DelegateHandle, [GameInstance, DelegateHandle]()
-		{
-			GameInstance->GetSubsystem<UWidgetSubsystem>()->Show(TEXT("MainMenu"));
-			GameInstance->GetWorld()->GetTimerManager().ClearTimer(*DelegateHandle);
-		}, 0.1f, false);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->OpenLevelAndShow(TEXT("L_MainMenu"), TEXT("MainMenu"));
 		return;
 	}
 
 	GameInstance->GetSubsystem<UWidgetSubsystem>()->Show(TEXT("MainMenu"));
+}
+
+void FMainMenuGameStage::OnExitStage(UPFGameInstance* GameInstance)
+{
 }

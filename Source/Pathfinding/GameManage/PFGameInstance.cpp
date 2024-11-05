@@ -21,24 +21,24 @@ inline bool UPFGameInstance::IsCurrentStage(const TSharedPtr<IGameStage>& InStag
 	return IGameStage::IsSameStage(CurrentStage, InStage);
 }
 
-bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& InDesiredStage)
+bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredStage)
 {
-	if (!InDesiredStage.IsValid())
+	if (!DesiredStage.IsValid())
 	{
 		GetSubsystem<UWidgetSubsystem>()->ShowErrorDialog("Error: The Desired State Is Not Valid");
 		return false;
 	}
 
-	if (IsCurrentStage(InDesiredStage))
+	if (IsCurrentStage(DesiredStage))
 	{
 		GetSubsystem<UWidgetSubsystem>()->ShowErrorDialog("Error: Can Not Transition To The Same State");
 		return false;
 	}
 
 	CurrentStage->OnExitStage(this);
-	InDesiredStage->OnEnterStage(this);
+	DesiredStage->OnEnterStage(this);
 
-	CurrentStage = InDesiredStage;
+	CurrentStage = DesiredStage;
 
 	return true;
 }
@@ -48,7 +48,7 @@ bool UPFGameInstance::IsCurrentStage(const FString& InStageName) const
 	return IGameStage::IsSameStage(CurrentStage, InStageName);
 }
 
-bool UPFGameInstance::TransitionToStage(const FString& InStageName)
+bool UPFGameInstance::TransitionToStage(const FString& DesiredStageName)
 {
-	return TransitionToStage(IGameStage::NameToStage(InStageName));
+	return TransitionToStage(IGameStage::NameToStage(DesiredStageName));
 }

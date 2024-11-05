@@ -26,17 +26,19 @@ private:
 
 protected:
 	// Try To Get Widget Of The Specified Name
-	UUserWidget* TryGetWidget(const FString& InWidgetName);
+	UUserWidget* TryGetWidget(const FString& WidgetName);
 	// Show The Specified Widget And Hide The Current Widget
-	void Show(UUserWidget* InTargetWidget);
+	void Show(UUserWidget* TargetWidget);
 
 public:
 	// Show Widget Of The Specified Name And Hide The Current Widget
-	void Show(const FString& InWidgetName);
+	void Show(const FString& WidgetName);
 	// Clear Current Widget
 	void Clear();
 	// Show Error Dialog
 	void ShowErrorDialog(const FString& ErrorText);
+
+	void OpenLevelAndShow(FName LevelName, FString WidgetName);
 
 private:
 	UPROPERTY()

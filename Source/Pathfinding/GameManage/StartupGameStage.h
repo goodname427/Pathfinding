@@ -1,13 +1,9 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameStage.h"
-#include "PFGameInstance.h"
 
 /**
- * 
+ * The Default Stage While Game Started, To Determine The Game Just Started.
  */
 class PATHFINDING_API FStartupGameStage final : public IGameStage
 {
