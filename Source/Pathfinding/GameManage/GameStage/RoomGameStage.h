@@ -8,7 +8,7 @@
 class PATHFINDING_API FRoomGameStage final : public IGameStage
 {
 public:
-	virtual FString GetStageName() const override { return "Room"; }
+	virtual FName GetStageName() const override { return "Room"; }
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override;
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
 };

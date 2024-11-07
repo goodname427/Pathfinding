@@ -14,7 +14,7 @@ class PATHFINDING_API FMainMenuGameStage final : public IGameStage
 public:
 	FMainMenuGameStage() {}
 
-	virtual FString GetStageName() const override { return TEXT("MainMenu"); }
+	virtual FName GetStageName() const override { return TEXT("MainMenu"); }
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override;
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
 };

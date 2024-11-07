@@ -20,7 +20,7 @@ class PATHFINDING_API UPFGameInstance : public UGameInstance
 
 public:
 	UPROPERTY(EditDefaultsOnly)
-	TMap<FString, TSubclassOf<UUserWidget>> WidgetSettings;
+	TMap<FName, TSubclassOf<UUserWidget>> WidgetSettings;
 
 public:
 	virtual void Init() override;
@@ -39,7 +39,7 @@ public:
 
 	// Return True If The Current Stage Equal The Stage Of Specified Name
 	UFUNCTION(BlueprintCallable)
-	bool IsCurrentStage(const FString& InStageName) const;
+	bool IsCurrentStage(const FName& InStageName) const;
 
 	// Transition To Desired Stage
 	template <typename TGameStage>
@@ -47,7 +47,7 @@ public:
 
 	// Transition To Desired Stage
 	UFUNCTION(BlueprintCallable)
-	bool TransitionToStage(const FString& DesiredStageName);
+	bool TransitionToStage(const FName& DesiredStageName);
 
 private:
 	TSharedPtr<IGameStage> CurrentStage;

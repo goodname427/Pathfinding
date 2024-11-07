@@ -42,12 +42,12 @@ bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredSta
 	return true;
 }
 
-bool UPFGameInstance::IsCurrentStage(const FString& InStageName) const
+bool UPFGameInstance::IsCurrentStage(const FName& InStageName) const
 {
 	return IGameStage::IsSameStage(CurrentStage, InStageName);
 }
 
-bool UPFGameInstance::TransitionToStage(const FString& DesiredStageName)
+bool UPFGameInstance::TransitionToStage(const FName& DesiredStageName)
 {
 	return TransitionToStage(IGameStage::NameToStage(DesiredStageName));
 }

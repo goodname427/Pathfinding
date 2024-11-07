@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "GameManage/PFGameInstance.h"
-#include "PFUserWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "WidgetSubsystem.generated.h"
 
@@ -26,19 +25,19 @@ private:
 
 protected:
 	// Try To Get Widget Of The Specified Name
-	UUserWidget* TryGetWidget(const FString& WidgetName);
+	UUserWidget* TryGetWidget(const FName& WidgetName);
 	// Show The Specified Widget And Hide The Current Widget
 	void Show(UUserWidget* TargetWidget);
 
 public:
 	// Show Widget Of The Specified Name And Hide The Current Widget
-	void Show(const FString& WidgetName);
+	void Show(const FName& WidgetName);
 	// Clear Current Widget
 	void Clear();
 	// Show Error Dialog
 	void ShowErrorDialog(const FString& ErrorText);
 
-	void OpenLevelAndShow(FName LevelName, FString WidgetName);
+	void OpenLevelAndShow(FName LevelName, FName WidgetName);
 
 private:
 	UPROPERTY()
@@ -46,5 +45,5 @@ private:
 	
 	// The Cache of All Loaded Widgets
 	UPROPERTY()
-	TMap<FString, UUserWidget*> LoadedWidgets;
+	TMap<FName, UUserWidget*> LoadedWidgets;
 };

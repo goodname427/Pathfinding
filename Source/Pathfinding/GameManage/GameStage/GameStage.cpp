@@ -7,7 +7,7 @@
 if (InStageName == #StageName) \
 	return MakeShared<F##StageName##GameStage>() \
 
-TSharedPtr<IGameStage> IGameStage::NameToStage(const FString& InStageName)
+TSharedPtr<IGameStage> IGameStage::NameToStage(const FName& InStageName)
 {
 	RET_STAGE_IF_MATCHED(Startup);
 	RET_STAGE_IF_MATCHED(MainMenu);
@@ -24,7 +24,7 @@ bool IGameStage::IsSameStage(const TSharedPtr<IGameStage>& Stage1, const TShared
 	return Stage1->GetStageName() == Stage2->GetStageName();
 }
 
-bool IGameStage::IsSameStage(const TSharedPtr<IGameStage>& Stage, const FString& StageName)
+bool IGameStage::IsSameStage(const TSharedPtr<IGameStage>& Stage, const FName& StageName)
 {
 	return Stage.IsValid() && Stage->GetStageName() == StageName;
 }
