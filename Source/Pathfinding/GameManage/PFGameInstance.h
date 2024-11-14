@@ -45,10 +45,6 @@ public:
 	template <typename TGameStage, typename... ArgTypes>
 	bool TransitionToStage(ArgTypes&&... InArgs) { return TransitionToStage(MakeShared<TGameStage>(InArgs...)); }
 
-	// Transition To Desired Stage
-	UFUNCTION(BlueprintCallable)
-	bool TransitionToStage(FName DesiredStageName);
-
 private:
 	TSharedPtr<IGameStage> CurrentStage;
 

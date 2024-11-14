@@ -4,23 +4,33 @@
 #include "StartupGameStage.h"
 #include "RoomGameStage.h"
 #include "MainMenuGameStage.h"
+#include "GameStageHelper.generated.h"
 
-#define RET_STAGE_IF_MATCHED(StageName) \
-if (InStageName == #StageName) \
-	return MakeShared<F##StageName##GameStage>(InArgs...)
+#define DECLARE_TRANSITION_TO_STAGE(StageName, ...) \
+	UFUNCTION(BlueprintCallable) \
+	static void TransitionTo##StageName##Stage(UPFGameInstance* GameInstance, ##__VA_ARGS__)
 
-class PATHFINDING_API FGameStageHelper
+UCLASS()
+class PATHFINDING_API UGameStageHelper : public UBlueprintFunctionLibrary
 {
+	GENERATED_BODY()
+
+	template <typename TGameStage, typename... ArgTypes>
+	static void TransitionToStage(UPFGameInstance* GameInstance, ArgTypes&&... InArgs);
+
 public:
-	template <typename... ArgTypes>
-	static TSharedPtr<IGameStage> NameToStage(FName InStageName, ArgTypes&&... InArgs);
+	// Blueprint Help
+
+	UFUNCTION(BlueprintCallable)
+	static void TransitionToMainMenuStage(UPFGameInstance* GameInstance);
+
+	UFUNCTION(BlueprintCallable)
+	static void TransitionToRoomStage(UPFGameInstance* GameInstance, AGameSession* InSessionToJoin);
 };
 
-template <typename... ArgTypes>
-TSharedPtr<IGameStage> FGameStageHelper::NameToStage(FName InStageName, ArgTypes&&... InArgs)
+
+template <typename TGameStage, typename... ArgTypes>
+void UGameStageHelper::TransitionToStage(UPFGameInstance* GameInstance, ArgTypes&&... InArgs)
 {
-	RET_STAGE_IF_MATCHED(Startup);
-	RET_STAGE_IF_MATCHED(MainMenu);
-	RET_STAGE_IF_MATCHED(Room);
-	return nullptr;
+	GameInstance->TransitionToStage<TGameStage, ArgTypes...>(InArgs...);
 }

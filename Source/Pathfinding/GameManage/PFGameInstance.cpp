@@ -48,11 +48,6 @@ bool UPFGameInstance::IsCurrentStage(FName InStageName) const
 	return IGameStage::IsSameStage(CurrentStage, InStageName);
 }
 
-bool UPFGameInstance::TransitionToStage(FName DesiredStageName)
-{
-	return TransitionToStage(FGameStageHelper::NameToStage(DesiredStageName));
-}
-
 void UPFGameInstance::Error(const FString& ErrorMessage)
 {
 	UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
