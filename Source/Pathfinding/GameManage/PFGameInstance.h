@@ -39,15 +39,15 @@ public:
 
 	// Return True If The Current Stage Equal The Stage Of Specified Name
 	UFUNCTION(BlueprintCallable)
-	bool IsCurrentStage(const FName& InStageName) const;
+	bool IsCurrentStage(FName InStageName) const;
 
 	// Transition To Desired Stage
-	template <typename TGameStage>
-	bool TransitionToStage() { return TransitionToStage(MakeShared<TGameStage>()); }
+	template <typename TGameStage, typename... ArgTypes>
+	bool TransitionToStage(ArgTypes... InArgs) { return TransitionToStage(MakeShared<TGameStage>(InArgs...)); }
 
 	// Transition To Desired Stage
 	UFUNCTION(BlueprintCallable)
-	bool TransitionToStage(const FName& DesiredStageName);
+	bool TransitionToStage(FName DesiredStageName);
 
 private:
 	TSharedPtr<IGameStage> CurrentStage;

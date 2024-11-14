@@ -25,19 +25,25 @@ private:
 
 protected:
 	// Try To Get Widget Of The Specified Name
-	UUserWidget* TryGetWidget(const FName& WidgetName);
+	UUserWidget* TryGetWidget(FName WidgetName);
 	// Show The Specified Widget And Hide The Current Widget
 	void Show(UUserWidget* TargetWidget);
 
 public:
 	// Show Widget Of The Specified Name And Hide The Current Widget
-	void Show(const FName& WidgetName);
+	UFUNCTION(BlueprintCallable)
+	void Show(FName WidgetName);
+
 	// Clear Current Widget
+	UFUNCTION(BlueprintCallable)
 	void Clear();
+
 	// Show Error Dialog
+	UFUNCTION(BlueprintCallable)
 	void ShowErrorDialog(const FString& ErrorText);
 
-	void OpenLevelAndShow(FName LevelName, FName WidgetName);
+	UFUNCTION(BlueprintCallable)
+	void OpenLevelAndShow(FName LevelName, FName WidgetName, FString Options = TEXT(""));
 
 private:
 	UPROPERTY()

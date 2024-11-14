@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "NetworkSubsystem.generated.h"
+#include "OnlineHelperSubsystem.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PATHFINDING_API UNetworkSubsystem : public UGameInstanceSubsystem
+class PATHFINDING_API UOnlineHelperSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -26,5 +26,8 @@ public:
 	void HostRoom();
 
 	UFUNCTION(BlueprintCallable)
-	void JoinRoom();	
+	void JoinRoom();
+
+	UFUNCTION(BlueprintCallable)
+	void FindRooms();
 };

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "PFGameInstance.h"
+#include "MainMenuGameStage.h"
+#include "StartupGameStage.h"
+#include "RoomGameStage.h"
 
 /**
  *
@@ -22,7 +25,22 @@ public:
 	template<typename TGameStage>
 	static bool IsSameStage(const TSharedPtr<IGameStage> Stage) { return dynamic_cast<TGameStage>(Stage.Get()); }
 
-	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage, const FName& StageName);
+	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage, FName StageName);
 
-	static TSharedPtr<IGameStage> NameToStage(const FName& InStageName);
+	template<typename... ArgTypes>
+	static TSharedPtr<IGameStage> NameToStage(FName InStageName, ArgTypes&&... InArgs);
 };
+
+#define RET_STAGE_IF_MATCHED(StageName) \
+if (InStageName == #StageName) \
+return MakeShared<F##StageName##GameStage>(InArgs...) \
+
+template <typename ... ArgTypes>
+TSharedPtr<IGameStage> IGameStage::NameToStage(FName InStageName, ArgTypes&&... InArgs)
+{
+	RET_STAGE_IF_MATCHED(Startup);
+	RET_STAGE_IF_MATCHED(MainMenu);
+	RET_STAGE_IF_MATCHED(Room);
+
+	return nullptr;
+}
