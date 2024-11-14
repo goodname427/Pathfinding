@@ -25,7 +25,7 @@ public:
 	static void TransitionToFindRoomStage(UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable)
-	static void TransitionToRoomStage(UObject* WorldContextObject, AGameSession* InSessionToJoin);
+	static void TransitionToRoomStage(UObject* WorldContextObject, int32 InRoomIndexToJoin);
 };
 
 

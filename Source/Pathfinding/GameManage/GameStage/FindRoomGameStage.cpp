@@ -14,5 +14,5 @@ void FFindRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 
 void FFindRoomGameStage::OnExitStage(class UPFGameInstance* GameInstance)
 {
-	IGameStage::OnExitStage(GameInstance);
+	
 }

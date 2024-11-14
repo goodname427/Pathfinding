@@ -16,7 +16,7 @@ void UGameStageHelper::TransitionToFindRoomStage(UObject* WorldContextObject)
 	IMPLEMENT_TRANSITION_TO_STAGE(FindRoom);
 }
 
-void UGameStageHelper::TransitionToRoomStage(UObject* WorldContextObject, AGameSession* InSessionToJoin)
+void UGameStageHelper::TransitionToRoomStage(UObject* WorldContextObject, int32 InRoomIndexToJoin = -1)
 {
-	IMPLEMENT_TRANSITION_TO_STAGE(Room, InSessionToJoin);
+	IMPLEMENT_TRANSITION_TO_STAGE(Room, InRoomIndexToJoin);
 }

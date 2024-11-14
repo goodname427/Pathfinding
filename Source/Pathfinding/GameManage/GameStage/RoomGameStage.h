@@ -9,8 +9,8 @@
 class PATHFINDING_API FRoomGameStage final : public IGameStage
 {
 public:
-	FRoomGameStage() : FRoomGameStage(nullptr) {};
-	FRoomGameStage(AGameSession* InSessionToJoin) : SessionToJoin(InSessionToJoin) {};
+	FRoomGameStage() : FRoomGameStage(INDEX_NONE) {};
+	FRoomGameStage(int32 InRoomIndexToJoin) : RoomIndexToJoin(InRoomIndexToJoin) {};
 	
 public:
 	virtual FName GetStageName() const override { return "Room"; }
@@ -18,5 +18,5 @@ public:
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
 
 private:
-	AGameSession* SessionToJoin;
+	int32 RoomIndexToJoin;
 };

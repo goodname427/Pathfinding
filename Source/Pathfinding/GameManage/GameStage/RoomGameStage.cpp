@@ -1,6 +1,5 @@
 ﻿#include "RoomGameStage.h"
 
-#include "LocalizationDescriptor.h"
 #include "OnlineHelperSubsystem.h"
 #include "PFGameInstance.h"
 #include "PFUtils.h"
@@ -12,7 +11,7 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	NULL_CHECK(OnlineHelperSubsystem);
 
 	// Host Room
-	if (SessionToJoin == nullptr)
+	if (RoomIndexToJoin == INDEX_NONE)
 	{
 		OnlineHelperSubsystem->HostRoom();
 		GameInstance->GetSubsystem<UWidgetSubsystem>()->OpenLevelAndShow(TEXT("L_Room"), TEXT("Room"), TEXT("listen"));
@@ -20,7 +19,8 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	// Join Room
 	else
 	{
-		// OnlineHelperSubsystem->JoinRoom(TEXT("L_Room"), TEXT("listen"));
+		OnlineHelperSubsystem->JoinRoom(RoomIndexToJoin);
+		OnlineHelperSubsystem->TravelToRoom();
 	}
 }
 
