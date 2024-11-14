@@ -43,7 +43,7 @@ public:
 
 	// Transition To Desired Stage
 	template <typename TGameStage, typename... ArgTypes>
-	bool TransitionToStage(ArgTypes... InArgs) { return TransitionToStage(MakeShared<TGameStage>(InArgs...)); }
+	bool TransitionToStage(ArgTypes&&... InArgs) { return TransitionToStage(MakeShared<TGameStage>(InArgs...)); }
 
 	// Transition To Desired Stage
 	UFUNCTION(BlueprintCallable)

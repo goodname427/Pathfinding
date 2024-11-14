@@ -3,9 +3,10 @@
 
 #include "PFGameInstance.h"
 #include "WidgetSubsystem.h"
-#include "NetworkSubsystem.h"
+#include "OnlineHelperSubsystem.h"
 #include "GameStage/StartupGameStage.h"
 #include "PFUtils.h"
+#include "GameStage/GameStageHelper.h"
 #include "Kismet/GameplayStatics.h"
 
 void UPFGameInstance::Init()
@@ -49,7 +50,7 @@ bool UPFGameInstance::IsCurrentStage(FName InStageName) const
 
 bool UPFGameInstance::TransitionToStage(FName DesiredStageName)
 {
-	return TransitionToStage(IGameStage::NameToStage(DesiredStageName));
+	return TransitionToStage(FGameStageHelper::NameToStage(DesiredStageName));
 }
 
 void UPFGameInstance::Error(const FString& ErrorMessage)

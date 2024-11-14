@@ -18,7 +18,7 @@ public class Pathfinding : ModuleRules
 			Path.Combine(ModuleDirectory), 
 			Path.Combine(ModuleDirectory, "Gameplay"), 
 			Path.Combine(ModuleDirectory, "Pawn"), 
-			Path.Combine(ModuleDirectory, "Network"), 
+			Path.Combine(ModuleDirectory, "Online"), 
 			Path.Combine(ModuleDirectory, "Widget"), 
 			Path.Combine(ModuleDirectory, "GameManage") 
 		});

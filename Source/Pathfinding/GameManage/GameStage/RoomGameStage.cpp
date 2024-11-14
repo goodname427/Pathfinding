@@ -1,14 +1,14 @@
 ﻿#include "RoomGameStage.h"
 
 #include "LocalizationDescriptor.h"
-#include "NetworkSubsystem.h"
+#include "OnlineHelperSubsystem.h"
 #include "PFGameInstance.h"
 #include "PFUtils.h"
 #include "WidgetSubsystem.h"
 
 void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 {
-	UNetworkSubsystem* NetworkSubsystem = GameInstance->GetSubsystem<UNetworkSubsystem>();
+	UOnlineHelperSubsystem* NetworkSubsystem = GameInstance->GetSubsystem<UOnlineHelperSubsystem>();
 	NULL_CHECK(NetworkSubsystem);
 
 	NetworkSubsystem->HostRoom();
