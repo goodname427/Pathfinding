@@ -34,11 +34,18 @@ void UOnlineHelperSubsystem::HostRoom()
 	FOnlineSessionSettings Settings;
 	{
 		Settings.bIsLANMatch = true;
+		Settings.NumPublicConnections = 10;
 	}
 
+	// OnlineSubsystem->GetSessionInterface()->CreateSession(
+	// 	4,
+	// 	FName(GetGameInstance()->GetFirstGamePlayer()->GetNickname()),
+	// 	Settings
+	// );
+	
 	OnlineSubsystem->GetSessionInterface()->CreateSession(
-		4,
-		FName(GetWorld()->GetFirstPlayerController()->GetLocalPlayer()->GetNickname()),
+		*GetGameInstance()->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId(),
+		FName(GetGameInstance()->GetFirstGamePlayer()->GetName()),
 		Settings
 	);
 }

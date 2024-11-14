@@ -13,7 +13,7 @@ void UPFGameInstance::Init()
 {
 	Super::Init();
 	
-	CurrentStage = MakeShared<FStartupGameStage>();
+	TransitionToStage<FStartupGameStage>();
 }
 
 inline bool UPFGameInstance::IsCurrentStage(const TSharedPtr<IGameStage>& InStage) const
@@ -35,7 +35,11 @@ bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredSta
 		return false;
 	}
 
-	CurrentStage->OnExitStage(this);
+	if (CurrentStage.IsValid())
+	{
+		CurrentStage->OnExitStage(this);
+	}
+	
 	DesiredStage->OnEnterStage(this);
 
 	CurrentStage = DesiredStage;

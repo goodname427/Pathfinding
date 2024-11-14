@@ -8,11 +8,20 @@
 
 void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 {
-	UOnlineHelperSubsystem* NetworkSubsystem = GameInstance->GetSubsystem<UOnlineHelperSubsystem>();
-	NULL_CHECK(NetworkSubsystem);
+	UOnlineHelperSubsystem* OnlineHelperSubsystem = GameInstance->GetSubsystem<UOnlineHelperSubsystem>();
+	NULL_CHECK(OnlineHelperSubsystem);
 
-	NetworkSubsystem->HostRoom();
-	GameInstance->GetSubsystem<UWidgetSubsystem>()->OpenLevelAndShow(TEXT("L_Room"), TEXT("Room"), TEXT("listen"));
+	// Host Room
+	if (SessionToJoin == nullptr)
+	{
+		OnlineHelperSubsystem->HostRoom();
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->OpenLevelAndShow(TEXT("L_Room"), TEXT("Room"), TEXT("listen"));
+	}
+	// Join Room
+	else
+	{
+		// OnlineHelperSubsystem->JoinRoom(TEXT("L_Room"), TEXT("listen"));
+	}
 }
 
 void FRoomGameStage::OnExitStage(class UPFGameInstance* GameInstance)
