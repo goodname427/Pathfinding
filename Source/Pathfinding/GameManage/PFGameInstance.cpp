@@ -3,9 +3,10 @@
 
 #include "PFGameInstance.h"
 #include "WidgetSubsystem.h"
-#include "OnlineHelperSubsystem.h"
+#include "PFGameSession.h"
 #include "GameStage/StartupGameStage.h"
 #include "PFUtils.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameStage/GameStageHelper.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -55,4 +56,19 @@ bool UPFGameInstance::IsCurrentStage(FName InStageName) const
 void UPFGameInstance::Error(const FString& ErrorMessage)
 {
 	UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
+}
+
+APFGameSession* UPFGameInstance::GetGameSession() const
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		AGameModeBase* GameMode = World->GetAuthGameMode();
+		if (GameMode)
+		{
+			return Cast<APFGameSession>(GameMode->GameSession);
+		}
+	}
+
+	return nullptr;
 }

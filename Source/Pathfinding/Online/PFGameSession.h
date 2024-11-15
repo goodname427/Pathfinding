@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "OnlineSessionSettings.h"
+#include "GameFramework/GameSession.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "OnlineHelperSubsystem.generated.h"
+#include "PFGameSession.generated.h"
 
 
 USTRUCT(BlueprintType)
@@ -32,12 +33,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindRoomsSignature, const TArray<FS
  * 
  */
 UCLASS()
-class PATHFINDING_API UOnlineHelperSubsystem : public UGameInstanceSubsystem
+class PATHFINDING_API APFGameSession : public AGameSession
 {
 	GENERATED_BODY()
-
-public:
-	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 
 public:
 	UPROPERTY(BlueprintAssignable)

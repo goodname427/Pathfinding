@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PFGameSession.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "GameStage/GameStage.h"
@@ -50,6 +51,10 @@ private:
 
 public:
 	void Error(const FString& ErrorMessage);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	APFGameSession* GetGameSession() const;
 };
 
 template <typename TGameStage>

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Online/OnlineHelperSubsystem.h"
+#include "Online/PFGameSession.h"
 #include "OnlineSubsystem.h"
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSessionSettings.h"
@@ -24,23 +24,18 @@ FSessionSearchResult::FSessionSearchResult(const FOnlineSessionSearchResult& InR
 	NumCurrentPlayer = NumMaxPlayer - (InResult.Session.NumOpenPrivateConnections + InResult.Session.NumOpenPublicConnections);
 }
 
-void UOnlineHelperSubsystem::Initialize(FSubsystemCollectionBase& Collection)
-{
-	Super::Initialize(Collection);
-}
-
-FUniqueNetIdPtr UOnlineHelperSubsystem::GetPlayerUniqueNetId() const
+FUniqueNetIdPtr APFGameSession::GetPlayerUniqueNetId() const
 {
 	return GetGameInstance()->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId();
 }
 
-void UOnlineHelperSubsystem::DestroySession()
+void APFGameSession::DestroySession()
 {
 	// todo
 	// APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 }
 
-void UOnlineHelperSubsystem::HostRoom()
+void APFGameSession::HostRoom()
 {
 	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld());
 	NULL_CHECK(OnlineSubsystem);
@@ -82,7 +77,7 @@ void UOnlineHelperSubsystem::HostRoom()
 	}
 }
 
-void UOnlineHelperSubsystem::JoinRoom(const int32 RoomIndex)
+void APFGameSession::JoinRoom(const int32 RoomIndex)
 {
 	if (RoomIndex < 0 || RoomIndex >= SearchSettings->SearchResults.Num())
 	{
@@ -92,12 +87,12 @@ void UOnlineHelperSubsystem::JoinRoom(const int32 RoomIndex)
 	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld());
 	NULL_CHECK(OnlineSubsystem);
 
-	IOnlineSessionPtr Sessions = OnlineSubsystem->GetSessionInterface();
-	if (Sessions.IsValid())
+	IOnlineSessionPtr SessionInterface = OnlineSubsystem->GetSessionInterface();
+	if (SessionInterface.IsValid())
 	{
 		TSharedPtr<FDelegateHandle> DelegateHandle = MakeShared<FDelegateHandle>();
-		*DelegateHandle = Sessions->OnJoinSessionCompleteDelegates.AddLambda(
-			[DelegateHandle, Sessions](FName GameSessionName, EOnJoinSessionCompleteResult::Type CompleteResult)
+		*DelegateHandle = SessionInterface->OnJoinSessionCompleteDelegates.AddLambda(
+			[DelegateHandle, SessionInterface](FName GameSessionName, EOnJoinSessionCompleteResult::Type CompleteResult)
 			{
 				if (CompleteResult == EOnJoinSessionCompleteResult::Success)
 				{
@@ -108,14 +103,14 @@ void UOnlineHelperSubsystem::JoinRoom(const int32 RoomIndex)
 					UE_LOG_TEMP(TEXT("Join Room Failure"));
 				}
 		
-				Sessions->OnJoinSessionCompleteDelegates.Remove(*DelegateHandle);
+				SessionInterface->OnJoinSessionCompleteDelegates.Remove(*DelegateHandle);
 			});
 		
-		Sessions->JoinSession(*GetPlayerUniqueNetId(), NAME_GameSession, SearchSettings->SearchResults[RoomIndex]);
+		SessionInterface->JoinSession(*GetPlayerUniqueNetId(), NAME_GameSession, SearchSettings->SearchResults[RoomIndex]);
 	}
 }
 
-void UOnlineHelperSubsystem::FindRooms()
+void APFGameSession::FindRooms()
 {
 	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld());
 	NULL_CHECK(OnlineSubsystem);
@@ -126,12 +121,12 @@ void UOnlineHelperSubsystem::FindRooms()
 		SearchSettings->MaxSearchResults = 20;
 	}
 
-	IOnlineSessionPtr Sessions = OnlineSubsystem->GetSessionInterface();
-	if (Sessions.IsValid())
+	IOnlineSessionPtr SessionInterface = OnlineSubsystem->GetSessionInterface();
+	if (SessionInterface.IsValid())
 	{
 		TSharedPtr<FDelegateHandle> DelegateHandle = MakeShared<FDelegateHandle>();
-		*DelegateHandle = Sessions->OnFindSessionsCompleteDelegates.AddLambda(
-			[DelegateHandle, Sessions, this](bool bWasSuccessful)
+		*DelegateHandle = SessionInterface->OnFindSessionsCompleteDelegates.AddLambda(
+			[DelegateHandle, SessionInterface, this](bool bWasSuccessful)
 			{
 				if (bWasSuccessful)
 				{
@@ -152,25 +147,24 @@ void UOnlineHelperSubsystem::FindRooms()
 				// 	UE_LOG_TEMP(TEXT("Find Room Failure"));
 				// }
 
-				Sessions->OnFindSessionsCompleteDelegates.Remove(*DelegateHandle);
+				SessionInterface->OnFindSessionsCompleteDelegates.Remove(*DelegateHandle);
 			});
 
-		Sessions->FindSessions(
+		SessionInterface->FindSessions(
 			*GetPlayerUniqueNetId(),
 			SearchSettings
 		);
 	}
 }
 
-void UOnlineHelperSubsystem::TravelToRoom()
+void APFGameSession::TravelToRoom()
 {
 	IOnlineSubsystem* OnlineSubsystem = Online::GetSubsystem(GetWorld());
 	NULL_CHECK(OnlineSubsystem);
 	
 	FString URL;
-	IOnlineSessionPtr Sessions = OnlineSubsystem->GetSessionInterface();
-	FName SessionName = GetWorld()->GetAuthGameMode()->GameSession->SessionName;
-	if (Sessions.IsValid() && Sessions->GetResolvedConnectString(SessionName, URL))
+	IOnlineSessionPtr SessionInterface = OnlineSubsystem->GetSessionInterface();
+	if (SessionInterface.IsValid() && SessionInterface->GetResolvedConnectString(SessionName, URL))
 	{
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		if (PC)

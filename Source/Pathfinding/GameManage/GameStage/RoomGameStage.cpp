@@ -1,26 +1,26 @@
 ﻿#include "RoomGameStage.h"
 
-#include "OnlineHelperSubsystem.h"
+#include "PFGameSession.h"
 #include "PFGameInstance.h"
 #include "PFUtils.h"
 #include "WidgetSubsystem.h"
 
 void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 {
-	UOnlineHelperSubsystem* OnlineHelperSubsystem = GameInstance->GetSubsystem<UOnlineHelperSubsystem>();
-	NULL_CHECK(OnlineHelperSubsystem);
+	APFGameSession* GameSession = GameInstance->GetGameSession();
+	NULL_CHECK(GameSession);
 
 	// Host Room
 	if (RoomIndexToJoin == INDEX_NONE)
 	{
-		OnlineHelperSubsystem->HostRoom();
+		GameSession->HostRoom();
 		GameInstance->GetSubsystem<UWidgetSubsystem>()->OpenLevelAndShow(TEXT("L_Room"), TEXT("Room"), TEXT("listen"));
 	}
 	// Join Room
 	else
 	{
-		OnlineHelperSubsystem->JoinRoom(RoomIndexToJoin);
-		OnlineHelperSubsystem->TravelToRoom();
+		GameSession->JoinRoom(RoomIndexToJoin);
+		GameSession->TravelToRoom();
 	}
 }
 
