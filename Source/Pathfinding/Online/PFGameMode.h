@@ -13,5 +13,9 @@ UCLASS()
 class PATHFINDING_API APFGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	APFGameMode();
 	
+	virtual void PostLogin(APlayerController* NewPlayer) override;
 };

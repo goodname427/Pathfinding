@@ -1,13 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PFCameraPawn.h"
+#include "CommanderPawn.h"
 #include "Kismet/GameplayStatics.h"
 #include "PFUtils.h"
 
 // Sets default values
-APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+ACommanderPawn::ACommanderPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -28,7 +27,7 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 
 	// Movement
-	Movement = CreateDefaultSubobject<UPawnMovementComponent, UPFCameraPawnMovementComponent>("Movement");
+	Movement = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("Movement");
 	Movement->UpdatedComponent = RootComponent;
 
 	// Camera Scale
@@ -51,7 +50,7 @@ APFCameraPawn::APFCameraPawn(const FObjectInitializer& ObjectInitializer)
 }
 
 // Called when the game starts or when spawned
-void APFCameraPawn::BeginPlay()
+void ACommanderPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -60,7 +59,7 @@ void APFCameraPawn::BeginPlay()
 }
 
 // Called every frame
-void APFCameraPawn::Tick(float DeltaTime)
+void ACommanderPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
@@ -80,7 +79,7 @@ void APFCameraPawn::Tick(float DeltaTime)
 }
 
 // Called to bind functionality to input
-void APFCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	FAST_BIND_AXIS(MoveVertical);
@@ -90,7 +89,7 @@ void APFCameraPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	FAST_BIND_AXIS(MouseHorizontal);
 }
 
-bool APFCameraPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
+bool ACommanderPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
 {
 	FVector2D MousePosition;
 	GEngine->GameViewport->GetMousePosition(MousePosition);
@@ -106,7 +105,7 @@ bool APFCameraPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
 	return OutMousePositionOnEdge.X != 0 || OutMousePositionOnEdge.Y != 0;
 }
 
-void APFCameraPawn::Move(float Value, EAxis::Type InAxis)
+void ACommanderPawn::Move(float Value, EAxis::Type InAxis)
 {
 	if (Controller == nullptr)
 	{
@@ -117,27 +116,27 @@ void APFCameraPawn::Move(float Value, EAxis::Type InAxis)
 	AddMovementInput(Direction, Value);
 }
 
-void APFCameraPawn::MoveVertical(float Value)
+void ACommanderPawn::MoveVertical(float Value)
 {
 	Move(Value, EAxis::X);
 }
 
-void APFCameraPawn::MoveHorizontal(float Value)
+void ACommanderPawn::MoveHorizontal(float Value)
 {
 	Move(Value, EAxis::Y);
 }
 
-void APFCameraPawn::ControlPressed()
+void ACommanderPawn::ControlPressed()
 {
 	bControlPressed = true;
 }
 
-void APFCameraPawn::ControlReleased()
+void ACommanderPawn::ControlReleased()
 {
 	bControlPressed = false;
 }
 
-void APFCameraPawn::MouseHorizontal(float Value)
+void ACommanderPawn::MouseHorizontal(float Value)
 {
 	if (bControlPressed)
 	{
@@ -146,7 +145,7 @@ void APFCameraPawn::MouseHorizontal(float Value)
 	}
 }
 
-void APFCameraPawn::CameraScale(float Value)
+void ACommanderPawn::CameraScale(float Value)
 {
 	// UE_LOG_TEMP(TEXT("Camera Scale: %f"), Value);
 	CameraScaleValue = FMath::Clamp(CameraScaleValue + Value * CameraScaleSpeed, 0.f, 1.f);

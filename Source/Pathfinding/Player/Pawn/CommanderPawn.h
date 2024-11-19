@@ -6,18 +6,18 @@
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "Movement/PFCameraPawnMovementComponent.h"
-#include "PFCameraPawn.generated.h"
+#include "Movement/CommanderPawnMovementComponent.h"
+#include "CommanderPawn.generated.h"
 
 
 UCLASS()
-class PATHFINDING_API APFCameraPawn : public APawn
+class PATHFINDING_API ACommanderPawn : public APawn
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this pawn's properties
-	explicit APFCameraPawn(const FObjectInitializer& ObjectInitializer);
+	ACommanderPawn();
 
 protected:
 	// Called when the game starts or when spawned

@@ -11,6 +11,25 @@
 
 class IGameStage;
 
+
+USTRUCT(BlueprintType)
+struct FMapInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FString MapName;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FString MapPath;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	FString MapDescripition;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	int32 MaxPlayers;
+};
+
 /**
  * 
  */
@@ -23,8 +42,20 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	TMap<FName, TSubclassOf<UUserWidget>> WidgetSettings;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FMapInfo> Maps;
+
 public:
 	virtual void Init() override;
+
+	virtual void OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld) override;
+
+	virtual void OnWorldBeginPlay(UWorld* World);
+
+	void PostLogin(APlayerController* NewPlayer);
+
+private:
+	FDelegateHandle OnWorldBeginPlayDelegateHandle;
 
 protected:
 	// Return True If The Current Stage Equal The In Stage
@@ -42,6 +73,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsCurrentStage(FName InStageName) const;
 
+	UFUNCTION(BlueprintCallable)
+	FName GetCurrentStageName() const;
+
 	// Transition To Desired Stage
 	template <typename TGameStage, typename... ArgTypes>
 	bool TransitionToStage(ArgTypes&&... InArgs) { return TransitionToStage(MakeShared<TGameStage>(InArgs...)); }
@@ -50,7 +84,11 @@ private:
 	TSharedPtr<IGameStage> CurrentStage;
 
 public:
-	void Error(const FString& ErrorMessage);
+	static FString GetURL(const FString& LevelPath, const FString& Options = TEXT("")) { return FString::Printf(TEXT("/Game/Maps/%s%s"), *LevelPath, *Options); }
+
+public:
+	template <typename FmtType, typename... ArgTypes>
+	void Error(const FmtType& ErrorMessageFormat, ArgTypes... InArgs);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -61,4 +99,11 @@ template <typename TGameStage>
 inline bool UPFGameInstance::IsCurrentStage() const
 {
 	return IGameStage::IsSameStage<TGameStage>(CurrentStage);
+}
+
+template <typename FmtType, typename... ArgTypes>
+void UPFGameInstance::Error(const FmtType& ErrorMessageFormat, ArgTypes... InArgs)
+{
+	const FString ErrorMessage = FString::Printf(ErrorMessageFormat, InArgs...);
+	UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
 }

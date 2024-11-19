@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "PFCameraPawnMovementComponent.generated.h"
+#include "CommanderPawnMovementComponent.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PATHFINDING_API UPFCameraPawnMovementComponent : public UPawnMovementComponent
+class PATHFINDING_API UCommanderPawnMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
 
 public:
-	explicit UPFCameraPawnMovementComponent(const FObjectInitializer& ObjectInitializer);
+	UCommanderPawnMovementComponent();
 
 private:
 	//Begin UActorComponent Interface

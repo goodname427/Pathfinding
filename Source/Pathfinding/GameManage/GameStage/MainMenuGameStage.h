@@ -12,9 +12,11 @@
 class PATHFINDING_API FMainMenuGameStage final : public IGameStage
 {
 public:
-	FMainMenuGameStage() {}
-
 	virtual FName GetStageName() const override { return TEXT("MainMenu"); }
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override;
-	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
+	virtual void OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World) override;
+
+private:
+	static FName LevelName;
+	static FName WidgetName;
 };

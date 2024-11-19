@@ -1,10 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PFCameraPawnMovementComponent.h"
+#include "CommanderPawnMovementComponent.h"
 
-UPFCameraPawnMovementComponent::UPFCameraPawnMovementComponent(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
 {
 	MaxSpeed = 1200.f;
 	Acceleration = 4000.f;
@@ -15,7 +14,8 @@ UPFCameraPawnMovementComponent::UPFCameraPawnMovementComponent(const FObjectInit
 	ResetMoveState();
 }
 
-void UPFCameraPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UCommanderPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+                                                   FActorComponentTickFunction* ThisTickFunction)
 {
 	if (ShouldSkipUpdate(DeltaTime))
 	{
@@ -33,7 +33,8 @@ void UPFCameraPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 	if (Controller && Controller->IsLocalController())
 	{
 		// apply input for local players but also for AI that's not following a navigation path at the moment
-		if (Controller->IsLocalPlayerController() == true || Controller->IsFollowingAPath() == false || bUseAccelerationForPaths)
+		if (Controller->IsLocalPlayerController() == true || Controller->IsFollowingAPath() == false ||
+			bUseAccelerationForPaths)
 		{
 			ApplyControlInputToVelocity(DeltaTime);
 		}
@@ -79,7 +80,7 @@ void UPFCameraPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelT
 	}
 };
 
-bool UPFCameraPawnMovementComponent::LimitWorldBounds()
+bool UCommanderPawnMovementComponent::LimitWorldBounds()
 {
 	AWorldSettings* WorldSettings = PawnOwner ? PawnOwner->GetWorldSettings() : NULL;
 	if (!WorldSettings || !WorldSettings->bEnableWorldBoundsChecks || !UpdatedComponent)
@@ -97,7 +98,7 @@ bool UPFCameraPawnMovementComponent::LimitWorldBounds()
 	return false;
 }
 
-void UPFCameraPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTime)
+void UCommanderPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTime)
 {
 	const FVector ControlAcceleration = GetPendingInputVector().GetClampedToMaxSize(1.f);
 
@@ -140,7 +141,8 @@ void UPFCameraPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTime
 	ConsumeInputVector();
 }
 
-bool UPFCameraPawnMovementComponent::ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit, const FQuat& NewRotationQuat)
+bool UCommanderPawnMovementComponent::ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit,
+                                                            const FQuat& NewRotationQuat)
 {
 	bPositionCorrected |= Super::ResolvePenetrationImpl(Adjustment, Hit, NewRotationQuat);
 	return bPositionCorrected;

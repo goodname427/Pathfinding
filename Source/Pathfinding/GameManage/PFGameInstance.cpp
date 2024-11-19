@@ -7,14 +7,57 @@
 #include "GameStage/StartupGameStage.h"
 #include "PFUtils.h"
 #include "GameFramework/GameModeBase.h"
-#include "GameStage/GameStageHelper.h"
 #include "Kismet/GameplayStatics.h"
 
 void UPFGameInstance::Init()
 {
 	Super::Init();
-	
+
 	TransitionToStage<FStartupGameStage>();
+}
+
+void UPFGameInstance::OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld)
+{
+	Super::OnWorldChanged(OldWorld, NewWorld);
+	if (OldWorld != nullptr && OnWorldBeginPlayDelegateHandle.IsValid())
+	{
+		OldWorld->OnWorldBeginPlay.Remove(OnWorldBeginPlayDelegateHandle);
+	}
+
+	if (NewWorld != nullptr)
+	{
+		OnWorldBeginPlayDelegateHandle = NewWorld->OnWorldBeginPlay.AddLambda([this, NewWorld]
+		{
+			OnWorldBeginPlay(NewWorld);
+		});
+	}
+
+	if (CurrentStage)
+	{
+		CurrentStage->OnWorldChanged(this, OldWorld, NewWorld);
+		// TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>(); 
+		// GetTimerManager().SetTimer(*TimerHandle, [this, TimerHandle, OldWorld, NewWorld]()
+		// {
+		// 	CurrentStage->OnWorldChanged(this, OldWorld, NewWorld);
+		// 	GetTimerManager().ClearTimer(*TimerHandle);
+		// }, 0.1f, false);
+	}
+}
+
+void UPFGameInstance::OnWorldBeginPlay(UWorld* World)
+{
+	if (CurrentStage)
+	{
+		CurrentStage->OnWorldBeginPlay(this, World);
+	}
+}
+
+void UPFGameInstance::PostLogin(APlayerController* NewPlayer)
+{
+	if (CurrentStage.IsValid())
+	{
+		CurrentStage->OnPostLogin(this, NewPlayer);
+	}
 }
 
 inline bool UPFGameInstance::IsCurrentStage(const TSharedPtr<IGameStage>& InStage) const
@@ -36,11 +79,17 @@ bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredSta
 		return false;
 	}
 
+	if (!DesiredStage->CanTransition(this))
+	{
+		Error(TEXT("Error: Desired Stage Can Not Transition"));
+		return false;
+	}
+
 	if (CurrentStage.IsValid())
 	{
 		CurrentStage->OnExitStage(this);
 	}
-	
+
 	DesiredStage->OnEnterStage(this);
 
 	CurrentStage = DesiredStage;
@@ -53,9 +102,14 @@ bool UPFGameInstance::IsCurrentStage(FName InStageName) const
 	return IGameStage::IsSameStage(CurrentStage, InStageName);
 }
 
-void UPFGameInstance::Error(const FString& ErrorMessage)
+FName UPFGameInstance::GetCurrentStageName() const
 {
-	UE_LOG(LogTemp, Error, TEXT("%s"), *ErrorMessage);
+	if (CurrentStage.IsValid())
+	{
+		return CurrentStage->GetStageName();
+	}
+
+	return NAME_None;
 }
 
 APFGameSession* UPFGameInstance::GetGameSession() const

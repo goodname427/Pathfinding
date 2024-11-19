@@ -32,8 +32,11 @@ protected:
 public:
 	// Show Widget Of The Specified Name And Hide The Current Widget
 	UFUNCTION(BlueprintCallable)
-	void Show(FName WidgetName);
+	bool Show(FName WidgetName);
 
+	UFUNCTION(BlueprintCallable)
+	bool ShowAndFocus(FName WidgetName);
+	
 	// Clear Current Widget
 	UFUNCTION(BlueprintCallable)
 	void Clear();
@@ -41,9 +44,6 @@ public:
 	// Show Error Dialog
 	UFUNCTION(BlueprintCallable)
 	void ShowErrorDialog(const FString& ErrorText);
-
-	UFUNCTION(BlueprintCallable)
-	void OpenLevelAndShow(FName LevelName, FName WidgetName, FString Options = TEXT(""));
 
 private:
 	UPROPERTY()

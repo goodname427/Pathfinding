@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "OnlineSessionSettings.h"
+#include "OnlineSubsystem.h"
 #include "GameFramework/GameSession.h"
+#include "GameStage/GameStage.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "PFGameSession.generated.h"
-
 
 USTRUCT(BlueprintType)
 struct FSessionSearchResult
@@ -27,7 +29,21 @@ struct FSessionSearchResult
 	int32 NumMaxPlayer;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindRoomsSignature, const TArray<FSessionSearchResult>&, SessionSearchResults);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindRoomsSignature, const TArray<FSessionSearchResult>&,
+                                            SessionSearchResults);
+
+#define DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(ActionName, ...) \
+FDelegateHandle On##ActionName##CompleteDelegateHandle; \
+void On##ActionName##Complete(__VA_ARGS__);
+
+#define BIND_SESSION_ACTION_COMPLETE_DELEGATE(ActionName) \
+On##ActionName##CompleteDelegateHandle = SessionInterface.Pin()->AddOn##ActionName##CompleteDelegate_Handle(FOn##ActionName##CompleteDelegate::CreateUObject(this, &ThisClass::On##ActionName##Complete))
+
+#define UNBIND_SESSION_ACTION_COMPLETE_DELEGATE(ActionName) \
+SessionInterface.Pin()->ClearOn##ActionName##CompleteDelegate_Handle(On##ActionName##CompleteDelegateHandle)
+
+#define GAME_SESSION_CHECK() \
+	if (!IsReady()) return
 
 /**
  * 
@@ -42,13 +58,28 @@ public:
 	FFindRoomsSignature OnFindRooms;
 
 protected:
-	FUniqueNetIdPtr GetPlayerUniqueNetId() const;
+	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+protected:
+	bool IsReady() const { return SessionInterface.IsValid(); }
 	
+	TWeakPtr<IOnlineSession, ESPMode::ThreadSafe> SessionInterface;
+	
+private:
+	DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(CreateSession, FName InSessionName, bool bWasSuccessful)
+	DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(FindSessions, bool bWasSuccessful)
+	DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(JoinSession, FName InSessionName, EOnJoinSessionCompleteResult::Type CompleteResult)
+	DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(DestroySession, FName InSessionName, bool bWasSuccessful)
+
+public:
+	virtual void PostLogin(APlayerController* NewPlayer) override;;
+
 public:
 	// Network
 	UFUNCTION(BlueprintCallable)
-	void DestroySession();
-
+	void DismissRoom();
+	
 	UFUNCTION(BlueprintCallable)
 	void HostRoom();
 
@@ -58,8 +89,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void FindRooms();
 
+	UFUNCTION(BlueprintCallable)
 	void TravelToRoom();
+
+	void ChangeMaxPlayer(int32 InMaxPlayer);
+
+protected:
+	FUniqueNetIdPtr GetPlayerUniqueNetId() const;
+
+	class UPFGameInstance* GetPFGameInstance() const;
 
 private:
 	TSharedRef<FOnlineSessionSearch> SearchSettings = MakeShareable(new FOnlineSessionSearch());;
+	TSharedRef<FOnlineSessionSettings> SessionSettings = MakeShareable(new FOnlineSessionSettings());;
 };

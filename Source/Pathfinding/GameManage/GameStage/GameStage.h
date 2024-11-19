@@ -17,14 +17,18 @@ protected:
 
 public:
 	virtual FName GetStageName() const = 0;
+	virtual bool CanTransition(class UPFGameInstance* GameInstance) { return true; } 
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) {};
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) {};
+	virtual void OnPostLogin(class UPFGameInstance* GameInstance, APlayerController* NewPlayer) {};
+	virtual void OnWorldChanged(class UPFGameInstance* GameInstance, UWorld* OldWorld, UWorld* NewWorld) {};
+	virtual void OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World) {};
 
 public:
 	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage1, const TSharedPtr<IGameStage>& Stage2);
 
 	template<typename TGameStage>
-	static bool IsSameStage(const TSharedPtr<IGameStage> Stage) { return dynamic_cast<TGameStage>(Stage.Get()); }
+	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage) { return StaticCastSharedPtr<TGameStage>(Stage).IsValid(); }
 
 	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage, FName StageName);
 };
