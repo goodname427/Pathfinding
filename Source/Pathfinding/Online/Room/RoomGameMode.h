@@ -17,8 +17,4 @@ class PATHFINDING_API ARoomGameMode : public APFGameMode
 
 protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
-
-public:
-	UFUNCTION(BlueprintCallable)
-	bool ChooseMap(const FMapInfo& InMap);
 };

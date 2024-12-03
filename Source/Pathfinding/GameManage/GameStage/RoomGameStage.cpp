@@ -5,17 +5,32 @@
 #include "PFPlayerController.h"
 #include "PFUtils.h"
 #include "WidgetSubsystem.h"
+#include "MainMenuGameStage.h"
+#include "Room/RoomGameState.h"
 
 FName FRoomGameStage::LevelName = FName("L_Room");
 FName FRoomGameStage::WidgetName = FName("RoomMenu");
 
-bool FRoomGameStage::CanTransition(UPFGameInstance* GameInstance)
+bool FRoomGameStage::CanTransition(UPFGameInstance* GameInstance, FString& OutErrorMessage)
 {
-	if ((GameSession = GameInstance->GetGameSession()) == nullptr)
+	if (!GameInstance->IsCurrentStage<FMainMenuGameStage>())
 	{
-		return false;
+		OutErrorMessage = TEXT("Room Stage Can Only Transition From MainMenu Stage");
+		return false;	
 	}
 	
+	if ((GameSession = GameInstance->GetGameSession()) == nullptr)
+	{
+		OutErrorMessage = TEXT("GameSession Is Null");
+		return false;
+	}
+
+	if (Type == RoomType::None)
+	{
+		OutErrorMessage = TEXT("Room Type Is None");
+		return false;
+	}
+
 	return true;
 }
 
@@ -25,14 +40,14 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 
 	// Host Room
 	// [Server]
-	if (RoomIndexToJoin == INDEX_NONE)
+	if (Type == RoomType::Host)
 	{
-		GameSession->HostRoom();
-		GameInstance->GetWorld()->ServerTravel(GameInstance->GetURL( LevelName.ToString(), TEXT("?listen")));
+		GameSession->HostRoom(MapToHost.MaxPlayers);
+		GameInstance->GetWorld()->ServerTravel(GameInstance->GetURL(LevelName.ToString(), TEXT("?listen")));
 	}
 	// Join Room
 	// [Client]
-	else
+	else if (Type == RoomType::Join)
 	{
 		GameSession->JoinRoom(RoomIndexToJoin);
 	}
@@ -47,6 +62,15 @@ void FRoomGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorl
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->ShowAndFocus(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+
+		if (World->IsServer())
+		{
+			ARoomGameState* RoomGameState = World->GetGameState<ARoomGameState>();
+			if (RoomGameState)
+			{
+				RoomGameState->SetCurrentMap(MapToHost);
+			}
+		}
 	}
 }

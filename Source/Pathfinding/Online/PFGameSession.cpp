@@ -141,14 +141,14 @@ void APFGameSession::DismissRoom()
 	SessionInterface.Pin()->DestroySession(NAME_GameSession);
 }
 
-void APFGameSession::HostRoom()
+void APFGameSession::HostRoom(int RoomMaxPlayers)
 {
 	GAME_SESSION_CHECK();
 
 	SessionSettings = MakeShared<FOnlineSessionSettings>();
 	{
 		SessionSettings->bIsLANMatch = true;
-		SessionSettings->NumPublicConnections = 10;
+		SessionSettings->NumPublicConnections = RoomMaxPlayers;
 		SessionSettings->NumPrivateConnections = 0;
 		SessionSettings->bShouldAdvertise = true;
 	}

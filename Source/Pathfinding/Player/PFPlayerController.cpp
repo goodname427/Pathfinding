@@ -2,11 +2,10 @@
 
 
 #include "PFPlayerController.h"
+
+#include "PFGameInstance.h"
 #include "GameStage/RoomGameStage.h"
 #include "GameStage/MainMenuGameStage.h"
-#include "GameStage/FindRoomGameStage.h"
-#include "PFGameInstance.h"
-#include "WidgetSubsystem.h"
 #include "GameStage/PlayingGameStage.h"
 
 void APFPlayerController::BeginPlay()
@@ -28,24 +27,14 @@ void APFPlayerController::TransitionToMainMenuStage_Implementation()
 	IMPLEMENT_TRANSITION_TO_STAGE(MainMenu);
 }
 
-void APFPlayerController::AllTransitionToFindRoomStage()
-{
-	IMPLEMENT_ALL_TRANSITION_TO_STAGE(FindRoom);
-}
-
-void APFPlayerController::TransitionToFindRoomStage_Implementation()
-{
-	IMPLEMENT_TRANSITION_TO_STAGE(FindRoom);
-}
-
-void APFPlayerController::AllTransitionToRoomStage(int32 InRoomIndexToJoin)
-{
-	IMPLEMENT_ALL_TRANSITION_TO_STAGE(Room, InRoomIndexToJoin);
-}
-
-void APFPlayerController::TransitionToRoomStage_Implementation(int32 InRoomIndexToJoin)
+void APFPlayerController::TransitionToRoomStageByJoin_Implementation(int32 InRoomIndexToJoin)
 {
 	IMPLEMENT_TRANSITION_TO_STAGE(Room, InRoomIndexToJoin);
+}
+
+void APFPlayerController::TransitionToRoomStageByHost_Implementation(FMapInfo InMapInfo)
+{
+	IMPLEMENT_TRANSITION_TO_STAGE(Room, InMapInfo);
 }
 
 void APFPlayerController::AllTransitionToPlayingStage(const FString& InLevelPathToPlay)
@@ -57,3 +46,5 @@ void APFPlayerController::TransitionToPlayingStage_Implementation(const FString&
 {
 	IMPLEMENT_TRANSITION_TO_STAGE(Playing, InLevelPathToPlay);
 }
+
+

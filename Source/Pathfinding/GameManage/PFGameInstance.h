@@ -12,38 +12,15 @@
 class IGameStage;
 
 
-USTRUCT(BlueprintType)
-struct FMapInfo
-{
-	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FString MapName;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FString MapPath;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	FString MapDescripition;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 MaxPlayers;
-};
 
 /**
  * 
  */
-UCLASS()
+UCLASS(Config = Game, DefaultConfig)
 class PATHFINDING_API UPFGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-
-public:
-	UPROPERTY(EditDefaultsOnly)
-	TMap<FName, TSubclassOf<UUserWidget>> WidgetSettings;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FMapInfo> Maps;
 
 public:
 	virtual void Init() override;

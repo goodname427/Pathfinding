@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PFGameSettings.h"
 #include "GameFramework/PlayerController.h"
 #include "PFPlayerController.generated.h"
 
@@ -47,17 +48,12 @@ public:
 	void AllTransitionToMainMenuStage();
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void TransitionToMainMenuStage();
-
-	UFUNCTION(BlueprintCallable)
-	void AllTransitionToFindRoomStage();
+	
 	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void TransitionToFindRoomStage();
-
-	UFUNCTION(BlueprintCallable)
-	void AllTransitionToRoomStage(int32 InRoomIndexToJoin);
+	void TransitionToRoomStageByJoin(int32 InRoomIndexToJoin);
 	UFUNCTION(BlueprintCallable, Client, Reliable)
-	void TransitionToRoomStage(int32 InRoomIndexToJoin);
-
+	void TransitionToRoomStageByHost(FMapInfo InMapInfo);
+	
 	UFUNCTION(BlueprintCallable)
 	void AllTransitionToPlayingStage(const FString& InLevelPathToPlay);
 	UFUNCTION(BlueprintCallable, Client, Reliable)

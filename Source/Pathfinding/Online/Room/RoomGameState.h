@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PFGameInstance.h"
+#include "PFGameSettings.h"
 #include "PFGameState.h"
 #include "RoomGameState.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FCurrentMapChangedSignature);
 
 /**
  * 
@@ -23,17 +21,13 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
-	UPROPERTY(BlueprintAssignable)
-	FCurrentMapChangedSignature OnCurrentMapChanged;
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentMap(const FMapInfo& NewMap);
 	
 	UFUNCTION(BlueprintCallable)
 	FMapInfo GetCurrentMap() const { return CurrentMap; }
 	
 private:
-	UFUNCTION()
-	void OnRep_CurrentMap();
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentMap)
+	UPROPERTY(Replicated)
 	FMapInfo CurrentMap;
-
-	void SetCurrentMap(const FMapInfo& NewMap);
 };

@@ -26,30 +26,41 @@ private:
 protected:
 	// Try To Get Widget Of The Specified Name
 	UUserWidget* TryGetWidget(FName WidgetName);
-	// Show The Specified Widget And Hide The Current Widget
-	void Show(UUserWidget* TargetWidget);
+	// Push The Specified Widget And Hide The Current Widget
+	void Push(UUserWidget* TargetWidget);
 
 public:
-	// Show Widget Of The Specified Name And Hide The Current Widget
+	// Push Widget Of The Specified Name And Hide The Current Widget
 	UFUNCTION(BlueprintCallable)
-	bool Show(FName WidgetName);
+	bool Push(FName WidgetName);
 
 	UFUNCTION(BlueprintCallable)
-	bool ShowAndFocus(FName WidgetName);
+	bool PushAndFocus(FName WidgetName);
+
+	UFUNCTION(BlueprintCallable)
+	bool Pop();
+
+	UFUNCTION(BlueprintCallable)
+	void ClearUntil(FName WidgetName);
 	
-	// Clear Current Widget
 	UFUNCTION(BlueprintCallable)
 	void Clear();
 
-	// Show Error Dialog
+	// Push Error Dialog
 	UFUNCTION(BlueprintCallable)
 	void ShowErrorDialog(const FString& ErrorText);
 
+	UFUNCTION(BlueprintCallable)
+	UUserWidget* GetCurrentWidget() const;
+
+	UFUNCTION(BlueprintCallable)
+	bool IsCurrentWidget(FName widgetName) const;
+	
 private:
 	UPROPERTY()
-	UUserWidget* CurrentWidget;
+	TArray<UUserWidget*> Widgets;
 	
 	// The Cache of All Loaded Widgets
 	UPROPERTY()
-	TMap<FName, UUserWidget*> LoadedWidgets;
+	TMap<FName, UUserWidget*> WidgetCache;
 };

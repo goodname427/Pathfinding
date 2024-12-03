@@ -8,10 +8,24 @@ public class Pathfinding : ModuleRules
 	public Pathfinding(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "NavigationSystem" });
+		
+		PublicDependencyModuleNames.AddRange(new string[]
+		{
+			"Core", 
+			"CoreUObject", 
+			"Engine", 
+			"InputCore", 
+			"NavigationSystem",
+			"DeveloperSettings"
+		});
 
-		PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore", "OnlineSubsystem", "OnlineSubsystemUtils" });
+		PrivateDependencyModuleNames.AddRange(new string[]
+		{
+			"Slate", 
+			"SlateCore", 
+			"OnlineSubsystem", 
+			"OnlineSubsystemUtils"
+		});
 
 		PublicIncludePaths.AddRange(new string[] 
 		{ 
@@ -19,7 +33,8 @@ public class Pathfinding : ModuleRules
 			Path.Combine(ModuleDirectory, "Player"), 
 			Path.Combine(ModuleDirectory, "Online"), 
 			Path.Combine(ModuleDirectory, "Widget"), 
-			Path.Combine(ModuleDirectory, "GameManage") 
+			Path.Combine(ModuleDirectory, "GameManage"), 
+			Path.Combine(ModuleDirectory, "Utils") 
 		});
 
 		// Uncomment if you are using Slate UI

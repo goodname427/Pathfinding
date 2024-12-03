@@ -75,13 +75,19 @@ bool UPFGameInstance::TransitionToStage(const TSharedPtr<IGameStage>& DesiredSta
 
 	if (IsCurrentStage(DesiredStage))
 	{
-		Error(TEXT("Error: Can Not Transition To The Same State"));
+		Error(TEXT("Error: Can Not Transition To The Same State [%s]"), *DesiredStage->GetStageName().ToString());
 		return false;
 	}
 
-	if (!DesiredStage->CanTransition(this))
+	FString ErrorMessage;
+	if (!DesiredStage->CanTransition(this, ErrorMessage))
 	{
-		Error(TEXT("Error: Desired Stage Can Not Transition"));
+		Error(
+			TEXT("Error: Desired Stage [%s] Can Not Transition\n")
+			TEXT("ErrorMessage: %s"),
+			*DesiredStage->GetStageName().ToString(),
+			*ErrorMessage
+		);
 		return false;
 	}
 

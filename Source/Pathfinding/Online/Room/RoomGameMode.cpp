@@ -13,18 +13,3 @@ void ARoomGameMode::PostLogin(APlayerController* NewPlayer)
 	Super::PostLogin(NewPlayer);
 	
 }
-
-bool ARoomGameMode::ChooseMap(const FMapInfo& InMap)
-{
-	ARoomGameState* RoomGameState = GetGameState<ARoomGameState>();
-	NULL_CHECK_RET(RoomGameState, false);
-	
-	// Need Kick Some Players
-	if (RoomGameState->CurrentMap.MaxPlayers < InMap.MaxPlayers)
-	{
-		
-	}
-	
-	RoomGameState->SetCurrentMap(InMap);
-	return true;
-}

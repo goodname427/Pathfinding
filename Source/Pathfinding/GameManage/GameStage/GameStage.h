@@ -17,7 +17,7 @@ protected:
 
 public:
 	virtual FName GetStageName() const = 0;
-	virtual bool CanTransition(class UPFGameInstance* GameInstance) { return true; } 
+	virtual bool CanTransition(class UPFGameInstance* GameInstance, FString& OutErrorMessage) { return true; } 
 	virtual void OnExitStage(class UPFGameInstance* GameInstance) {};
 	virtual void OnEnterStage(class UPFGameInstance* GameInstance) {};
 	virtual void OnPostLogin(class UPFGameInstance* GameInstance, APlayerController* NewPlayer) {};

@@ -29,4 +29,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	void OnRemoveFromViewport();
 	void OnRemoveFromViewport_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnPause();
+	void OnPause_Implementation() {}
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnResume();
+	void OnResume_Implementation() {}
 };

@@ -11,23 +11,10 @@ void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(ARoomGameState, CurrentMap);
 }
 
-void ARoomGameState::OnRep_CurrentMap()
-{
-	if (OnCurrentMapChanged.IsBound())
-	{
-		OnCurrentMapChanged.Broadcast();
-	}
-}
-
 void ARoomGameState::SetCurrentMap(const FMapInfo& NewMap)
 {
 	if (HasAuthority())
 	{
 		CurrentMap = NewMap; 
-
-		if (OnCurrentMapChanged.IsBound())
-		{
-			OnCurrentMapChanged.Broadcast();
-		}
 	}
 }

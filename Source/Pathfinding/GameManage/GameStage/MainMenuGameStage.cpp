@@ -44,16 +44,21 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 			PC->ClientTravel(GameInstance->GetURL(LevelName.ToString()), TRAVEL_Absolute);
 		}
 	}
-	else
-	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->ShowAndFocus(WidgetName);
-	}
+	// else
+	// {
+	// 	GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+	// }
+}
+
+void FMainMenuGameStage::OnExitStage(class UPFGameInstance* GameInstance)
+{
+	GameInstance->GetSubsystem<UWidgetSubsystem>()->Clear();
 }
 
 void FMainMenuGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World)
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->ShowAndFocus(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
 	}
 }

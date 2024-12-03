@@ -81,7 +81,7 @@ public:
 	void DismissRoom();
 	
 	UFUNCTION(BlueprintCallable)
-	void HostRoom();
+	void HostRoom(int RoomMaxPlayers = 10);
 
 	UFUNCTION(BlueprintCallable)
 	void JoinRoom(int32 RoomIndex);
