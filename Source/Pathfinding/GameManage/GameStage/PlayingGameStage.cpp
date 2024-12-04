@@ -20,7 +20,7 @@ void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	// [Server]
 	if (GameInstance->GetWorld()->IsServer())
 	{
-		GameInstance->GetWorld()->ServerTravel(GameInstance->GetURL(LevelPathToPlay, TEXT("?listen")));
+		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelPathToPlay, TEXT("?listen")));
 	}
 }
 

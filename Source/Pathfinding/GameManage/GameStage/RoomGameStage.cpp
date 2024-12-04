@@ -43,7 +43,7 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	if (Type == RoomType::Host)
 	{
 		GameSession->HostRoom(MapToHost.MaxPlayers);
-		GameInstance->GetWorld()->ServerTravel(GameInstance->GetURL(LevelName.ToString(), TEXT("?listen")));
+		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelName.ToString(), TEXT("?listen")));
 	}
 	// Join Room
 	// [Client]

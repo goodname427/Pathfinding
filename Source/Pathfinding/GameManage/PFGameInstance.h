@@ -61,7 +61,7 @@ private:
 	TSharedPtr<IGameStage> CurrentStage;
 
 public:
-	static FString GetURL(const FString& LevelPath, const FString& Options = TEXT("")) { return FString::Printf(TEXT("/Game/Maps/%s%s"), *LevelPath, *Options); }
+	static FString GetURL(const FString& LevelPath, const FString& Options = TEXT(""));
 
 public:
 	template <typename FmtType, typename... ArgTypes>

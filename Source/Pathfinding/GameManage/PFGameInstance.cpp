@@ -118,6 +118,26 @@ FName UPFGameInstance::GetCurrentStageName() const
 	return NAME_None;
 }
 
+FString UPFGameInstance::GetURL(const FString& LevelPath, const FString& Options)
+{
+	static FString Prefix = TEXT("/Game/Maps/");
+
+	FString Path = LevelPath;
+
+	int32 Index;
+	if ((Index = Path.Find(".")) != INDEX_NONE)
+	{
+		Path = Path.Mid(0, Index);
+	}
+	
+	if (!Path.StartsWith(Prefix))
+	{
+		Path = Prefix + Path;
+	}
+
+	return Path + Options;
+}
+
 APFGameSession* UPFGameInstance::GetGameSession() const
 {
 	UWorld* World = GetWorld();
