@@ -11,5 +11,4 @@
 void ARoomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-	
 }

@@ -13,5 +13,14 @@ UCLASS()
 class PATHFINDING_API APFPlayerState : public APlayerState
 {
 	GENERATED_BODY()
+
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	int32 TeamId;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	FLinearColor PlayerColor;
 };
