@@ -6,6 +6,7 @@
 #include "PFGameInstance.h"
 #include "GameStage/RoomGameStage.h"
 #include "GameStage/MainMenuGameStage.h"
+#include "GameFramework/PlayerState.h"
 #include "GameStage/PlayingGameStage.h"
 
 void APFPlayerController::BeginPlay()

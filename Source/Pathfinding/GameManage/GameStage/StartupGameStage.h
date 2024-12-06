@@ -9,4 +9,6 @@ class PATHFINDING_API FStartupGameStage final : public IGameStage
 {
 public:
 	virtual FName GetStageName() const override { return TEXT("Startup"); }
+
+	virtual void OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World) override;
 };

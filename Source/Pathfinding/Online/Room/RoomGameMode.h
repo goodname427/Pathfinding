@@ -16,6 +16,9 @@ class PATHFINDING_API ARoomGameMode : public APFGameMode
 {
 	GENERATED_BODY()
 
+public:
+	ARoomGameMode();
+	
 protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 

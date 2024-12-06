@@ -13,4 +13,9 @@ UCLASS()
 class PATHFINDING_API ABattleGameMode : public APFGameMode
 {
 	GENERATED_BODY()
+
+public:
+	ABattleGameMode();
+
+	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 };

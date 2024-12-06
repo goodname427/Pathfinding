@@ -44,10 +44,10 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 			PC->ClientTravel(GameInstance->GetURL(LevelName.ToString()), TRAVEL_Absolute);
 		}
 	}
-	// else
-	// {
-	// 	GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
-	// }
+	else
+	{
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+	}
 }
 
 void FMainMenuGameStage::OnExitStage(class UPFGameInstance* GameInstance)

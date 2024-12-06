@@ -27,7 +27,7 @@ protected:
 	// Try To Get Widget Of The Specified Name
 	UUserWidget* TryGetWidget(FName WidgetName);
 	// Push The Specified Widget And Hide The Current Widget
-	void Push(UUserWidget* TargetWidget);
+	bool Push(UUserWidget* TargetWidget);
 
 public:
 	// Push Widget Of The Specified Name And Hide The Current Widget

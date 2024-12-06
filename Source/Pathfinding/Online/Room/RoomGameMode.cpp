@@ -6,6 +6,13 @@
 #include "RoomGameState.h"
 #include "GameFramework/GameState.h"
 
+ARoomGameMode::ARoomGameMode()
+{
+	// bUseSeamlessTravel = true;
+
+	GameStateClass = ARoomGameState::StaticClass();
+}
+
 void ARoomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);

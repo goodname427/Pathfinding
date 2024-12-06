@@ -4,6 +4,7 @@
 #include "PFHUD.h"
 
 #include "PFGameInstance.h"
+#include "PFPlayerState.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/GameMode.h"
 
@@ -22,6 +23,8 @@ void APFHUD::DrawHUD()
 	FString NetMode = TEXT("Unknown");
 	FString IsServer = TEXT("Unknown");
 	int32 NumPlayers = -1;
+	int32 PlayerLocation = -1;
+	
 	UWorld* World = GetWorld();
 	if (World)
 	{
@@ -54,7 +57,14 @@ void APFHUD::DrawHUD()
 		{
 			NumPlayers = GameModeBase->GetNumPlayers();
 		}
+		APFPlayerState* PS = Cast<APFPlayerState>(World->GetFirstPlayerController()->PlayerState); 
+		if (PS)
+		{
+			PlayerLocation = PS->PlayerLocation;
+		}
 	}
+
+	
 
 	FString Text = FString::Printf(
 		TEXT("Current Stage: %s\n")
@@ -62,12 +72,14 @@ void APFHUD::DrawHUD()
 		TEXT("Net Mode: %s\n")
 		TEXT("Is Server: %s\n")
 		TEXT("Num Players: %d\n")
+		TEXT("Player Location: %d\n")
 		,
 		*CurrentStageName,
 		*WorldName,
 		*NetMode,
 		*IsServer,
-		NumPlayers
+		NumPlayers,
+		PlayerLocation
 	);
 	FCanvasTextItem TextItem(FVector2D(0, 0), FText::FromString(Text), GEngine->GetLargeFont(), FLinearColor::Green);
 	Canvas->DrawItem(TextItem);
