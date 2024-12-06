@@ -5,24 +5,6 @@
 
 #include "Net/UnrealNetwork.h"
 
-void ARoomGameState::AddPlayerState(APlayerState* PlayerState)
-{
-	Super::AddPlayerState(PlayerState);
-	if(OnPlayerStateAdded.IsBound())
-	{
-		OnPlayerStateAdded.Broadcast(PlayerState);
-	}
-}
-
-void ARoomGameState::RemovePlayerState(APlayerState* PlayerState)
-{
-	Super::RemovePlayerState(PlayerState);
-	if(OnPlayerStateRemoved.IsBound())
-	{
-		OnPlayerStateRemoved.Broadcast(PlayerState);
-	}
-}
-
 void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -31,8 +13,5 @@ void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void ARoomGameState::SetCurrentMap(const FMapInfo& NewMap)
 {
-	if (HasAuthority())
-	{
-		CurrentMap = NewMap; 
-	}
+	CurrentMap = NewMap;
 }

@@ -29,7 +29,7 @@ struct FSessionSearchResult
 	int32 NumMaxPlayer;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindRoomsSignature, const TArray<FSessionSearchResult>&,
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFoundRoomsSignature, const TArray<FSessionSearchResult>&,
                                             SessionSearchResults);
 
 #define DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(ActionName, ...) \
@@ -55,7 +55,7 @@ class PATHFINDING_API APFGameSession : public AGameSession
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FFindRoomsSignature OnFindRooms;
+	FFoundRoomsSignature OnFoundRooms;
 
 protected:
 	virtual void BeginPlay() override;
@@ -92,7 +92,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TravelToRoom();
 
-	void ChangeMaxPlayer(int32 InMaxPlayer);
+	UFUNCTION(BlueprintCallable)
+	virtual bool KickPlayer(APlayerController* KickedPlayer, const FText& KickReason) override;
 
 protected:
 	FUniqueNetIdPtr GetPlayerUniqueNetId() const;

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PFGameInstance.h"
 #include "PFGameMode.h"
+#include "PFPlayerState.h"
 #include "RoomGameMode.generated.h"
 
 /**
@@ -14,7 +15,9 @@ UCLASS()
 class PATHFINDING_API ARoomGameMode : public APFGameMode
 {
 	GENERATED_BODY()
-	
+
 protected:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+	virtual void Logout(AController* Exiting) override;
 };

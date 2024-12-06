@@ -70,6 +70,7 @@ void FRoomGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorl
 			if (RoomGameState)
 			{
 				RoomGameState->SetCurrentMap(MapToHost);
+				RoomGameState->InitPlayerLocations(MapToHost.MaxPlayers);
 			}
 		}
 	}

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerState.h"
 #include "PFPlayerState.generated.h"
 
+class APFPlayerController;
 /**
  * 
  */
@@ -18,9 +19,24 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UFUNCTION(BlueprintCallable)
+	APFPlayerController* GetPlayerController();
+
+protected:
+	UPROPERTY(Transient)
+	APFPlayerController* PlayerController;
+
+public:
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SetPlayerLocation(int32 InLocation);
+	
+public:
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, Replicated)
+	int32 PlayerLocation;
+	
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Replicated)
 	int32 TeamId;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Replicated)
 	FLinearColor PlayerColor;
 };

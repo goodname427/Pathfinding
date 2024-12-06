@@ -18,4 +18,7 @@ class PATHFINDING_API UPFBlueprintFunctionLibrary : public UBlueprintFunctionLib
 public:
 	UFUNCTION(BlueprintCallable)
 	static const UPFGameSettings* GetPFGameSettings();
+
+	// UFUNCTION(BlueprintCallable)
+	// static UUserWidget* CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass, TArray<UUserWidget*>& WidgetArray, UPanelWidget* ParentPanelWidget);
 };

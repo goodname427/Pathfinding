@@ -3,12 +3,49 @@
 
 #include "RoomGameMode.h"
 
-#include "PFGameState.h"
 #include "RoomGameState.h"
-#include "PFUtils.h"
 #include "GameFramework/GameState.h"
 
 void ARoomGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
+
+	APFGameState* PFGameState = GetGameState<APFGameState>();
+	if (PFGameState)
+	{
+		int32 NumPlayerLocations = PFGameState->GetNumPlayerLocations();
+
+		int32 i = 0;
+		for (; i < NumPlayerLocations; i++)
+		{
+			if (PFGameState->GetPlayerLocation(i) == nullptr)
+			{
+				break;
+			}
+		}
+
+		if (i < NumPlayerLocations)
+		{
+			APFPlayerState* PFPlayerState = Cast<APFPlayerState>(NewPlayer->PlayerState);
+			if (PFPlayerState)
+			{
+				PFGameState->SetPlayerLocation(i, PFPlayerState);
+			}
+		}
+	}
+}
+
+void ARoomGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+
+	APFGameState* PFGameState = GetGameState<APFGameState>();
+	if (PFGameState)
+	{
+		APFPlayerState* PFPlayerState = Cast<APFPlayerState>(Exiting->PlayerState);
+		if (PFPlayerState)
+		{
+			PFGameState->SetPlayerLocation(PFPlayerState->PlayerLocation, nullptr);
+		}
+	}
 }

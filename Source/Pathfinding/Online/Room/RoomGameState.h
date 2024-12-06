@@ -5,9 +5,10 @@
 #include "CoreMinimal.h"
 #include "PFGameSettings.h"
 #include "PFGameState.h"
+#include "PFPlayerState.h"
 #include "RoomGameState.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerStateChangedSignature, APlayerState*, NewPlayer);
+
 
 /**
  * 
@@ -20,17 +21,7 @@ class PATHFINDING_API ARoomGameState : public APFGameState
 	friend class ARoomGameMode;
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FPlayerStateChangedSignature OnPlayerStateAdded;
-	UPROPERTY(BlueprintAssignable)
-	FPlayerStateChangedSignature OnPlayerStateRemoved;
-	
-	virtual void AddPlayerState(APlayerState* PlayerState) override;
-	virtual void RemovePlayerState(APlayerState* PlayerState) override;
-
-public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -40,6 +31,6 @@ public:
 	FMapInfo GetCurrentMap() const { return CurrentMap; }
 	
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(Transient, Replicated)
 	FMapInfo CurrentMap;
 };

@@ -6,6 +6,7 @@
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSessionSettings.h"
 #include "PFGameInstance.h"
+#include "PFPlayerController.h"
 #include "PFUtils.h"
 #include "GameFramework/GameSession.h"
 #include "Interfaces/OnlineSessionInterface.h"
@@ -89,9 +90,9 @@ void APFGameSession::OnFindSessionsComplete(bool bWasSuccessful)
 						*Result.Session.OwningUserName);
 			SearchResults.Add(Result);
 		}
-		if (OnFindRooms.IsBound())
+		if (OnFoundRooms.IsBound())
 		{
-			OnFindRooms.Broadcast(SearchResults);
+			OnFoundRooms.Broadcast(SearchResults);
 		}
 	}
 	else
@@ -205,7 +206,13 @@ void APFGameSession::TravelToRoom()
 	}
 }
 
-void APFGameSession::ChangeMaxPlayer(int32 InMaxPlayer)
+bool APFGameSession::KickPlayer(APlayerController* KickedPlayer, const FText& KickReason)
 {
-	GAME_SESSION_CHECK();
+	APFPlayerController* PC = Cast<APFPlayerController>(KickedPlayer);
+	if (PC)
+	{
+		PC->TransitionToMainMenuStage();
+	}
+	
+	return Super::KickPlayer(KickedPlayer, KickReason);
 }

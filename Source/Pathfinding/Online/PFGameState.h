@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "PFPlayerState.h"
 #include "PFGameState.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerLocationChangedSignature);
 
 /**
  * 
@@ -14,4 +17,27 @@ class PATHFINDING_API APFGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 	
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+public:
+	void InitPlayerLocations(int32 MaxPlayer);
+	
+	UFUNCTION(BlueprintCallable)
+	void SetPlayerLocation(int32 InLocation, APFPlayerState* Player);
+
+	UFUNCTION(BlueprintCallable)
+	const APFPlayerState* GetPlayerLocation(int32 Location) const { return PlayerLocations[Location]; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetNumPlayerLocations() const { return PlayerLocations.Num(); }
+	
+	UPROPERTY(BlueprintAssignable)
+	FPlayerLocationChangedSignature OnPlayerLocationChanged;
+
+private:
+	UPROPERTY(Transient, Replicated, ReplicatedUsing = OnRep_PlayerLocations)
+	TArray<APFPlayerState*> PlayerLocations;
+	UFUNCTION()
+	void OnRep_PlayerLocations();
 };
