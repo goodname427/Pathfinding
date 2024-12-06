@@ -12,7 +12,7 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
 	// UE_LOG_TEMP(TEXT("Current Level Name: %s"), *GameInstance->GetWorld()->GetName());
 	// Disconnect
-	if (!GameInstance->GetWorld()->IsNetMode(NM_Standalone))
+	// if (!GameInstance->GetWorld()->IsNetMode(NM_Standalone))
 	{
 		Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface()->DestroySession(NAME_GameSession);
 		// [Server]
@@ -35,7 +35,7 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 		// 	Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface()->DestroySession(NAME_GameSession);
 		// }
 	}
-
+	
 	if (GameInstance->GetWorld()->GetFName() != LevelName)
 	{
 		APlayerController* PC = GameInstance->GetWorld()->GetFirstPlayerController();

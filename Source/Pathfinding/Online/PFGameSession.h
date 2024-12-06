@@ -74,6 +74,7 @@ private:
 
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;;
+	virtual bool AtCapacity(bool bSpectator) override;
 
 public:
 	// Network
@@ -95,10 +96,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool KickPlayer(APlayerController* KickedPlayer, const FText& KickReason) override;
 
+	bool IsRoomFull(int32 RoomIndex) const;
+	
 protected:
 	FUniqueNetIdPtr GetPlayerUniqueNetId() const;
 
 	class UPFGameInstance* GetPFGameInstance() const;
+
+	FNamedOnlineSession* GetCurrentOnlineSession() const;
 
 private:
 	TSharedRef<FOnlineSessionSearch> SearchSettings = MakeShareable(new FOnlineSessionSearch());;

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PFGameSession.h"
+#include "PFOnlineSession.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
 #include "GameStage/GameStage.h"
@@ -70,6 +71,8 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	APFGameSession* GetGameSession() const;
+
+	virtual TSubclassOf<UOnlineSession> GetOnlineSessionClass() override { return UPFOnlineSession::StaticClass(); }
 };
 
 template <typename TGameStage>

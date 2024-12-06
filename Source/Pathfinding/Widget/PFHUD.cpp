@@ -5,6 +5,7 @@
 
 #include "PFGameInstance.h"
 #include "Engine/Canvas.h"
+#include "GameFramework/GameMode.h"
 
 void APFHUD::DrawHUD()
 {
@@ -20,6 +21,7 @@ void APFHUD::DrawHUD()
 	FString WorldName = TEXT("Unknown");
 	FString NetMode = TEXT("Unknown");
 	FString IsServer = TEXT("Unknown");
+	int32 NumPlayers = -1;
 	UWorld* World = GetWorld();
 	if (World)
 	{
@@ -46,6 +48,12 @@ void APFHUD::DrawHUD()
 		default:
 			break;
 		}
+
+		AGameModeBase* GameModeBase = World->GetAuthGameMode();
+		if (GameModeBase)
+		{
+			NumPlayers = GameModeBase->GetNumPlayers();
+		}
 	}
 
 	FString Text = FString::Printf(
@@ -53,11 +61,13 @@ void APFHUD::DrawHUD()
 		TEXT("World Name: %s\n")
 		TEXT("Net Mode: %s\n")
 		TEXT("Is Server: %s\n")
+		TEXT("Num Players: %d\n")
 		,
 		*CurrentStageName,
 		*WorldName,
 		*NetMode,
-		*IsServer
+		*IsServer,
+		NumPlayers
 	);
 	FCanvasTextItem TextItem(FVector2D(0, 0), FText::FromString(Text), GEngine->GetLargeFont(), FLinearColor::Green);
 	Canvas->DrawItem(TextItem);

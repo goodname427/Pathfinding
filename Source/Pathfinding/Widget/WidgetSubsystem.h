@@ -54,7 +54,7 @@ public:
 	UUserWidget* GetCurrentWidget() const;
 
 	UFUNCTION(BlueprintCallable)
-	bool IsCurrentWidget(FName widgetName) const;
+	bool IsCurrentWidget(FName WidgetName) const;
 	
 private:
 	UPROPERTY()

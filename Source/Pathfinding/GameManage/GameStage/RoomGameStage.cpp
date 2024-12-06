@@ -24,12 +24,18 @@ bool FRoomGameStage::CanTransition(UPFGameInstance* GameInstance, FString& OutEr
 		OutErrorMessage = TEXT("GameSession Is Null");
 		return false;
 	}
+	// else if (Type == RoomType::Join && GameSession->IsRoomFull(RoomIndexToJoin))
+	// {
+	// 	OutErrorMessage = TEXT("Room is Full");
+	// 	return false;
+	// }
 
 	if (Type == RoomType::None)
 	{
 		OutErrorMessage = TEXT("Room Type Is None");
 		return false;
 	}
+
 
 	return true;
 }

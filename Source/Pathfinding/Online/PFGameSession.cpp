@@ -8,6 +8,7 @@
 #include "PFGameInstance.h"
 #include "PFPlayerController.h"
 #include "PFUtils.h"
+#include "GameFramework/GameModeBase.h"
 #include "GameFramework/GameSession.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Kismet/GameplayStatics.h"
@@ -37,6 +38,16 @@ UPFGameInstance* APFGameSession::GetPFGameInstance() const
 	return Cast<UPFGameInstance>(GetGameInstance());
 }
 
+FNamedOnlineSession* APFGameSession::GetCurrentOnlineSession() const
+{
+	if (IsReady())
+	{
+		return SessionInterface.Pin()->GetNamedSession(NAME_GameSession);
+	}
+
+	return nullptr;
+}
+
 void APFGameSession::BeginPlay()
 {
 	Super::BeginPlay();
@@ -46,7 +57,7 @@ void APFGameSession::BeginPlay()
 
 	SessionInterface = OnlineSubsystem->GetSessionInterface();
 	GAME_SESSION_CHECK();
-	
+
 	BIND_SESSION_ACTION_COMPLETE_DELEGATE(CreateSession);
 	BIND_SESSION_ACTION_COMPLETE_DELEGATE(FindSessions);
 	BIND_SESSION_ACTION_COMPLETE_DELEGATE(JoinSession);
@@ -87,7 +98,7 @@ void APFGameSession::OnFindSessionsComplete(bool bWasSuccessful)
 		for (const FOnlineSessionSearchResult& Result : SearchSettings->SearchResults)
 		{
 			UE_LOG_TEMP(TEXT("Session Owning User Name: %s"),
-						*Result.Session.OwningUserName);
+			            *Result.Session.OwningUserName);
 			SearchResults.Add(Result);
 		}
 		if (OnFoundRooms.IsBound())
@@ -120,7 +131,7 @@ void APFGameSession::OnDestroySessionComplete(FName InSessionName, bool bWasSucc
 	if (bWasSuccessful)
 	{
 		UE_LOG_TEMP(TEXT("Dismiss Room [ %s ] Successful"),
-					*SessionName.ToString());
+		            *SessionName.ToString());
 	}
 	else
 	{
@@ -134,11 +145,32 @@ void APFGameSession::PostLogin(APlayerController* NewPlayer)
 	GetPFGameInstance()->PostLogin(NewPlayer);
 }
 
+bool APFGameSession::AtCapacity(bool bSpectator)
+{
+	if (Super::AtCapacity(bSpectator))
+	{
+		return true;
+	}
+
+	AGameModeBase* GameMode = GetWorld()->GetAuthGameMode();
+	if (GameMode)
+	{
+		auto Session = GetCurrentOnlineSession();
+		if (Session)
+		{
+			return Session->SessionSettings.NumPublicConnections > 0 && GameMode->GetNumPlayers() >= Session->
+				SessionSettings.NumPublicConnections;
+		}
+	}
+
+	return false;
+}
+
 void APFGameSession::DismissRoom()
 {
 	// APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	GAME_SESSION_CHECK();
-	
+
 	SessionInterface.Pin()->DestroySession(NAME_GameSession);
 }
 
@@ -149,11 +181,11 @@ void APFGameSession::HostRoom(int RoomMaxPlayers)
 	SessionSettings = MakeShared<FOnlineSessionSettings>();
 	{
 		SessionSettings->bIsLANMatch = true;
-		SessionSettings->NumPublicConnections = RoomMaxPlayers;
+		MaxPlayers = SessionSettings->NumPublicConnections = RoomMaxPlayers;
 		SessionSettings->NumPrivateConnections = 0;
 		SessionSettings->bShouldAdvertise = true;
 	}
-	
+
 	SessionInterface.Pin()->CreateSession(
 		*GetPlayerUniqueNetId(),
 		// FName(FString::Printf(TEXT("%s's Room"), *GetGameInstance()->GetFirstGamePlayer()->GetNickname())),
@@ -165,14 +197,14 @@ void APFGameSession::HostRoom(int RoomMaxPlayers)
 void APFGameSession::JoinRoom(const int32 RoomIndex)
 {
 	GAME_SESSION_CHECK();
-	
+
 	if (RoomIndex < 0 || RoomIndex >= SearchSettings->SearchResults.Num())
 	{
 		return;
 	}
-	
+
 	SessionInterface.Pin()->JoinSession(*GetPlayerUniqueNetId(), NAME_GameSession,
-	                              SearchSettings->SearchResults[RoomIndex]);
+	                                    SearchSettings->SearchResults[RoomIndex]);
 }
 
 void APFGameSession::FindRooms()
@@ -213,6 +245,11 @@ bool APFGameSession::KickPlayer(APlayerController* KickedPlayer, const FText& Ki
 	{
 		PC->TransitionToMainMenuStage();
 	}
-	
+
 	return Super::KickPlayer(KickedPlayer, KickReason);
+}
+
+bool APFGameSession::IsRoomFull(int32 RoomIndex) const
+{
+	return SearchSettings->SearchResults[RoomIndex].Session.NumOpenPublicConnections == 0;
 }
