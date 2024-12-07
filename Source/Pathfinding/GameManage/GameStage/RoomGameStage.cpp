@@ -89,7 +89,7 @@ void FRoomGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorl
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
 
 		if (World->IsServer())
 		{

@@ -29,13 +29,12 @@ protected:
 	// Push The Specified Widget And Hide The Current Widget
 	bool Push(UUserWidget* TargetWidget);
 
+	void Focus(UUserWidget* TargetWidget);
+
 public:
 	// Push Widget Of The Specified Name And Hide The Current Widget
 	UFUNCTION(BlueprintCallable)
 	bool Push(FName WidgetName);
-
-	UFUNCTION(BlueprintCallable)
-	bool PushAndFocus(FName WidgetName);
 
 	UFUNCTION(BlueprintCallable)
 	bool Pop();

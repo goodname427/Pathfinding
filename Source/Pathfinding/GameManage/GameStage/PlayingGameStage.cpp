@@ -1,5 +1,6 @@
 ﻿#include "PlayingGameStage.h"
 
+#include "PFUtils.h"
 #include "RoomGameStage.h"
 #include "WidgetSubsystem.h"
 
@@ -20,6 +21,7 @@ void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	// [Server]
 	if (GameInstance->GetWorld()->IsServer())
 	{
+		DEBUG_MESSAGE(TEXT("%s"), *LevelPathToPlay);
 		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelPathToPlay, TEXT("?listen")));
 		APFGameSession* GameSession = GameInstance->GetGameSession();
 		if (GameSession)
@@ -40,12 +42,5 @@ void FPlayingGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UW
 	if (World != nullptr && World->GetName() == LevelName)
 	{
 		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
-
-		APlayerController* PC = GameInstance->GetWorld()->GetFirstPlayerController();
-		if (PC)
-		{
-			PC->SetShowMouseCursor(true);
-			PC->SetInputMode(FInputModeGameAndUI());
-		}
 	}
 }

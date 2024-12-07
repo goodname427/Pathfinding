@@ -46,7 +46,7 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 	}
 	else
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
 	}
 }
 
@@ -59,6 +59,6 @@ void FMainMenuGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, U
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->PushAndFocus(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
 	}
 }
