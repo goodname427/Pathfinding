@@ -18,4 +18,6 @@ public:
 	ABattleGameMode();
 
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+
+	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 };

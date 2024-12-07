@@ -33,9 +33,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFoundRoomsSignature, const TArray<F
                                             SessionSearchResults);
 
 #define DECLARE_SESSION_ACTION_COMPLETE_DELEGATE(ActionName, ...) \
+FOn##ActionName##CompleteDelegate InternalOn##ActionName##CompleteDelegate; \
 FDelegateHandle On##ActionName##CompleteDelegateHandle; \
 void On##ActionName##Complete(__VA_ARGS__);
-
 #define BIND_SESSION_ACTION_COMPLETE_DELEGATE(ActionName) \
 On##ActionName##CompleteDelegateHandle = SessionInterface.Pin()->AddOn##ActionName##CompleteDelegate_Handle(FOn##ActionName##CompleteDelegate::CreateUObject(this, &ThisClass::On##ActionName##Complete))
 
@@ -80,19 +80,26 @@ public:
 	// Network
 	UFUNCTION(BlueprintCallable)
 	void DismissRoom();
+
+	void HostRoom(int32 RoomMaxPlayers, const FOnCreateSessionCompleteDelegate& OnCreateSessionCompleteDelegate);
 	
 	UFUNCTION(BlueprintCallable)
-	void HostRoom(int RoomMaxPlayers = 10);
+	void HostRoom(int32 RoomMaxPlayers = 10);
+	
+	void JoinRoom(int32 RoomIndex, const FOnJoinSessionCompleteDelegate& OnJoinSessionCompleteDelegate);
 
 	UFUNCTION(BlueprintCallable)
 	void JoinRoom(int32 RoomIndex);
 
 	UFUNCTION(BlueprintCallable)
 	void FindRooms();
-
+	
 	UFUNCTION(BlueprintCallable)
 	void TravelToRoom();
 
+	UFUNCTION(BlueprintCallable)
+	void StartRoom();
+	
 	UFUNCTION(BlueprintCallable)
 	virtual bool KickPlayer(APlayerController* KickedPlayer, const FText& KickReason) override;
 

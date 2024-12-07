@@ -2,7 +2,9 @@
 
 #include "Online.h"
 #include "OnlineSubsystemUtils.h"
+#include "PFUtils.h"
 #include "WidgetSubsystem.h"
+#include "StartupGameStage.h"
 #include "Kismet/GameplayStatics.h"
 
 FName FMainMenuGameStage::LevelName = FName("L_MainMenu");
@@ -10,32 +12,30 @@ FName FMainMenuGameStage::WidgetName = FName("MainMenu");
 
 void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
-	// UE_LOG_TEMP(TEXT("Current Level Name: %s"), *GameInstance->GetWorld()->GetName());
-	// Disconnect
-	// if (!GameInstance->GetWorld()->IsNetMode(NM_Standalone))
+	auto SessionInterface = Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface();
+	// if (SessionInterface->IsPlayerInSession(
+	// 	NAME_GameSession, *GameInstance->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId()))
 	{
-		Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface()->DestroySession(NAME_GameSession);
-		// [Server]
-		// APFGameSession* GameSession = GameInstance->GetGameSession();
-		// if (GameSession)
-		// {
-		// 	auto PlayerIter = GameInstance->GetWorld()->GetPlayerControllerIterator();
-		// 	if (PlayerIter)
-		// 	{
-		// 		++PlayerIter; // Skip First Player
-		// 		for (; PlayerIter; ++PlayerIter)
-		// 		{
-		// 			GameSession->KickPlayer(PlayerIter->Get(), FText::FromString(TEXT("Room Dismissed")));
-		// 		}
-		// 	}
-		// }
-		// [Client]
-		// else
-		// {
-		// 	Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface()->DestroySession(NAME_GameSession);
-		// }
+		APFGameSession* GS = GameInstance->GetGameSession();
+		if (GS)
+		{
+			GS->DismissRoom();
+		}
+		else
+		{
+			SessionInterface->DestroySession(
+			NAME_GameSession,
+			FOnDestroySessionCompleteDelegate::CreateLambda(
+				[](FName GameSessionName, bool bSuccess)
+				{
+					UE_LOG_TEMP(TEXT("Destroy Session [%s] %s"),
+								*GameSessionName.ToString(),
+								bSuccess ? TEXT("Success") : TEXT("Failure"));
+				}
+			));
+		}
 	}
-	
+
 	if (GameInstance->GetWorld()->GetFName() != LevelName)
 	{
 		APlayerController* PC = GameInstance->GetWorld()->GetFirstPlayerController();

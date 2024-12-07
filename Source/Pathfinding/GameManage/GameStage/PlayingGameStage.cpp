@@ -21,6 +21,11 @@ void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	if (GameInstance->GetWorld()->IsServer())
 	{
 		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelPathToPlay, TEXT("?listen")));
+		APFGameSession* GameSession = GameInstance->GetGameSession();
+		if (GameSession)
+		{
+			GameSession->StartRoom();
+		}
 	}
 }
 

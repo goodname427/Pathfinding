@@ -48,14 +48,35 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	// [Server]
 	if (Type == RoomType::Host)
 	{
-		GameSession->HostRoom(MapToHost.MaxPlayers);
-		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelName.ToString(), TEXT("?listen")));
+		GameSession->HostRoom(MapToHost.MaxPlayers, FOnCreateSessionCompleteDelegate::CreateLambda([GameInstance](FName InSessionName, bool bWasSuccessful)
+		{
+			if (bWasSuccessful)
+			{
+				GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(TEXT("L_Room"), TEXT("?listen")));
+			}
+			else
+			{
+				GameInstance->TransitionToStage<FMainMenuGameStage>();
+			}
+		}));
+		// GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelName.ToString(), TEXT("?listen")));
 	}
 	// Join Room
 	// [Client]
 	else if (Type == RoomType::Join)
 	{
-		GameSession->JoinRoom(RoomIndexToJoin);
+		// GameInstance->ShowLoadingScreen(TEXT("Join Room"));
+		GameSession->JoinRoom(RoomIndexToJoin, FOnJoinSessionCompleteDelegate::CreateLambda([GameInstance, this](FName InSessionName, EOnJoinSessionCompleteResult::Type InResult)
+		{
+			if (InResult == EOnJoinSessionCompleteResult::Success)
+			{
+				GameSession->TravelToRoom();
+			}
+			else
+			{
+				GameInstance->TransitionToStage<FMainMenuGameStage>();
+			}
+		}));
 	}
 }
 

@@ -3,6 +3,7 @@
 
 #include "PFGameInstance.h"
 #include "PFGameSession.h"
+#include "WidgetSubsystem.h"
 #include "GameStage/StartupGameStage.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameStage/MainMenuGameStage.h"
@@ -17,9 +18,18 @@ void UPFGameInstance::Init()
 void UPFGameInstance::OnWorldChanged(UWorld* OldWorld, UWorld* NewWorld)
 {
 	Super::OnWorldChanged(OldWorld, NewWorld);
-	if (OldWorld != nullptr && OnWorldBeginPlayDelegateHandle.IsValid())
+	if (OldWorld != nullptr)
 	{
-		OldWorld->OnWorldBeginPlay.Remove(OnWorldBeginPlayDelegateHandle);
+		UWidgetSubsystem* WidgetSubsystem = GetSubsystem<UWidgetSubsystem>();
+		if (WidgetSubsystem)
+		{
+			WidgetSubsystem->Clear();
+		}
+
+		if (OnWorldBeginPlayDelegateHandle.IsValid())
+		{
+			OldWorld->OnWorldBeginPlay.Remove(OnWorldBeginPlayDelegateHandle);
+		}
 	}
 
 	if (NewWorld != nullptr)
@@ -134,6 +144,11 @@ FString UPFGameInstance::GetURL(const FString& LevelPath, const FString& Options
 	}
 
 	return Path + Options;
+}
+
+void UPFGameInstance::ShowLoadingScreen(const FString& InTitle)
+{
+	GetSubsystem<UWidgetSubsystem>()->ShowLoadingScreen(InTitle);
 }
 
 APFGameSession* UPFGameInstance::GetGameSession() const

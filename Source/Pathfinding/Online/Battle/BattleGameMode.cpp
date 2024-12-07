@@ -23,6 +23,7 @@ ABattleGameMode::ABattleGameMode()
 
 AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
+	// fall back
 	APFPlayerState* PlayerState = Cast<APFPlayerState>(Player->PlayerState);
 	if (!PlayerState)
 	{
@@ -45,4 +46,12 @@ AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	}
 
 	return FoundPlayerStart;
+}
+
+void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
+	FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+
+	ErrorMessage = TEXT("Battle has Started");
 }

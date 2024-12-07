@@ -42,7 +42,7 @@ FNamedOnlineSession* APFGameSession::GetCurrentOnlineSession() const
 {
 	if (IsReady())
 	{
-		return SessionInterface.Pin()->GetNamedSession(NAME_GameSession);
+		return SessionInterface.Pin()->GetNamedSession(SessionName);
 	}
 
 	return nullptr;
@@ -80,12 +80,16 @@ void APFGameSession::OnCreateSessionComplete(FName InSessionName, bool bWasSucce
 {
 	if (bWasSuccessful)
 	{
-		UE_LOG_TEMP(TEXT("Create Room [ %s ] Successful"), *SessionName.ToString());
+		UE_LOG_TEMP(TEXT("Create Room [ %s ] Successful"), *InSessionName.ToString());
+		SessionName = InSessionName;
 	}
 	else
 	{
 		GetPFGameInstance()->Error(TEXT("Create Room Failure"));
 	}
+
+	InternalOnCreateSessionCompleteDelegate.ExecuteIfBound(InSessionName, bWasSuccessful);
+	InternalOnCreateSessionCompleteDelegate = nullptr;
 }
 
 void APFGameSession::OnFindSessionsComplete(bool bWasSuccessful)
@@ -117,13 +121,15 @@ void APFGameSession::OnJoinSessionComplete(FName InSessionName, EOnJoinSessionCo
 	if (CompleteResult == EOnJoinSessionCompleteResult::Success)
 	{
 		UE_LOG_TEMP(TEXT("Join Room [ %s ] Successful"), *InSessionName.ToString());
-
-		TravelToRoom();
+		SessionName = InSessionName;
 	}
 	else
 	{
 		GetPFGameInstance()->Error(TEXT("Join Room Failure"));
 	}
+
+	InternalOnJoinSessionCompleteDelegate.ExecuteIfBound(InSessionName, CompleteResult);
+	InternalOnJoinSessionCompleteDelegate = nullptr;
 }
 
 void APFGameSession::OnDestroySessionComplete(FName InSessionName, bool bWasSuccessful)
@@ -131,7 +137,7 @@ void APFGameSession::OnDestroySessionComplete(FName InSessionName, bool bWasSucc
 	if (bWasSuccessful)
 	{
 		UE_LOG_TEMP(TEXT("Dismiss Room [ %s ] Successful"),
-		            *SessionName.ToString());
+		            *InSessionName.ToString());
 	}
 	else
 	{
@@ -170,22 +176,24 @@ void APFGameSession::DismissRoom()
 {
 	// APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
 	GAME_SESSION_CHECK();
-
-	SessionInterface.Pin()->DestroySession(NAME_GameSession);
+	SessionInterface.Pin()->EndSession(SessionName);
+	SessionInterface.Pin()->DestroySession(SessionName);
 }
 
-void APFGameSession::HostRoom(int RoomMaxPlayers)
+void APFGameSession::HostRoom(int32 RoomMaxPlayers, const FOnCreateSessionCompleteDelegate& OnCreateSessionCompleteDelegate)
 {
 	GAME_SESSION_CHECK();
 
 	SessionSettings = MakeShared<FOnlineSessionSettings>();
 	{
 		SessionSettings->bIsLANMatch = true;
-		MaxPlayers = SessionSettings->NumPublicConnections = RoomMaxPlayers;
-		SessionSettings->NumPrivateConnections = 0;
+		SessionSettings->NumPublicConnections = RoomMaxPlayers;
+		// SessionSettings->NumPrivateConnections = 0;
 		SessionSettings->bShouldAdvertise = true;
+		// SessionSettings->bAllowJoinInProgress = false;
 	}
 
+	InternalOnCreateSessionCompleteDelegate = OnCreateSessionCompleteDelegate;
 	SessionInterface.Pin()->CreateSession(
 		*GetPlayerUniqueNetId(),
 		// FName(FString::Printf(TEXT("%s's Room"), *GetGameInstance()->GetFirstGamePlayer()->GetNickname())),
@@ -194,7 +202,17 @@ void APFGameSession::HostRoom(int RoomMaxPlayers)
 	);
 }
 
+void APFGameSession::HostRoom(int32 RoomMaxPlayers)
+{
+	HostRoom(RoomMaxPlayers, FOnCreateSessionCompleteDelegate());
+}
+
 void APFGameSession::JoinRoom(const int32 RoomIndex)
+{
+	JoinRoom(RoomIndex, FOnJoinSessionCompleteDelegate());
+}
+
+void APFGameSession::JoinRoom(int32 RoomIndex, const FOnJoinSessionCompleteDelegate& OnJoinSessionCompleteDelegate)
 {
 	GAME_SESSION_CHECK();
 
@@ -202,19 +220,25 @@ void APFGameSession::JoinRoom(const int32 RoomIndex)
 	{
 		return;
 	}
-
+	InternalOnJoinSessionCompleteDelegate = OnJoinSessionCompleteDelegate;
 	SessionInterface.Pin()->JoinSession(*GetPlayerUniqueNetId(), NAME_GameSession,
-	                                    SearchSettings->SearchResults[RoomIndex]);
+										SearchSettings->SearchResults[RoomIndex]);
 }
 
 void APFGameSession::FindRooms()
 {
 	GAME_SESSION_CHECK();
 
+	if (SearchSettings->SearchState == EOnlineAsyncTaskState::InProgress)
+	{
+		SessionInterface.Pin()->CancelFindSessions();
+	}
+	
 	SearchSettings = MakeShared<FOnlineSessionSearch>();
 	{
 		SearchSettings->bIsLanQuery = true;
-		SearchSettings->MaxSearchResults = 20;
+		SearchSettings->TimeoutInSeconds = 1000;
+		// SearchSettings->MaxSearchResults = 20;
 	}
 
 	SessionInterface.Pin()->FindSessions(
@@ -233,18 +257,31 @@ void APFGameSession::TravelToRoom()
 		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 		if (PC)
 		{
+			TSharedPtr<FDelegateHandle> Handle = MakeShared<FDelegateHandle>();
+			*Handle = GEngine->OnTravelFailure().AddLambda([Handle](UWorld* World, ETravelFailure::Type TravelFailureType, const FString& ReasonString)
+			{
+				//DEBUG_MESSAGE(TEXT("OnTravelFailure"));
+				GEngine->OnTravelFailure().Remove(*Handle);
+			});
 			PC->ClientTravel(URL, TRAVEL_Absolute);
 		}
 	}
 }
 
+void APFGameSession::StartRoom()
+{
+	GAME_SESSION_CHECK();
+
+	SessionInterface.Pin()->StartSession(SessionName);
+}
+
 bool APFGameSession::KickPlayer(APlayerController* KickedPlayer, const FText& KickReason)
 {
-	APFPlayerController* PC = Cast<APFPlayerController>(KickedPlayer);
-	if (PC)
-	{
-		PC->TransitionToMainMenuStage();
-	}
+	// APFPlayerController* PC = Cast<APFPlayerController>(KickedPlayer);
+	// if (PC)
+	// {
+	// 	PC->TransitionToMainMenuStage();
+	// }
 
 	return Super::KickPlayer(KickedPlayer, KickReason);
 }

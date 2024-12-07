@@ -5,6 +5,7 @@
 
 #include "PFGameInstance.h"
 #include "PFPlayerState.h"
+#include "WidgetSubsystem.h"
 #include "Engine/Canvas.h"
 #include "GameFramework/GameMode.h"
 
@@ -13,10 +14,17 @@ void APFHUD::DrawHUD()
 	Super::DrawHUD();
 
 	FString CurrentStageName = TEXT("Unknown");
+	FString CurrentWidgetName = TEXT("Unknown");
 	UPFGameInstance* GI = Cast<UPFGameInstance>(GetGameInstance());
 	if (GI)
 	{
 		CurrentStageName = GI->GetCurrentStageName().ToString();
+
+		UWidgetSubsystem* WidgetSubsystem = GI->GetSubsystem<UWidgetSubsystem>();
+		if (WidgetSubsystem)
+		{
+			CurrentWidgetName = WidgetSubsystem->GetCurrentWidgetName();
+		}
 	}
 
 	FString WorldName = TEXT("Unknown");
@@ -68,6 +76,7 @@ void APFHUD::DrawHUD()
 
 	FString Text = FString::Printf(
 		TEXT("Current Stage: %s\n")
+		TEXT("Current Widget: %s\n")
 		TEXT("World Name: %s\n")
 		TEXT("Net Mode: %s\n")
 		TEXT("Is Server: %s\n")
@@ -75,6 +84,7 @@ void APFHUD::DrawHUD()
 		TEXT("Player Location: %d\n")
 		,
 		*CurrentStageName,
+		*CurrentWidgetName,
 		*WorldName,
 		*NetMode,
 		*IsServer,

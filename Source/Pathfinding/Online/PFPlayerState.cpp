@@ -26,6 +26,7 @@ APFPlayerController* APFPlayerState::GetPlayerController()
 			if ((*PlayerControllerIter)->PlayerState == this)
 			{
 				PlayerController = Cast<APFPlayerController>(*PlayerControllerIter);
+				break;
 			}
 		}
 	}

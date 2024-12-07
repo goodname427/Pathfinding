@@ -68,6 +68,8 @@ public:
 	template <typename FmtType, typename... ArgTypes>
 	void Error(const FmtType& ErrorMessageFormat, ArgTypes... InArgs);
 
+	void ShowLoadingScreen(const FString& InTitle = TEXT(""));
+
 public:
 	UFUNCTION(BlueprintCallable)
 	APFGameSession* GetGameSession() const;

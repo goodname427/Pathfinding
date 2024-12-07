@@ -51,10 +51,16 @@ public:
 	void ShowErrorDialog(const FString& ErrorText);
 
 	UFUNCTION(BlueprintCallable)
+	void ShowLoadingScreen(const FString& LoadingText = TEXT(""));
+	
+	UFUNCTION(BlueprintCallable)
 	UUserWidget* GetCurrentWidget() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsCurrentWidget(FName WidgetName) const;
+
+	UFUNCTION(BlueprintCallable)
+	FString GetCurrentWidgetName() const;
 	
 private:
 	UPROPERTY()
