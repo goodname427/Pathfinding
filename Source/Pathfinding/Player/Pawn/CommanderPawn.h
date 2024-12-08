@@ -78,10 +78,10 @@ protected:
 	float CameraRotateSpeed;
 
 private:
-	UPROPERTY(Category = "Control|CameraRotate", VisibleAnywhere)
+	UPROPERTY(Transient, Category = "Control|CameraRotate", VisibleAnywhere)
 	uint32 bControlPressed : 1;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMesh;
 };

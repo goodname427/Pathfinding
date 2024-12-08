@@ -5,6 +5,7 @@
 
 #include "PFGameState.h"
 #include "PFPlayerController.h"
+#include "PFUtils.h"
 #include "Net/UnrealNetwork.h"
 
 void APFPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,6 +15,19 @@ void APFPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(APFPlayerState, PlayerLocation);
 	DOREPLIFETIME(APFPlayerState, TeamId);
 	DOREPLIFETIME(APFPlayerState, PlayerColor);
+}
+
+void APFPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+
+	APFPlayerState* PFPlayerState = Cast<APFPlayerState>(PlayerState);
+	if (PFPlayerState)
+	{
+		PFPlayerState->PlayerLocation = PlayerLocation;
+		PFPlayerState->TeamId = TeamId;
+		PFPlayerState->PlayerColor = PlayerColor;
+	}
 }
 
 APFPlayerController* APFPlayerState::GetPlayerController()

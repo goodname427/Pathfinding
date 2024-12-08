@@ -2,6 +2,8 @@
 
 
 #include "CommanderPawn.h"
+
+#include "PFPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PFUtils.h"
 
@@ -56,6 +58,22 @@ void ACommanderPawn::BeginPlay()
 
 	SpringArm->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
 	CameraScaleValue = 0.5f;
+	//
+	// APFPlayerState* PFPlayerState = GetPlayerState<APFPlayerState>();
+	// if (PFPlayerState)
+	// {
+	// 	if (StaticMesh->GetMaterial(0))
+	// 	{
+	// 		DEBUG_MESSAGE(TEXT("Material0"));
+	// 	}
+	// 	
+	// 	UMaterialInstanceDynamic* Material = Cast<UMaterialInstanceDynamic>(StaticMesh->GetMaterial(0));
+	// 	if (Material)
+	// 	{
+	// 		DEBUG_MESSAGE(TEXT("Material1"));
+	// 		Material->SetVectorParameterValue(TEXT("Color"), PFPlayerState->PlayerColor);
+	// 	}
+	// }
 }
 
 // Called every frame

@@ -16,7 +16,7 @@ struct FMapInfo
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FString MapDescripition;
-	
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, meta=(AllowedClasses="World"))
 	FSoftObjectPath MapPath;
 
@@ -35,4 +35,8 @@ class PATHFINDING_API UPFGameSettings : public UDeveloperSettings
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Map")
 	TArray<FMapInfo> Maps;
+
+public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
+	TArray<FLinearColor> PlayerColors;
 };

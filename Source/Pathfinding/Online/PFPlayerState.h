@@ -17,6 +17,8 @@ class PATHFINDING_API APFPlayerState : public APlayerState
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void CopyProperties(APlayerState* PlayerState) override;
 	
 public:
 	UFUNCTION(BlueprintCallable)

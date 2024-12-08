@@ -21,6 +21,17 @@ ABattleGameMode::ABattleGameMode()
 	}
 }
 
+void ABattleGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+	APFGameState* PFGameState = GetGameState<APFGameState>();
+	if (PFGameState)
+	{
+		PFGameState->InitPlayerLocations();
+	}
+}
+
 AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 {
 	// fall back

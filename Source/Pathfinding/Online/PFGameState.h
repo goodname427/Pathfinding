@@ -22,6 +22,8 @@ public:
 	
 public:
 	void InitPlayerLocations(int32 MaxPlayer);
+
+	void InitPlayerLocations();
 	
 	UFUNCTION(BlueprintCallable)
 	void SetPlayerLocation(int32 InLocation, APFPlayerState* Player);

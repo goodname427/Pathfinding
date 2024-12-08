@@ -65,7 +65,7 @@ void APFHUD::DrawHUD()
 		{
 			NumPlayers = GameModeBase->GetNumPlayers();
 		}
-		APFPlayerState* PS = Cast<APFPlayerState>(World->GetFirstPlayerController()->PlayerState); 
+		APFPlayerState* PS = Cast<APFPlayerState>(GI->GetFirstLocalPlayerController()->PlayerState); 
 		if (PS)
 		{
 			PlayerLocation = PS->PlayerLocation;

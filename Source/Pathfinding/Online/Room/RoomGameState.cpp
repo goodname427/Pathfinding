@@ -14,4 +14,5 @@ void ARoomGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 void ARoomGameState::SetCurrentMap(const FMapInfo& NewMap)
 {
 	CurrentMap = NewMap;
+	InitPlayerLocations(NewMap.MaxPlayers);
 }

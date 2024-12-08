@@ -17,6 +17,11 @@ class PATHFINDING_API ABattleGameMode : public APFGameMode
 public:
 	ABattleGameMode();
 
+protected:
+	virtual void BeginPlay() override;
+	
+public:
+
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;

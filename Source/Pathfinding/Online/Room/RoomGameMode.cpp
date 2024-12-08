@@ -56,3 +56,8 @@ void ARoomGameMode::Logout(AController* Exiting)
 		}
 	}
 }
+
+void ARoomGameMode::BeginPlay()
+{
+	Super::BeginPlay();
+}

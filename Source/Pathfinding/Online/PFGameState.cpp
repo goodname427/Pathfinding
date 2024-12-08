@@ -3,6 +3,7 @@
 
 #include "PFGameState.h"
 
+#include "PFGameSettings.h"
 #include "Net/UnrealNetwork.h"
 
 void APFGameState::InitPlayerLocations(int32 MaxPlayer)
@@ -18,6 +19,19 @@ void APFGameState::InitPlayerLocations(int32 MaxPlayer)
 	if (FirstPlayer != nullptr)
 	{
 		SetPlayerLocation(0, FirstPlayer);
+	}
+}
+
+void APFGameState::InitPlayerLocations()
+{
+	PlayerLocations.SetNum(PlayerArray.Num());
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		APFPlayerState* PFPlayerState = Cast<APFPlayerState>(PlayerState);
+		if (PFPlayerState != nullptr)
+		{
+			PlayerLocations[PFPlayerState->PlayerLocation] = PFPlayerState;
+		}
 	}
 }
 
@@ -42,6 +56,7 @@ void APFGameState::SetPlayerLocation(int32 InLocation, APFPlayerState* Player)
 	if (Player)
 	{
 		Player->PlayerLocation = InLocation;
+		Player->PlayerColor = GetDefault<UPFGameSettings>()->PlayerColors[InLocation];
 	}
 
 	OnRep_PlayerLocations();

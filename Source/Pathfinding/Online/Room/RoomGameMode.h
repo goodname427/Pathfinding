@@ -18,6 +18,9 @@ class PATHFINDING_API ARoomGameMode : public APFGameMode
 
 public:
 	ARoomGameMode();
+
+protected:
+	virtual void BeginPlay() override;
 	
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
