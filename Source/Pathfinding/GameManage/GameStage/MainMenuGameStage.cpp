@@ -38,7 +38,7 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 
 	if (GameInstance->GetWorld()->GetFName() != LevelName)
 	{
-		APlayerController* PC = GameInstance->GetWorld()->GetFirstPlayerController();
+		APlayerController* PC = GameInstance->GetFirstLocalPlayerController();// GameInstance->GetWorld()->GetFirstPlayerController();
 		if (PC)
 		{
 			PC->ClientTravel(GameInstance->GetURL(LevelName.ToString()), TRAVEL_Absolute);
