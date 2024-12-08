@@ -39,6 +39,13 @@ void APFPlayerState::SetPlayerLocation_Implementation(int32 InLocation)
 	APFGameState* GameState = Cast<APFGameState>(GetWorld()->GetGameState());
 	if (GameState)
 	{
+		// can not set to the location while other player on the location
+		if (GameState->GetPlayerLocation(InLocation) != nullptr)
+		{
+			return;
+		}
+
+		// reset before location to null while the player has set location
 		if (PlayerLocation >= 0 && PlayerLocation < GameState->GetNumPlayerLocations() && GameState->
 			GetPlayerLocation(PlayerLocation) == this)
 		{
