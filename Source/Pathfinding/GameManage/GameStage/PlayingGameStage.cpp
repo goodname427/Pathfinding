@@ -41,5 +41,16 @@ void FPlayingGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UW
 	if (World != nullptr && World->GetName() == LevelName)
 	{
 		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
+
+		// for (auto PCIter = World->GetPlayerControllerIterator(); PCIter; ++PCIter)
+		// {
+		// 	(*PCIter)->SetInputMode(FInputModeGameAndUI());
+		// }
+
+		APlayerController* PC = World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
+		if (PC != nullptr)
+		{
+			PC->SetInputMode(FInputModeGameAndUI());
+		}
 	}
 }
