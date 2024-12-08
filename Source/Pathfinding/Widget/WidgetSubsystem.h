@@ -29,7 +29,7 @@ protected:
 	// Push The Specified Widget And Hide The Current Widget
 	bool Push(UUserWidget* TargetWidget);
 
-	void Focus(UUserWidget* TargetWidget);
+	void Focus(UUserWidget* TargetWidget) const;
 
 public:
 	// Push Widget Of The Specified Name And Hide The Current Widget

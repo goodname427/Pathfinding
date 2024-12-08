@@ -4,7 +4,7 @@
 #include "RoomGameStage.h"
 #include "WidgetSubsystem.h"
 
-FName FPlayingGameStage::WidgetName = FName("PlayMenu");
+FName FPlayingGameStage::WidgetName = FName("PlayingMenu");
 
 bool FPlayingGameStage::CanTransition(UPFGameInstance* GameInstance, FString& OutErrorMessage)
 {
@@ -21,7 +21,6 @@ void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	// [Server]
 	if (GameInstance->GetWorld()->IsServer())
 	{
-		DEBUG_MESSAGE(TEXT("%s"), *LevelPathToPlay);
 		GameInstance->GetWorld()->ServerTravel(UPFGameInstance::GetURL(LevelPathToPlay, TEXT("?listen")));
 		APFGameSession* GameSession = GameInstance->GetGameSession();
 		if (GameSession)
