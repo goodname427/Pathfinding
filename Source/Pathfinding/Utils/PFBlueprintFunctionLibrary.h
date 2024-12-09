@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PFGameSettings.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "Pawn/CommanderPawn.h"
 #include "PFBlueprintFunctionLibrary.generated.h"
 
 /**
@@ -21,4 +22,27 @@ public:
 
 	// UFUNCTION(BlueprintCallable)
 	// static UUserWidget* CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass, TArray<UUserWidget*>& WidgetArray, UPanelWidget* ParentPanelWidget);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	static ACommanderPawn* GetCommanderPawn(UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable)
+	static ACommanderPawn* GetCommanderPawnByController(AController* Controller);
+	
+	UFUNCTION(BlueprintCallable)
+	static APFPawn* SpawnPFPawn(
+		UObject* WorldContextObject,
+		TSubclassOf<APFPawn> PFPawnClass,
+		ACommanderPawn* OwnerCommander,
+		FVector Location,
+		FRotator Rotation
+	);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent, int32 MaterialIndex);
+	
+	UFUNCTION(BlueprintCallable)
+	static void SetStaticMeshColor(UStaticMeshComponent* StaticMesh, FLinearColor Color);
 };

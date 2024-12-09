@@ -39,4 +39,10 @@ public:
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
 	TArray<FLinearColor> PlayerColors;
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color|Select")
+	FLinearColor PawnSelectedColor;
+	
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color|Select")
+	FLinearColor PawnNormalColor;
 };

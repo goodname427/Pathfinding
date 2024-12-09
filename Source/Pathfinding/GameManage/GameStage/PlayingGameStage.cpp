@@ -40,17 +40,23 @@ void FPlayingGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UW
 	FString LevelName = FPaths::GetBaseFilename(LevelPathToPlay);
 	if (World != nullptr && World->GetName() == LevelName)
 	{
-		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
+		// GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
+
+		// if (World->IsServer())
+		// {
+		// }
 
 		// for (auto PCIter = World->GetPlayerControllerIterator(); PCIter; ++PCIter)
 		// {
-		// 	(*PCIter)->SetInputMode(FInputModeGameAndUI());
+		// 	(*PCIter)->SetInputMode(FInputModeGameAndUI().SetHideCursorDuringCapture(false));
 		// }
-
+			
 		APlayerController* PC = World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
 		if (PC != nullptr)
 		{
-			PC->SetInputMode(FInputModeGameAndUI());
+			DEBUG_MESSAGE(TEXT("Set PlayerController [%s]"), *PC->GetName());
+			PC->SetShowMouseCursor(true);
+			PC->SetInputMode(FInputModeGameAndUI().SetHideCursorDuringCapture(false));
 		}
 	}
 }

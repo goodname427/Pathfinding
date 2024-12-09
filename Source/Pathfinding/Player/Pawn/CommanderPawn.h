@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PFPawn.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -22,7 +23,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	
+
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -30,12 +31,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 protected:
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
 	class UCameraComponent* Camera;
 
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
 	class USpringArmComponent* SpringArm;
+
+	// Static mesh
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UStaticMeshComponent* StaticMesh;
 
 protected:
 	// Camera Scale
@@ -82,6 +89,50 @@ private:
 	uint32 bControlPressed : 1;
 
 protected:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UStaticMeshComponent* StaticMesh;
+	// Select
+	void SelectPressed();
+	void SelectReleased();
+	void Select_CtrlPressed();
+	void Select_CtrlReleased();
+
+	void BeginSelect();
+	void EndSelect(bool bAddtional);
+
+	void SingleSelect(APlayerController* PlayerController, const FVector2D& MousePos, bool bMustBeSelf);
+	void MultiSelect(APlayerController* PlayerController, const FBox2D& SelectBox);
+
+	void LineTrace(TArray<FHitResult>& OutHits, APlayerController* Player, FVector2D ScreenPoint);
+
+private:
+	float SelectPressedTime;
+
+	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
+	uint32 bSelectPressed : 1;
+
+	UPROPERTY(Category = "Select", EditDefaultsOnly)
+	float SingleSelectPressedDuration;
+
+	UPROPERTY(Category = "Select", EditDefaultsOnly)
+	float SingleSelectBoxSize;
+	
+	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
+	float LineTraceStep;
+
+	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
+	float LineTraceDistance;
+
+	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, Replicated)
+	TArray<APFPawn*> SelectedPawns;
+
+protected:
+	// target
+	void TargetPressed();
+	void TargetReleased();
+
+public:
+	UFUNCTION(BlueprintNativeEvent)
+	void Test();
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SpawnPFPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
 };

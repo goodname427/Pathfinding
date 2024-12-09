@@ -7,6 +7,7 @@
 
 #include "BattleGameState.h"
 #include "EngineUtils.h"
+#include "PFUtils.h"
 #include "Engine/PlayerStartPIE.h"
 #include "GameFramework/PlayerStart.h"
 
@@ -30,6 +31,14 @@ void ABattleGameMode::BeginPlay()
 	{
 		PFGameState->InitPlayerLocations();
 	}
+
+	// AsyncTask(ENamedThreads::Type::GameThread, [this]()
+	// {
+	// 	
+	// });
+
+	// DEBUG_MESSAGE(TEXT("PlayerController Count [%d]"), GetWorld()->GetNumPlayerControllers());
+	
 }
 
 AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
