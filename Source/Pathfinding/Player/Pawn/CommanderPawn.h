@@ -94,26 +94,22 @@ protected:
 	void SelectReleased();
 	void Select_CtrlPressed();
 	void Select_CtrlReleased();
-
+	void SelectDoubleClick();
+	
 	void BeginSelect();
-	void EndSelect(bool bAddtional);
+	void EndSelect(bool bAdditional);
 
-	void SingleSelect(APlayerController* PlayerController, const FVector2D& MousePos, bool bMustBeSelf);
-	void MultiSelect(APlayerController* PlayerController, const FBox2D& SelectBox);
+	void Select(APFPawn* PFPawn);
+	void Deselect(APFPawn* PFPawn);
+	void DeselectAll();
+	
+	APFPawn* LineTrace(APlayerController* Player, FVector2D ScreenPoint);
+	void MultiLineTrace(TSet<APFPawn*>& HitPawns, APlayerController* PlayerController, const FBox2D& SelectBox, bool& bHasOwned, APFPawn*& FirstOthersPawn);
 
-	void LineTrace(TArray<FHitResult>& OutHits, APlayerController* Player, FVector2D ScreenPoint);
 
 private:
-	float SelectPressedTime;
-
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelectPressed : 1;
-
-	UPROPERTY(Category = "Select", EditDefaultsOnly)
-	float SingleSelectPressedDuration;
-
-	UPROPERTY(Category = "Select", EditDefaultsOnly)
-	float SingleSelectBoxSize;
 	
 	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
 	float LineTraceStep;

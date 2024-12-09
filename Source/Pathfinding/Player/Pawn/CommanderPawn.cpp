@@ -52,8 +52,6 @@ ACommanderPawn::ACommanderPawn()
 	// Select
 	LineTraceDistance = 100 * 100.f; // 100 m
 	LineTraceStep = 0.01f;
-	SingleSelectPressedDuration = 0.1f;
-	SingleSelectBoxSize = 10.f;
 
 	// Flag
 	INIT_DEFAULT_SUBOBJECT(StaticMesh);
@@ -109,6 +107,7 @@ void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	FAST_BIND_AXIS(MouseHorizontal);
 	FAST_BIND_ACTION(Select);
 	FAST_BIND_ACTION(Select_Ctrl);
+	PlayerInputComponent->BindAction("Select", IE_DoubleClick, this, &ThisClass::SelectDoubleClick);
 	FAST_BIND_ACTION(Target);
 
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
@@ -190,10 +189,40 @@ void ACommanderPawn::Select_CtrlReleased()
 	EndSelect(true);
 }
 
+void ACommanderPawn::SelectDoubleClick()
+{
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController != nullptr)
+	{
+		static FVector2D MousePosition;
+		PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+		APFPawn* PFPawn = LineTrace(PlayerController, MousePosition);
+		if (PFPawn != nullptr)
+		{
+			static TSet<APFPawn*> HitPawns;
+			static bool bHasOwned;
+			static APFPawn* FirstOtherPawn;
+			static int32 ViewportSizeX, ViewportSizeY;
+			PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
+			
+			HitPawns.Reset();
+			MultiLineTrace(HitPawns, PlayerController, FBox2D(FVector2D(0, 0), FVector2D(ViewportSizeX, ViewportSizeY)), bHasOwned, FirstOtherPawn);
+
+			DeselectAll();
+			for (APFPawn* HitPawn : HitPawns)
+			{
+				if (HitPawn->GetClass() == PFPawn->GetClass() && HitPawn->GetOwner() == this)
+				{
+					Select(HitPawn);
+				}
+			}
+		}
+	}
+}
+
 void ACommanderPawn::BeginSelect()
 {
 	bSelectPressed = true;
-	SelectPressedTime = GetWorld()->GetTimeSeconds();
 
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController != nullptr)
@@ -206,10 +235,9 @@ void ACommanderPawn::BeginSelect()
 	}
 }
 
-void ACommanderPawn::EndSelect(bool bAddtional)
+void ACommanderPawn::EndSelect(bool bAdditional)
 {
 	bSelectPressed = false;
-	float Duration = GetWorld()->GetTimeSeconds() - SelectPressedTime;
 
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController != nullptr)
@@ -218,29 +246,40 @@ void ACommanderPawn::EndSelect(bool bAddtional)
 		if (HUD != nullptr)
 		{
 			FBox2D SelectBox = HUD->EndDrawSelectBox();
+			
+			static TSet<APFPawn*> HitPawns;
+			static bool bHasOwned;
+			static APFPawn* FirstOtherPawn;
 
-			if (!bAddtional)
+			HitPawns.Reset();
+			MultiLineTrace(HitPawns, PlayerController, SelectBox, bHasOwned, FirstOtherPawn);
+
+			// deselect all selected pawns
+			// - if we have selected other's pawn when additional select owned pawn
+			// - it's not additional
+			if (!bAdditional
+				|| (bHasOwned && SelectedPawns.Num() > 0 && SelectedPawns[0]->GetOwner() != this))
 			{
 				// deselected
-				for (APFPawn* PFPawn : SelectedPawns)
+				DeselectAll();
+			}
+			
+			if (bAdditional || bHasOwned)
+			{
+				// only select owned pawn when using additional select or there is owned pawn in hit pawns
+				for (APFPawn* Pawn : HitPawns)
 				{
-					PFPawn->OnDeselected();
+					if (Pawn->GetOwner() == this)
+					{
+						Select(Pawn);
+					}
 				}
-				SelectedPawns.Reset();
 			}
-
-			// selected single or multi
-			FVector2D SelectBoxSize = SelectBox.GetSize();
-			if (Duration < SingleSelectPressedDuration || SelectBoxSize.X * SelectBoxSize.Y < SingleSelectBoxSize)
+			else if (FirstOtherPawn != nullptr)
 			{
-				// single select can select other's pawn (to view information of the pawn), but multi select can not
-				SingleSelect(PlayerController, SelectBox.GetCenter(), false);
+				Select(FirstOtherPawn);
 			}
-			else
-			{
-				MultiSelect(PlayerController, SelectBox);
-			}
-
+			
 			// DEBUG_MESSAGE(TEXT("Selected Actors [%d]"), SelectedPawns.Num());
 			// for (AActor* Actor : SelectedPawns)
 			// {
@@ -250,47 +289,91 @@ void ACommanderPawn::EndSelect(bool bAddtional)
 	}
 }
 
-void ACommanderPawn::SingleSelect(APlayerController* PlayerController, const FVector2D& MousePos, bool bMustBeSelf)
+void ACommanderPawn::Select(APFPawn* PFPawn)
 {
-	static TArray<FHitResult> TempHitResults;
-	TempHitResults.Reset();
-
-	LineTrace(TempHitResults, PlayerController, MousePos);
-	for (FHitResult HitResult : TempHitResults)
+	if (PFPawn == nullptr || PFPawn->HasSelected())
 	{
-		APFPawn* PFPawn = Cast<APFPawn>(HitResult.Actor.Get());
-		if (PFPawn != nullptr && (!bMustBeSelf || PFPawn->GetOwnerPlayer() == GetPlayerState<APFPlayerState>()) && !
-			PFPawn->HasSelected())
-		{
-			SelectedPawns.Add(PFPawn);
-			PFPawn->OnSelected(this);
-		}
+		return;
+	}
+
+	// // deselect all if select other's pawn
+	// if (PFPawn->GetOwner() != this)
+	// {
+	// 	DeselectAll();
+	// }
+	// // deselect other's pawn if select owned pawn
+	// else if (SelectedPawns.Num() > 0 && SelectedPawns[0]->GetOwner() != this)
+	// {
+	// 	DeselectAll();
+	// }
+
+	SelectedPawns.Add(PFPawn);
+	PFPawn->OnSelected(this);
+}
+
+void ACommanderPawn::Deselect(APFPawn* PFPawn)
+{
+	if (PFPawn != nullptr && PFPawn->HasSelected())
+	{
+		PFPawn->OnDeselected();
+		SelectedPawns.Remove(PFPawn);
 	}
 }
 
-void ACommanderPawn::MultiSelect(APlayerController* PlayerController, const FBox2D& SelectBox)
+void ACommanderPawn::DeselectAll()
+{
+	for (APFPawn* PFPawn : SelectedPawns)
+	{
+		PFPawn->OnDeselected();
+	}
+	SelectedPawns.Reset();
+}
+
+void ACommanderPawn::MultiLineTrace(TSet<APFPawn*>& HitPawns, APlayerController* PlayerController,
+                                    const FBox2D& SelectBox, bool& bHasOwned, APFPawn*& FirstOthersPawn)
 {
 	int XStep, YStep;
 	PlayerController->GetViewportSize(XStep, YStep);
 	XStep = FMath::CeilToInt(XStep * LineTraceStep);
 	YStep = FMath::CeilToInt(YStep * LineTraceStep);
-
+	
+	bHasOwned = false;
+	FirstOthersPawn = nullptr;
 	for (float X = SelectBox.Min.X; X <= SelectBox.Max.X; X += XStep)
 	{
 		for (float Y = SelectBox.Min.Y; Y <= SelectBox.Max.Y; Y += YStep)
 		{
-			SingleSelect(PlayerController, FVector2D(X, Y), true);
+			APFPawn* PFPawn = LineTrace(PlayerController, FVector2D(X, Y));
+			if (PFPawn != nullptr)
+			{
+				HitPawns.Add(PFPawn);
+				bHasOwned |= PFPawn->GetOwner() == this;
+
+				if (PFPawn->GetOwner() != this)
+				{
+					FirstOthersPawn = PFPawn;
+				}
+			}
 		}
 	}
 }
 
-void ACommanderPawn::LineTrace(TArray<FHitResult>& OutHits, APlayerController* Player, FVector2D ScreenPoint)
+APFPawn* ACommanderPawn::LineTrace(APlayerController* Player, FVector2D ScreenPoint)
 {
 	static FVector LineStart, LineEnd;
 	UGameplayStatics::DeprojectScreenToWorld(Player, ScreenPoint, LineStart, LineEnd);
 	LineEnd = LineStart + LineEnd * LineTraceDistance;
 
-	GetWorld()->LineTraceMultiByChannel(OutHits, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
+	static TArray<FHitResult> TempHitResults;
+	TempHitResults.Reset();
+	GetWorld()->LineTraceMultiByChannel(TempHitResults, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
+
+	for (FHitResult HitResult : TempHitResults)
+	{
+		return Cast<APFPawn>(HitResult.Actor.Get());
+	}
+
+	return nullptr;
 }
 
 void ACommanderPawn::TargetPressed()
