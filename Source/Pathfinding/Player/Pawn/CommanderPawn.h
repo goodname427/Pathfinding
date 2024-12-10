@@ -118,10 +118,10 @@ private:
 	
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelectPressed : 1;
-	
-	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
-	float LineTraceStep;
 
+	float LineTraceStepFactor;
+
+	// by cm
 	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
 	float LineTraceDistance;
 

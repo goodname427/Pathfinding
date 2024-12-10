@@ -45,4 +45,8 @@ public:
 	
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color|Select")
 	FLinearColor PawnNormalColor;
+
+public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn")
+	float PawnMinSize;
 };

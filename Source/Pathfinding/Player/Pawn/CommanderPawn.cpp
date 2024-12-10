@@ -4,6 +4,7 @@
 #include "CommanderPawn.h"
 
 #include "BattleHUD.h"
+#include "DrawDebugHelpers.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFHUD.h"
 #include "PFPlayerState.h"
@@ -31,7 +32,7 @@ ACommanderPawn::ACommanderPawn()
 	// Camera
 	INIT_DEFAULT_SUBOBJECT(Camera);
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-
+	
 	// Movement
 	Movement = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("Movement");
 	Movement->UpdatedComponent = RootComponent;
@@ -52,7 +53,6 @@ ACommanderPawn::ACommanderPawn()
 
 	// Select
 	LineTraceDistance = 100 * 100.f; // 100 m
-	LineTraceStep = 0.01f;
 
 	// Flag
 	INIT_DEFAULT_SUBOBJECT(StaticMesh);
@@ -66,6 +66,19 @@ void ACommanderPawn::BeginPlay()
 
 	SpringArm->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
 	CameraScaleValue = 0.5f;
+
+	// Step = (ViewportSizeY * PawnMinSize) / (2 * tan(FOV / 2) * ArmLength)
+	// Step = (ViewportSizeY / ArmLength) * (PawnMinSize / 2 * tan(FOV / 2))
+	// Factor = PawnMinSizeY / (2 * tan(FOV / 2))
+	// Step = (ViewportSizeY / ArmLength) * Factor
+
+	// SubFactor = ViewportSizeY / ArmLength
+	// Step = Factor * SubFactor
+
+	// FOV = 90d
+	// FactorXY = PawnMinSize / 2
+
+	LineTraceStepFactor = GetDefault<UPFGameSettings>()->PawnMinSize * 0.5f;
 }
 
 // Called every frame
@@ -116,16 +129,22 @@ void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
 bool ACommanderPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
 {
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController == nullptr)
+	{
+		return false;
+	}
+		
 	FVector2D MousePosition;
-	GEngine->GameViewport->GetMousePosition(MousePosition);
-	FVector2D ViewportSize;
-	GEngine->GameViewport->GetViewportSize(ViewportSize);
+	PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+	int32 ViewportSizeX, ViewportSizeY;
+	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
 	// UE_LOG_TEMP(TEXT("Viewport Size: (%.2f, %.2f), Mouse Position: (%.2f, %.2f)"), ViewportSize.X, ViewportSize.Y, MousePosition.X, MousePosition.Y);
 
 	OutMousePositionOnEdge.X = OutMousePositionOnEdge.Y = 0;
-	OutMousePositionOnEdge.X = MousePosition.Y == 0 ? 1 : (MousePosition.Y >= ViewportSize.Y - 1 ? -1 : 0);
-	OutMousePositionOnEdge.Y = MousePosition.X == 0 ? -1 : (MousePosition.X >= ViewportSize.X - 1 ? 1 : 0);
+	OutMousePositionOnEdge.X = MousePosition.Y == 0 ? 1 : (MousePosition.Y >= ViewportSizeY - 1 ? -1 : 0);
+	OutMousePositionOnEdge.Y = MousePosition.X == 0 ? -1 : (MousePosition.X >= ViewportSizeX - 1 ? 1 : 0);
 
 	return OutMousePositionOnEdge.X != 0 || OutMousePositionOnEdge.Y != 0;
 }
@@ -172,7 +191,6 @@ void ACommanderPawn::MouseHorizontal(float Value)
 
 void ACommanderPawn::SelectPressed()
 {
-	DEBUG_FUNC_FLAG();
 	bDoubleClick = false;
 	BeginSelect();
 }
@@ -204,7 +222,7 @@ void ACommanderPawn::SelectDoubleClick()
 		APFPawn* PFPawn = LineTrace(PlayerController, MousePosition);
 		if (PFPawn != nullptr && IsOwned(PFPawn))
 		{
-			static int32 ViewportSizeX, ViewportSizeY;
+			int32 ViewportSizeX, ViewportSizeY;
 			PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
 			static FMultiLineTraceResult Result;
@@ -323,23 +341,28 @@ void ACommanderPawn::DeselectAll()
 void ACommanderPawn::MultiLineTrace(const APlayerController* PlayerController, const FBox2D& SelectBox,
                                     FMultiLineTraceResult& OutResult) const
 {
-	int XStep, YStep;
-	PlayerController->GetViewportSize(XStep, YStep);
-	XStep = FMath::CeilToInt(XStep * LineTraceStep);
-	YStep = FMath::CeilToInt(YStep * LineTraceStep);
+	int32 ViewportSizeX, ViewportSizeY;
+	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
+	const float SubFactor = ViewportSizeY / SpringArm->TargetArmLength;
+	const float Step = FMath::Max(1.f, SubFactor * LineTraceStepFactor);
+
+	// DEBUG_MESSAGE(TEXT("Line Trace SubFactor: %.2f"), SubFactor);
+	// DEBUG_MESSAGE(TEXT("Line Trace Factor: %s"), *LineTraceStepFactor.ToString());
+	// DEBUG_MESSAGE(TEXT("Line Trace Step: %.2f"), Step);
+	
 	OutResult.HitPawns.Reset();
 	OutResult.bHasOwned = false;
 	OutResult.FirstOthersPawn = nullptr;
-	for (float X = SelectBox.Min.X; X <= SelectBox.Max.X; X += XStep)
+	for (float X = SelectBox.Min.X; X <= SelectBox.Max.X; X += Step)
 	{
-		for (float Y = SelectBox.Min.Y; Y <= SelectBox.Max.Y; Y += YStep)
+		for (float Y = SelectBox.Min.Y; Y <= SelectBox.Max.Y; Y += Step)
 		{
 			APFPawn* PFPawn = LineTrace(PlayerController, FVector2D(X, Y));
 			if (PFPawn != nullptr)
 			{
 				OutResult.HitPawns.Add(PFPawn);
-
+	
 				if (IsOwned(PFPawn))
 				{
 					OutResult.bHasOwned = true;
@@ -355,13 +378,14 @@ void ACommanderPawn::MultiLineTrace(const APlayerController* PlayerController, c
 
 APFPawn* ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint) const
 {
-	static FVector LineStart, LineEnd;
+	FVector LineStart, LineEnd;
 	UGameplayStatics::DeprojectScreenToWorld(Player, ScreenPoint, LineStart, LineEnd);
 	LineEnd = LineStart + LineEnd * LineTraceDistance;
 
 	static TArray<FHitResult> TempHitResults;
 	TempHitResults.Reset();
 	GetWorld()->LineTraceMultiByChannel(TempHitResults, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
+	// DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Yellow, false, 5);
 
 	for (const FHitResult& HitResult : TempHitResults)
 	{
