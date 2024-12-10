@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PFGameState.h"
 #include "GameFramework/PlayerState.h"
 #include "PFPlayerState.generated.h"
 
@@ -15,6 +16,8 @@ class PATHFINDING_API APFPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 
+	friend class APFGameState;
+	
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
@@ -23,16 +26,20 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	APFPlayerController* GetPlayerController();
-
-protected:
-	UPROPERTY(Transient)
-	APFPlayerController* PlayerController;
-
-public:
+	
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SetPlayerLocation(int32 InLocation);
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetPlayerLocation() const { return PlayerLocation; }
+
+	UFUNCTION(BlueprintCallable)
+	int32 GetTeamId() const { return TeamId; }
+
+	UFUNCTION(BlueprintCallable)
+	FLinearColor GetPlayerColor() const { return PlayerColor; }
 	
-public:
+protected:
 	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, Replicated)
 	int32 PlayerLocation;
 	

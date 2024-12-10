@@ -54,7 +54,7 @@ AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	}
 	
 	// Choose a player start
-	FName PlayerStartTag = FName(FString::FromInt(PlayerState->PlayerLocation));
+	FName PlayerStartTag = FName(FString::FromInt(PlayerState->GetPlayerLocation()));
 	APlayerStart* FoundPlayerStart = nullptr;
 	UWorld* World = GetWorld();
 	for (TActorIterator<APlayerStart> It(World); It; ++It)

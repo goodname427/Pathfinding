@@ -32,6 +32,8 @@ void APFPlayerState::CopyProperties(APlayerState* PlayerState)
 
 APFPlayerController* APFPlayerState::GetPlayerController()
 {
+	static APFPlayerController* PlayerController = nullptr;
+	
 	if (!PlayerController)
 	{
 		for (auto PlayerControllerIter = GetWorld()->GetPlayerControllerIterator(); PlayerControllerIter; ++

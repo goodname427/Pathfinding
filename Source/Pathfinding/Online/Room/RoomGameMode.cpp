@@ -52,7 +52,7 @@ void ARoomGameMode::Logout(AController* Exiting)
 		APFPlayerState* PFPlayerState = Cast<APFPlayerState>(Exiting->PlayerState);
 		if (PFPlayerState)
 		{
-			PFGameState->SetPlayerLocation(PFPlayerState->PlayerLocation, nullptr);
+			PFGameState->SetPlayerLocation(PFPlayerState->GetPlayerLocation(), nullptr);
 		}
 	}
 }

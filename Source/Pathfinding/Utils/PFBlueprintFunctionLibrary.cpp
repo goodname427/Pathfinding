@@ -21,7 +21,7 @@ ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawnByController(AContr
 	return Controller->GetPawn<ACommanderPawn>();
 }
 
-APFPawn* UPFBlueprintFunctionLibrary::SpawnPFPawn(
+APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
 	UObject* WorldContextObject,
 	TSubclassOf<APFPawn> PFPawnClass,
 	ACommanderPawn* OwnerCommander,

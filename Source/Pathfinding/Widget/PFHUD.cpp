@@ -13,7 +13,7 @@ void APFHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	// DrawInfo();
+	DrawInfo();
 }
 
 void APFHUD::DrawInfo() const
@@ -37,6 +37,7 @@ void APFHUD::DrawInfo() const
 	FString IsServer = TEXT("Unknown");
 	int32 NumPlayers = -1;
 	int32 PlayerLocation = -1;
+	FVector2D MousePosition;
 
 	UWorld* World = GetWorld();
 	if (World)
@@ -70,10 +71,18 @@ void APFHUD::DrawInfo() const
 		{
 			NumPlayers = GameModeBase->GetNumPlayers();
 		}
-		APFPlayerState* PS = Cast<APFPlayerState>(GI->GetFirstLocalPlayerController()->PlayerState);
-		if (PS)
+		
+
+		APlayerController* PC = GetOwningPlayerController();
+		if (PC)
 		{
-			PlayerLocation = PS->PlayerLocation;
+			APFPlayerState* PS = Cast<APFPlayerState>(PC->PlayerState);
+			if (PS)
+			{
+				PlayerLocation = PS->GetPlayerLocation();
+			}
+
+			PC->GetMousePosition(MousePosition.X, MousePosition.Y);
 		}
 	}
 
@@ -82,18 +91,20 @@ void APFHUD::DrawInfo() const
 		TEXT("Current Stage: %s\n")
 		TEXT("Current Widget: %s\n")
 		TEXT("World Name: %s\n")
-		TEXT("Net Mode: %s\n")
-		TEXT("Is Server: %s\n")
-		TEXT("Num Players: %d\n")
-		TEXT("Player Location: %d\n")
+		// TEXT("Net Mode: %s\n")
+		// TEXT("Is Server: %s\n")
+		// TEXT("Num Players: %d\n")
+		// TEXT("Player Location: %d\n")
+		TEXT("Mouse Position: %s\n")
 		,
 		*CurrentStageName,
 		*CurrentWidgetName,
 		*WorldName,
-		*NetMode,
-		*IsServer,
-		NumPlayers,
-		PlayerLocation
+		// *NetMode,
+		// *IsServer,
+		// NumPlayers,
+		// PlayerLocation,
+		*MousePosition.ToString()
 	);
 	FCanvasTextItem TextItem(FVector2D(0, 0), FText::FromString(Text), GEngine->GetLargeFont(), FLinearColor::Green);
 	Canvas->DrawItem(TextItem);

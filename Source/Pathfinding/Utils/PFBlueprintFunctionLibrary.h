@@ -31,7 +31,7 @@ public:
 	static ACommanderPawn* GetCommanderPawnByController(AController* Controller);
 	
 	UFUNCTION(BlueprintCallable)
-	static APFPawn* SpawnPFPawn(
+	static APFPawn* SpawnPawnForCommander(
 		UObject* WorldContextObject,
 		TSubclassOf<APFPawn> PFPawnClass,
 		ACommanderPawn* OwnerCommander,

@@ -8,6 +8,16 @@
 #include "GameFramework/Pawn.h"
 #include "PFPawn.generated.h"
 
+UENUM()
+enum class EPawnRole : uint8
+{
+	None,
+	Self,
+	Neutrality,
+	Teammate,
+	Enemy,
+};
+
 UCLASS()
 class PATHFINDING_API APFPawn : public APawn
 {
@@ -40,8 +50,12 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	APFPlayerState* GetOwnerPlayer() const { return OwnerPlayer; }
+
 	UFUNCTION(BlueprintCallable)
-	FLinearColor GetColor() const { return OwnerPlayer ? OwnerPlayer->PlayerColor : GetDefault<UPFGameSettings>()->PawnNormalColor; }
+	FLinearColor GetOwnerColor() const { return OwnerPlayer ? OwnerPlayer->GetPlayerColor() : GetDefault<UPFGameSettings>()->PawnNormalColor; }
+
+	UFUNCTION(BlueprintCallable)
+	EPawnRole GetPawnRole(APFPawn* OtherPawn) const;
 	
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)

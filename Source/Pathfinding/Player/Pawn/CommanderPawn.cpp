@@ -4,9 +4,7 @@
 #include "CommanderPawn.h"
 
 #include "BattleHUD.h"
-#include "DrawDebugHelpers.h"
 #include "PFBlueprintFunctionLibrary.h"
-#include "PFHUD.h"
 #include "PFPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PFUtils.h"
@@ -32,7 +30,7 @@ ACommanderPawn::ACommanderPawn()
 	// Camera
 	INIT_DEFAULT_SUBOBJECT(Camera);
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	
+
 	// Movement
 	Movement = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("Movement");
 	Movement->UpdatedComponent = RootComponent;
@@ -127,14 +125,14 @@ void ACommanderPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	PlayerInputComponent->BindAction("Test", IE_Pressed, this, &ThisClass::Test);
 }
 
-bool ACommanderPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge)
+bool ACommanderPawn::IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge) const
 {
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController == nullptr)
 	{
 		return false;
 	}
-		
+
 	FVector2D MousePosition;
 	PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
 	int32 ViewportSizeX, ViewportSizeY;
@@ -219,20 +217,24 @@ void ACommanderPawn::SelectDoubleClick()
 	{
 		static FVector2D MousePosition;
 		PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
-		APFPawn* PFPawn = LineTrace(PlayerController, MousePosition);
-		if (PFPawn != nullptr && IsOwned(PFPawn))
+
+		FHitResult HitResult;
+		LineTrace(PlayerController, MousePosition, HitResult);
+		APFPawn* ClickedPawn = Cast<APFPawn>(HitResult.Actor.Get());
+		
+		if (ClickedPawn != nullptr && IsOwned(ClickedPawn))
 		{
 			int32 ViewportSizeX, ViewportSizeY;
 			PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
 			static FMultiLineTraceResult Result;
-			MultiLineTrace(PlayerController, {{0, 0}, FVector2D(ViewportSizeX, ViewportSizeY)}
-			               , Result);
+			SelectBoxLineTracePawn(PlayerController, {{0, 0}, FVector2D(ViewportSizeX, ViewportSizeY)}
+			                       , Result);
 
 			DeselectAll();
 			for (APFPawn* HitPawn : Result.HitPawns)
 			{
-				if (HitPawn->GetClass() == PFPawn->GetClass() && IsOwned(HitPawn))
+				if (HitPawn->GetClass() == ClickedPawn->GetClass() && IsOwned(HitPawn))
 				{
 					Select(HitPawn);
 				}
@@ -274,7 +276,7 @@ void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 			}
 
 			static FMultiLineTraceResult Result;
-			MultiLineTrace(PlayerController, SelectBox, Result);
+			SelectBoxLineTracePawn(PlayerController, SelectBox, Result);
 
 			// deselect all selected pawns
 			// - if we have selected other's pawn when additional select owned pawn
@@ -311,36 +313,38 @@ void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 	}
 }
 
-void ACommanderPawn::Select(APFPawn* PFPawn)
+void ACommanderPawn::Select(APFPawn* Pawn)
 {
-	if (PFPawn != nullptr && !PFPawn->HasSelected())
+	if (Pawn != nullptr && !Pawn->HasSelected())
 	{
-		SelectedPawns.Add(PFPawn);
-		PFPawn->OnSelected(this);
+		SelectedPawns.Add(Pawn);
+		Pawn->OnSelected(this);
 	}
 }
 
-void ACommanderPawn::Deselect(APFPawn* PFPawn)
+void ACommanderPawn::Deselect(APFPawn* Pawn)
 {
-	if (PFPawn != nullptr && PFPawn->HasSelected())
+	if (Pawn != nullptr && Pawn->HasSelected())
 	{
-		PFPawn->OnDeselected();
-		SelectedPawns.Remove(PFPawn);
+		Pawn->OnDeselected();
+		SelectedPawns.Remove(Pawn);
 	}
 }
 
 void ACommanderPawn::DeselectAll()
 {
-	for (APFPawn* PFPawn : SelectedPawns)
+	for (APFPawn* Pawn : SelectedPawns)
 	{
-		PFPawn->OnDeselected();
+		Pawn->OnDeselected();
 	}
 	SelectedPawns.Reset();
 }
 
-void ACommanderPawn::MultiLineTrace(const APlayerController* PlayerController, const FBox2D& SelectBox,
-                                    FMultiLineTraceResult& OutResult) const
+void ACommanderPawn::SelectBoxLineTracePawn(const APlayerController* PlayerController, const FBox2D& SelectBox,
+                                            FMultiLineTraceResult& OutResult) const
 {
+	// DEBUG_MESSAGE(TEXT("Select Box: %s"), *SelectBox.ToString());
+	
 	int32 ViewportSizeX, ViewportSizeY;
 	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
@@ -350,67 +354,114 @@ void ACommanderPawn::MultiLineTrace(const APlayerController* PlayerController, c
 	// DEBUG_MESSAGE(TEXT("Line Trace SubFactor: %.2f"), SubFactor);
 	// DEBUG_MESSAGE(TEXT("Line Trace Factor: %s"), *LineTraceStepFactor.ToString());
 	// DEBUG_MESSAGE(TEXT("Line Trace Step: %.2f"), Step);
-	
+
 	OutResult.HitPawns.Reset();
 	OutResult.bHasOwned = false;
 	OutResult.FirstOthersPawn = nullptr;
+
+	FHitResult HitResult;
 	for (float X = SelectBox.Min.X; X <= SelectBox.Max.X; X += Step)
 	{
 		for (float Y = SelectBox.Min.Y; Y <= SelectBox.Max.Y; Y += Step)
 		{
-			APFPawn* PFPawn = LineTrace(PlayerController, FVector2D(X, Y));
-			if (PFPawn != nullptr)
+			LineTrace(PlayerController, FVector2D(X, Y), HitResult);
+			APFPawn* Pawn = Cast<APFPawn>(HitResult.Actor.Get());
+			if (Pawn != nullptr)
 			{
-				OutResult.HitPawns.Add(PFPawn);
-	
-				if (IsOwned(PFPawn))
+				OutResult.HitPawns.Add(Pawn);
+
+				if (IsOwned(Pawn))
 				{
 					OutResult.bHasOwned = true;
 				}
 				else
 				{
-					OutResult.FirstOthersPawn = PFPawn;
+					OutResult.FirstOthersPawn = Pawn;
 				}
 			}
 		}
 	}
 }
 
-APFPawn* ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint) const
+void ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint,
+                               FHitResult& OutResult) const
 {
 	FVector LineStart, LineEnd;
 	UGameplayStatics::DeprojectScreenToWorld(Player, ScreenPoint, LineStart, LineEnd);
 	LineEnd = LineStart + LineEnd * LineTraceDistance;
 
-	static TArray<FHitResult> TempHitResults;
-	TempHitResults.Reset();
-	GetWorld()->LineTraceMultiByChannel(TempHitResults, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
+	// static TArray<FHitResult> TempHitResults;
+	GetWorld()->LineTraceSingleByChannel(OutResult, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
 	// DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Yellow, false, 5);
 
-	for (const FHitResult& HitResult : TempHitResults)
-	{
-		return Cast<APFPawn>(HitResult.Actor.Get());
-	}
-
-	return nullptr;
+	// for (const FHitResult& HitResult : TempHitResults)
+	// {
+	// 	return HitResult;
+	// }
+	//
+	// return {};
 }
 
-bool ACommanderPawn::IsOwned(APFPawn* PFPawn) const
+bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
 {
-	return PFPawn != nullptr && PFPawn->GetOwnerPlayer() == GetPlayerState<APFPlayerState>();
+	return Pawn != nullptr && Pawn->GetOwnerPlayer() == GetPlayerState<APFPlayerState>();
+}
+
+void ACommanderPawn::Target_Implementation(const FCommandInfo& CommandInfo)
+{
 }
 
 void ACommanderPawn::TargetPressed()
 {
+	//
+	if (SelectedPawns.Num() == 0)
+	{
+		return;
+	}
+	
+	APlayerController* PlayerController = Cast<APlayerController>(GetController());
+	if (PlayerController != nullptr)
+	{
+		FVector2D MousePosition;
+		PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+
+		FHitResult HitResult;
+		LineTrace(PlayerController, MousePosition, HitResult);
+
+		if (!HitResult.IsValidBlockingHit())
+		{
+			return;
+		}
+		
+		FCommandInfo CommandInfo;
+		CommandInfo.CommandName = NAME_None;
+		CommandInfo.TargetLocation = HitResult.Location;
+		CommandInfo.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
+
+		for (APFPawn* Pawn : SelectedPawns)
+		{
+			if (!IsOwned(Pawn))
+			{
+				return;
+			}
+			
+			AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn);
+			if (ConsciousPawn != nullptr)
+			{
+				ConsciousPawn->Receive(CommandInfo);
+			}
+		}
+	}
 }
 
 void ACommanderPawn::TargetReleased()
 {
+	// keep
 }
 
-void ACommanderPawn::SpawnPFPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
+void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
 {
-	UPFBlueprintFunctionLibrary::SpawnPFPawn(this, PawnClass, this, Location, FRotator(0, 0, 0));
+	UPFBlueprintFunctionLibrary::SpawnPawnForCommander(this, PawnClass, this, Location, FRotator(0, 0, 0));
 }
 
 void ACommanderPawn::Test_Implementation()

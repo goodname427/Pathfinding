@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ConsciousPawn.h"
 #include "PFPawn.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"
@@ -61,7 +62,7 @@ private:
 
 protected:
 	// Moving
-	bool IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge);
+	bool IsMouseOnScreenEdge(FVector2D& OutMousePositionOnEdge) const;
 	void Move(float Value, EAxis::Type InAxis);
 	void MoveVertical(float Value);
 	void MoveHorizontal(float Value);
@@ -99,11 +100,11 @@ protected:
 	void BeginSelect();
 	void EndSelect(bool bAdditional, bool bSkipSelect = false);
 
-	void Select(APFPawn* PFPawn);
-	void Deselect(APFPawn* PFPawn);
+	void Select(APFPawn* Pawn);
+	void Deselect(APFPawn* Pawn);
 	void DeselectAll();
 	
-	APFPawn* LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint) const;
+	void LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint, FHitResult& OutResult) const;
 
 	struct FMultiLineTraceResult
 	{
@@ -111,7 +112,7 @@ protected:
 		bool bHasOwned;
 		APFPawn* FirstOthersPawn;
 	};
-	void MultiLineTrace(const APlayerController* PlayerController, const FBox2D& SelectBox, FMultiLineTraceResult& OutResult) const;
+	void SelectBoxLineTracePawn(const APlayerController* PlayerController, const FBox2D& SelectBox, FMultiLineTraceResult& OutResult) const;
 
 private:
 	uint32 bDoubleClick : 1;
@@ -127,7 +128,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	bool IsOwned(APFPawn* PFPawn) const;
+	bool IsOwned(APFPawn* Pawn) const;
 	
 	UFUNCTION(BlueprintCallable)
 	APFPawn* GetFirstSelectedPawn() const { return SelectedPawns.Num() > 0 ? SelectedPawns[0] : nullptr; };
@@ -136,15 +137,20 @@ private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, Replicated)
 	TArray<APFPawn*> SelectedPawns;
 
+public:
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void Target(const FCommandInfo& CommandInfo);
+
 protected:
 	// target
 	void TargetPressed();
 	void TargetReleased();
+
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void Test();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SpawnPFPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
+	void SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
 };
