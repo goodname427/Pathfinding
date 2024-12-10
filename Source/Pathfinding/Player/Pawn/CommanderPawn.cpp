@@ -393,13 +393,6 @@ void ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D&
 	// static TArray<FHitResult> TempHitResults;
 	GetWorld()->LineTraceSingleByChannel(OutResult, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
 	// DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Yellow, false, 5);
-
-	// for (const FHitResult& HitResult : TempHitResults)
-	// {
-	// 	return HitResult;
-	// }
-	//
-	// return {};
 }
 
 bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
@@ -413,7 +406,6 @@ void ACommanderPawn::Target_Implementation(const FCommandInfo& CommandInfo)
 
 void ACommanderPawn::TargetPressed()
 {
-	//
 	if (SelectedPawns.Num() == 0)
 	{
 		return;
