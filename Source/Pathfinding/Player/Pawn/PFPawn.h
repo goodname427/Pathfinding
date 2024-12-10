@@ -6,7 +6,6 @@
 #include "PFGameSettings.h"
 #include "PFPlayerState.h"
 #include "GameFramework/Pawn.h"
-#include "Misc/MapErrors.h"
 #include "PFPawn.generated.h"
 
 UCLASS()

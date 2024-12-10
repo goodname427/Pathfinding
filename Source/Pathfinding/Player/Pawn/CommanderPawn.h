@@ -10,7 +10,6 @@
 #include "Movement/CommanderPawnMovementComponent.h"
 #include "CommanderPawn.generated.h"
 
-
 UCLASS()
 class PATHFINDING_API ACommanderPawn : public APawn
 {
@@ -94,20 +93,29 @@ protected:
 	void SelectReleased();
 	void Select_CtrlPressed();
 	void Select_CtrlReleased();
+	
 	void SelectDoubleClick();
 	
 	void BeginSelect();
-	void EndSelect(bool bAdditional);
+	void EndSelect(bool bAdditional, bool bSkipSelect = false);
 
 	void Select(APFPawn* PFPawn);
 	void Deselect(APFPawn* PFPawn);
 	void DeselectAll();
 	
-	APFPawn* LineTrace(APlayerController* Player, FVector2D ScreenPoint);
-	void MultiLineTrace(TSet<APFPawn*>& HitPawns, APlayerController* PlayerController, const FBox2D& SelectBox, bool& bHasOwned, APFPawn*& FirstOthersPawn);
+	APFPawn* LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint) const;
 
+	struct FMultiLineTraceResult
+	{
+		TSet<APFPawn*> HitPawns;
+		bool bHasOwned;
+		APFPawn* FirstOthersPawn;
+	};
+	void MultiLineTrace(const APlayerController* PlayerController, const FBox2D& SelectBox, FMultiLineTraceResult& OutResult) const;
 
 private:
+	uint32 bDoubleClick : 1;
+	
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelectPressed : 1;
 	
@@ -117,6 +125,14 @@ private:
 	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
 	float LineTraceDistance;
 
+public:
+	UFUNCTION(BlueprintCallable)
+	bool IsOwned(APFPawn* PFPawn) const;
+	
+	UFUNCTION(BlueprintCallable)
+	APFPawn* GetFirstSelectedPawn() const { return SelectedPawns.Num() > 0 ? SelectedPawns[0] : nullptr; };
+
+private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, Replicated)
 	TArray<APFPawn*> SelectedPawns;
 

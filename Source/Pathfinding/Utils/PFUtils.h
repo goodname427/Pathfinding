@@ -18,7 +18,9 @@ while(0) \
 
 #define UE_LOG_TEMP(Format, ...) UE_LOG(LogTemp, Log, Format, __VA_ARGS__)
 
-#define DEBUG_MESSAGE(Format, ...) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(Format, __VA_ARGS__))
+#define DEBUG_FUNC_FLAG() GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("Call %s"), TEXT(__FUNCTION__)))
+
+#define DEBUG_MESSAGE(Format, ...) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString::Printf(TEXT("%s: "), TEXT(__FUNCTION__)) + FString::Printf(Format, __VA_ARGS__))
 
 //
 // INIT
