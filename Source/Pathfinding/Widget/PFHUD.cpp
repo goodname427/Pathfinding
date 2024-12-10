@@ -14,12 +14,6 @@ void APFHUD::DrawHUD()
 	Super::DrawHUD();
 
 	// DrawInfo();
-
-	// draw select box
-	if (bDrawingSelectBox)
-	{
-		DrawSelectBox();
-	}
 }
 
 void APFHUD::DrawInfo() const
@@ -105,48 +99,4 @@ void APFHUD::DrawInfo() const
 	Canvas->DrawItem(TextItem);
 }
 
-void APFHUD::BeginDrawSelectBox()
-{
-	if (bDrawingSelectBox)
-	{
-		EndDrawSelectBox();
-	}
-	
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController)
-	{
-		bDrawingSelectBox = true;
-		PlayerController->GetMousePosition(SelectBoxBeginMousePos.X, SelectBoxBeginMousePos.Y);
-	}
-}
 
-FBox2D APFHUD::EndDrawSelectBox()
-{
-	if (!bDrawingSelectBox)
-	{
-		return FBox2D();
-	}
-
-	FVector2D MousePos;
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController)
-	{
-		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
-	}
-	
-	bDrawingSelectBox = false;
-	return FBox2D(FVector2D::Min(SelectBoxBeginMousePos, MousePos), FVector2D::Max(SelectBoxBeginMousePos, MousePos));
-}
-
-void APFHUD::DrawSelectBox() const
-{
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController)
-	{
-		FVector2D MousePos;
-		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
-
-		FCanvasBoxItem BoxItem(SelectBoxBeginMousePos, MousePos - SelectBoxBeginMousePos);
-		Canvas->DrawItem(BoxItem);
-	}
-}

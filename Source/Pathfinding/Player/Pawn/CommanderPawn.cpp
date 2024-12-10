@@ -3,6 +3,7 @@
 
 #include "CommanderPawn.h"
 
+#include "BattleHUD.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFHUD.h"
 #include "PFPlayerState.h"
@@ -229,7 +230,7 @@ void ACommanderPawn::BeginSelect()
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController != nullptr)
 	{
-		APFHUD* HUD = PlayerController->GetHUD<APFHUD>();
+		ABattleHUD* HUD = PlayerController->GetHUD<ABattleHUD>();
 		if (HUD != nullptr)
 		{
 			HUD->BeginDrawSelectBox();
@@ -244,7 +245,7 @@ void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController != nullptr)
 	{
-		APFHUD* HUD = PlayerController->GetHUD<APFHUD>();
+		ABattleHUD* HUD = PlayerController->GetHUD<ABattleHUD>();
 		if (HUD != nullptr)
 		{
 			const FBox2D SelectBox = HUD->EndDrawSelectBox();

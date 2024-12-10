@@ -6,6 +6,7 @@
 #include <string>
 
 #include "BattleGameState.h"
+#include "BattleHUD.h"
 #include "EngineUtils.h"
 #include "PFUtils.h"
 #include "Engine/PlayerStartPIE.h"
@@ -15,6 +16,8 @@ ABattleGameMode::ABattleGameMode()
 {
 	GameStateClass = ABattleGameState::StaticClass();
 
+	HUDClass = ABattleHUD::StaticClass();
+	
 	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassFinder(TEXT("/Game/Blueprints/Player/Pawn/BP_CommanderPawn"));
 	if (DefaultPawnClassFinder.Succeeded())
 	{

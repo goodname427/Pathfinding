@@ -19,15 +19,4 @@ public:
 
 private:
 	void DrawInfo() const;
-
-public:
-	void BeginDrawSelectBox();
-	FBox2D EndDrawSelectBox();
-
-private:
-	void DrawSelectBox() const;
-
-private:
-	int32 bDrawingSelectBox : 1;
-	FVector2D SelectBoxBeginMousePos;
 };
