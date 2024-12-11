@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BehaviorTree/BehaviorTree.h"
 #include "Engine/DeveloperSettings.h"
 #include "PFGameSettings.generated.h"
 
@@ -42,11 +43,15 @@ public:
 
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color|Select")
 	FLinearColor PawnSelectedColor;
-	
+
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color|Select")
 	FLinearColor PawnNormalColor;
 
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn")
 	float PawnMinSize;
+
+public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowedClasses = "BehaviorTree"))
+	FSoftObjectPath ConsciousBehaviorTree;
 };

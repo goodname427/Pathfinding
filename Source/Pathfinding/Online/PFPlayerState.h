@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PFGameState.h"
+// #include "PFGameState.h"
 #include "GameFramework/PlayerState.h"
 #include "PFPlayerState.generated.h"
 

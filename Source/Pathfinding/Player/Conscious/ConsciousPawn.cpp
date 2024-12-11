@@ -3,6 +3,7 @@
 
 #include "ConsciousPawn.h"
 
+#include "ConsciousAIController.h"
 #include "PFUtils.h"
 
 
@@ -11,25 +12,9 @@ AConsciousPawn::AConsciousPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-}
-
-// Called when the game starts or when spawned
-void AConsciousPawn::BeginPlay()
-{
-	Super::BeginPlay();
 	
-}
-
-// Called every frame
-void AConsciousPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void AConsciousPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	AIControllerClass = AConsciousAIController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AConsciousPawn::Receive(const FCommandInfo& CommandInfo) const

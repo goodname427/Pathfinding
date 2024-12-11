@@ -16,7 +16,8 @@ public class Pathfinding : ModuleRules
 			"Engine", 
 			"InputCore", 
 			"NavigationSystem",
-			"DeveloperSettings"
+			"DeveloperSettings",
+			"AIModule"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]
@@ -24,7 +25,7 @@ public class Pathfinding : ModuleRules
 			"Slate", 
 			"SlateCore", 
 			"OnlineSubsystem", 
-			"OnlineSubsystemUtils"
+			"OnlineSubsystemUtils",
 		});
 
 		PublicIncludePaths.AddRange(new string[] 

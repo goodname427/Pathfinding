@@ -11,31 +11,17 @@
 // Sets default values
 APFPawn::APFPawn()
 {
-	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
 	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMesh);
 }
 
-// Called when the game starts or when spawned
 void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMesh, MaterialParent, 0);
 	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMesh, GetOwnerColor());
-}
-
-// Called every frame
-void APFPawn::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-}
-
-// Called to bind functionality to input
-void APFPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const

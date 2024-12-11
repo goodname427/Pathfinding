@@ -17,18 +17,14 @@ class PATHFINDING_API ACommanderPawn : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
 	ACommanderPawn();
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	// Called to bind functionality to input
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -139,7 +135,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void Target(const FCommandInfo& CommandInfo);
+	void Send(const FCommandInfo& CommandInfo);
 
 protected:
 	// target
