@@ -14,13 +14,7 @@ APFGameMode::APFGameMode()
 {
 	GameSessionClass = APFGameSession::StaticClass();
 	GameStateClass = APFGameState::StaticClass();
-
-	static ConstructorHelpers::FClassFinder<APFPlayerController> PlayerControllerClassFinder(TEXT("/Game/Blueprints/Player/BP_PFPlayerController"));
-	if (PlayerControllerClassFinder.Succeeded())
-	{
-		PlayerControllerClass = PlayerControllerClassFinder.Class;
-	}
-
+	PlayerControllerClass = APFPlayerController::StaticClass();
 	PlayerStateClass = APFPlayerState::StaticClass();
 	HUDClass = APFHUD::StaticClass();
 }

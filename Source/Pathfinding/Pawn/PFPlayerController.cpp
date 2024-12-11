@@ -9,6 +9,11 @@
 #include "GameFramework/PlayerState.h"
 #include "GameStage/PlayingGameStage.h"
 
+APFPlayerController::APFPlayerController()
+{
+	bShowMouseCursor = true;
+}
+
 void APFPlayerController::BeginPlay()
 {
 	Super::BeginPlay();

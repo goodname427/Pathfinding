@@ -135,7 +135,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void Send(const FCommandInfo& CommandInfo);
+	void Send(const FTargetRequest& Request);
 
 protected:
 	// target

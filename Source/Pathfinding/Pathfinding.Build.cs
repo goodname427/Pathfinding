@@ -17,7 +17,8 @@ public class Pathfinding : ModuleRules
 			"InputCore", 
 			"NavigationSystem",
 			"DeveloperSettings",
-			"AIModule"
+			"AIModule",
+			"GameplayTasks"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[]

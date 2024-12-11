@@ -13,9 +13,9 @@ public:
 
 	virtual FName GetStageName() const override { return "Playing"; }
 	virtual bool CanTransition(UPFGameInstance* GameInstance, FString& OutErrorMessage) override;
-	virtual void OnEnterStage(class UPFGameInstance* GameInstance) override;
-	virtual void OnExitStage(class UPFGameInstance* GameInstance) override;
-	virtual void OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World) override;
+	virtual void OnEnterStage(UPFGameInstance* GameInstance) override;
+	virtual void OnExitStage(UPFGameInstance* GameInstance) override;
+	virtual void OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World) override;
 
 private:
 	FString LevelPathToPlay;

@@ -50,12 +50,12 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 	}
 }
 
-void FMainMenuGameStage::OnExitStage(class UPFGameInstance* GameInstance)
+void FMainMenuGameStage::OnExitStage(UPFGameInstance* GameInstance)
 {
 	GameInstance->GetSubsystem<UWidgetSubsystem>()->Clear();
 }
 
-void FMainMenuGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World)
+void FMainMenuGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World)
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{

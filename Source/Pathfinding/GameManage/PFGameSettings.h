@@ -53,5 +53,5 @@ public:
 
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowedClasses = "BehaviorTree"))
-	FSoftObjectPath ConsciousBehaviorTree;
+	FSoftObjectPath ConsciousPawnBehaviorTree;
 };

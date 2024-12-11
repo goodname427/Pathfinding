@@ -7,6 +7,7 @@
 
 #include "BattleGameState.h"
 #include "BattleHUD.h"
+#include "CommanderPawn.h"
 #include "EngineUtils.h"
 #include "PFUtils.h"
 #include "Engine/PlayerStartPIE.h"
@@ -15,14 +16,8 @@
 ABattleGameMode::ABattleGameMode()
 {
 	GameStateClass = ABattleGameState::StaticClass();
-
 	HUDClass = ABattleHUD::StaticClass();
-	
-	static ConstructorHelpers::FClassFinder<APawn> DefaultPawnClassFinder(TEXT("/Game/Blueprints/Player/Pawn/BP_CommanderPawn"));
-	if (DefaultPawnClassFinder.Succeeded())
-	{
-		DefaultPawnClass = DefaultPawnClassFinder.Class;
-	}
+	DefaultPawnClass = ACommanderPawn::StaticClass();
 }
 
 void ABattleGameMode::BeginPlay()
@@ -41,7 +36,6 @@ void ABattleGameMode::BeginPlay()
 	// });
 
 	// DEBUG_MESSAGE(TEXT("PlayerController Count [%d]"), GetWorld()->GetNumPlayerControllers());
-	
 }
 
 AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
@@ -52,7 +46,7 @@ AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 	{
 		return Super::ChoosePlayerStart_Implementation(Player);
 	}
-	
+
 	// Choose a player start
 	FName PlayerStartTag = FName(FString::FromInt(PlayerState->GetPlayerLocation()));
 	APlayerStart* FoundPlayerStart = nullptr;
@@ -72,7 +66,7 @@ AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
 }
 
 void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
-	FString& ErrorMessage)
+                               FString& ErrorMessage)
 {
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 

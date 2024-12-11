@@ -18,11 +18,11 @@ protected:
 public:
 	virtual FName GetStageName() const = 0;
 	virtual bool CanTransition(class UPFGameInstance* GameInstance, FString& OutErrorMessage) { return true; } 
-	virtual void OnExitStage(class UPFGameInstance* GameInstance) {};
-	virtual void OnEnterStage(class UPFGameInstance* GameInstance) {};
-	virtual void OnPostLogin(class UPFGameInstance* GameInstance, APlayerController* NewPlayer) {};
-	virtual void OnWorldChanged(class UPFGameInstance* GameInstance, UWorld* OldWorld, UWorld* NewWorld) {};
-	virtual void OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World) {};
+	virtual void OnExitStage(UPFGameInstance* GameInstance) {};
+	virtual void OnEnterStage(UPFGameInstance* GameInstance) {};
+	virtual void OnPostLogin(UPFGameInstance* GameInstance, APlayerController* NewPlayer) {};
+	virtual void OnWorldChanged(UPFGameInstance* GameInstance, UWorld* OldWorld, UWorld* NewWorld) {};
+	virtual void OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World) {};
 
 public:
 	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage1, const TSharedPtr<IGameStage>& Stage2);

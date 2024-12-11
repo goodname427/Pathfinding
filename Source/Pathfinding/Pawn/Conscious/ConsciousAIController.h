@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "BehaviorTree/BehaviorTree.h"
+#include "CommandComponent.h"
 #include "ConsciousAIController.generated.h"
 
 UCLASS()
@@ -17,11 +17,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	virtual void OnPossess(APawn* InPawn) override;
 
-protected:
-	// AI
-	UPROPERTY(Category = "AI", VisibleDefaultsOnly, BlueprintReadOnly)
-	UBehaviorTree* BehaviorTree;
+public:
+	UCommandComponent* GetCommand() const;
+	void ExecuteCommand(UCommandComponent* Command);
+	void CancelCommand();
+
+public:
+	static FName CurrentCommandKeyName;
 };

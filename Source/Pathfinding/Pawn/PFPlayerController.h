@@ -40,6 +40,9 @@ class PATHFINDING_API APFPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
+public:
+	APFPlayerController();
+	
 protected:
 	virtual void BeginPlay() override;
 

@@ -400,7 +400,7 @@ bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
 	return Pawn != nullptr && Pawn->GetOwnerPlayer() == GetPlayerState<APFPlayerState>();
 }
 
-void ACommanderPawn::Send_Implementation(const FCommandInfo& CommandInfo)
+void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 {
 	for (APFPawn* Pawn : SelectedPawns)
 	{
@@ -412,7 +412,7 @@ void ACommanderPawn::Send_Implementation(const FCommandInfo& CommandInfo)
 		AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn);
 		if (ConsciousPawn != nullptr)
 		{
-			ConsciousPawn->Receive(CommandInfo);
+			ConsciousPawn->Receive(Request);
 		}
 	}
 }
@@ -438,12 +438,12 @@ void ACommanderPawn::TargetPressed()
 			return;
 		}
 		
-		FCommandInfo CommandInfo;
-		CommandInfo.CommandName = NAME_None;
-		CommandInfo.TargetLocation = HitResult.Location;
-		CommandInfo.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
+		FTargetRequest Request;
+		Request.CommandName = NAME_None;
+		Request.TargetLocation = HitResult.Location;
+		Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
 
-		Send(CommandInfo);
+		Send(Request);
 	}
 }
 

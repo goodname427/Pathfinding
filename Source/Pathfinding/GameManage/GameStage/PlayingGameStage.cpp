@@ -16,7 +16,7 @@ bool FPlayingGameStage::CanTransition(UPFGameInstance* GameInstance, FString& Ou
 	return true;
 }
 
-void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
+void FPlayingGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
 	// [Server]
 	if (GameInstance->GetWorld()->IsServer())
@@ -30,12 +30,12 @@ void FPlayingGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	}
 }
 
-void FPlayingGameStage::OnExitStage(class UPFGameInstance* GameInstance)
+void FPlayingGameStage::OnExitStage(UPFGameInstance* GameInstance)
 {
 	GameInstance->GetSubsystem<UWidgetSubsystem>()->Clear();
 }
 
-void FPlayingGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World)
+void FPlayingGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World)
 {
 	FString LevelName = FPaths::GetBaseFilename(LevelPathToPlay);
 	if (World != nullptr && World->GetName() == LevelName)

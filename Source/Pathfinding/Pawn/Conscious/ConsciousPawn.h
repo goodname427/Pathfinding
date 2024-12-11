@@ -3,21 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommandComponent.h"
+#include "ConsciousAIController.h"
 #include "PFPawn.h"
 #include "ConsciousPawn.generated.h"
 
-USTRUCT(BlueprintType)
-struct FCommandInfo
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FName CommandName;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	APFPawn* TargetPawn;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FVector TargetLocation;
-};
+struct FTargetRequest;
+class UCommandComponent;
 
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
@@ -28,6 +20,21 @@ public:
 	// Sets default values for this pawn's properties
 	AConsciousPawn();
 
+protected:
+	virtual void BeginPlay() override;
+
+	virtual void PossessedBy(AController* NewController) override;
+	
 public:
-	void Receive(const FCommandInfo& CommandInfo) const;
+	void Receive(const FTargetRequest& Request);
+
+protected:
+	virtual UCommandComponent* ResolveRequest(const FTargetRequest& Request);
+
+protected:
+	UPROPERTY()
+	AConsciousAIController* ConsciousAIController;
+	
+	UPROPERTY(Transient, Category = "Command", VisibleAnywhere, BlueprintReadWrite)
+	TMap<FName, UCommandComponent*> Commands;	
 };

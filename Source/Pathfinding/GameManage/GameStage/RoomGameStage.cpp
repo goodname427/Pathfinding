@@ -40,7 +40,7 @@ bool FRoomGameStage::CanTransition(UPFGameInstance* GameInstance, FString& OutEr
 	return true;
 }
 
-void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
+void FRoomGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
 	NULL_CHECK(GameSession);
 
@@ -83,17 +83,17 @@ void FRoomGameStage::OnEnterStage(class UPFGameInstance* GameInstance)
 	}
 }
 
-void FRoomGameStage::OnExitStage(class UPFGameInstance* GameInstance)
+void FRoomGameStage::OnExitStage(UPFGameInstance* GameInstance)
 {
 	GameInstance->GetSubsystem<UWidgetSubsystem>()->Clear();
 }
 
-void FRoomGameStage::OnWorldBeginPlay(class UPFGameInstance* GameInstance, UWorld* World)
+void FRoomGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World)
 {
 	if (World != nullptr && World->GetFName() == LevelName)
 	{
 		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
-		
+
 		if (World->IsServer())
 		{
 			ARoomGameState* RoomGameState = World->GetGameState<ARoomGameState>();
