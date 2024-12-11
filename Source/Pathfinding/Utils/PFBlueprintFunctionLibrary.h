@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "PFGameSettings.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
-#include "Pawn/CommanderPawn.h"
+#include "CommanderPawn.h"
 #include "PFBlueprintFunctionLibrary.generated.h"
 
 /**

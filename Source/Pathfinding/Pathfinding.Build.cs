@@ -31,7 +31,7 @@ public class Pathfinding : ModuleRules
 		PublicIncludePaths.AddRange(new string[] 
 		{ 
 			Path.Combine(ModuleDirectory), 
-			Path.Combine(ModuleDirectory, "Player"), 
+			Path.Combine(ModuleDirectory, "Pawn"), 
 			Path.Combine(ModuleDirectory, "Online"), 
 			Path.Combine(ModuleDirectory, "Widget"), 
 			Path.Combine(ModuleDirectory, "GameManage"), 
