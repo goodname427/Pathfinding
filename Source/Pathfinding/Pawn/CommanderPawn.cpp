@@ -221,7 +221,7 @@ void ACommanderPawn::SelectDoubleClick()
 		FHitResult HitResult;
 		LineTrace(PlayerController, MousePosition, HitResult);
 		APFPawn* ClickedPawn = Cast<APFPawn>(HitResult.Actor.Get());
-		
+
 		if (ClickedPawn != nullptr && IsOwned(ClickedPawn))
 		{
 			int32 ViewportSizeX, ViewportSizeY;
@@ -317,8 +317,8 @@ void ACommanderPawn::Select(APFPawn* Pawn)
 {
 	if (Pawn != nullptr && !Pawn->HasSelected())
 	{
-		SelectedPawns.Add(Pawn);
 		Pawn->OnSelected(this);
+		ServerSelect(Pawn);
 	}
 }
 
@@ -327,7 +327,7 @@ void ACommanderPawn::Deselect(APFPawn* Pawn)
 	if (Pawn != nullptr && Pawn->HasSelected())
 	{
 		Pawn->OnDeselected();
-		SelectedPawns.Remove(Pawn);
+		ServerDeselect(Pawn);
 	}
 }
 
@@ -337,6 +337,21 @@ void ACommanderPawn::DeselectAll()
 	{
 		Pawn->OnDeselected();
 	}
+	ServerDeselectAll();
+}
+
+void ACommanderPawn::ServerSelect_Implementation(APFPawn* Pawn)
+{
+	SelectedPawns.Add(Pawn);
+}
+
+void ACommanderPawn::ServerDeselect_Implementation(APFPawn* Pawn)
+{
+	SelectedPawns.Remove(Pawn);
+}
+
+void ACommanderPawn::ServerDeselectAll_Implementation()
+{
 	SelectedPawns.Reset();
 }
 
@@ -344,7 +359,7 @@ void ACommanderPawn::SelectBoxLineTracePawn(const APlayerController* PlayerContr
                                             FMultiLineTraceResult& OutResult) const
 {
 	// DEBUG_MESSAGE(TEXT("Select Box: %s"), *SelectBox.ToString());
-	
+
 	int32 ViewportSizeX, ViewportSizeY;
 	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
@@ -383,6 +398,7 @@ void ACommanderPawn::SelectBoxLineTracePawn(const APlayerController* PlayerContr
 	}
 }
 
+
 void ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint,
                                FHitResult& OutResult) const
 {
@@ -402,19 +418,50 @@ bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
 
 void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 {
+	// DEBUG_MESSAGE(TEXT("SelectPawns Count [%d]"), SelectedPawns.Num());
+
+	int32 NumSent = 0;
 	for (APFPawn* Pawn : SelectedPawns)
 	{
 		if (!IsOwned(Pawn))
 		{
 			return;
 		}
-			
+
+		// if (Pawn->GetOwner() == this)
+		// {
+		// 	DEBUG_MESSAGE(TEXT("Owner Of Pawn [%s] Is [%s]. Me [%s]"), *Pawn->GetName(), *Pawn->GetOwner()->GetName(), *GetName());
+		// }
+		FString PawnLocalRole;
+		switch (Pawn->GetLocalRole())
+		{
+		case ROLE_Authority:
+			PawnLocalRole = FString("ROLE_Authority");
+			break;
+		case ROLE_AutonomousProxy:
+			PawnLocalRole = FString("ROLE_AutonomousProxy");
+			break;
+		case ROLE_SimulatedProxy:
+			PawnLocalRole = FString("ROLE_SimulatedProxy");
+			break;
+		case ROLE_None:
+			PawnLocalRole = FString("ROLE_None");
+			break;
+		case ROLE_MAX:
+			PawnLocalRole = FString("ROLE_MAX");
+			break;
+		}
+		DEBUG_MESSAGE(TEXT("Role Of Pawn Is [%s]"), *PawnLocalRole);
+
 		AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn);
 		if (ConsciousPawn != nullptr)
 		{
+			NumSent++;
 			ConsciousPawn->Receive(Request);
 		}
 	}
+
+	// DEBUG_MESSAGE(TEXT("SelectPawns Sent / All [%d / %d]"), NumSent, SelectedPawns.Num());
 }
 
 void ACommanderPawn::TargetPressed()
@@ -423,7 +470,7 @@ void ACommanderPawn::TargetPressed()
 	{
 		return;
 	}
-	
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController != nullptr)
 	{
@@ -437,7 +484,7 @@ void ACommanderPawn::TargetPressed()
 		{
 			return;
 		}
-		
+
 		FTargetRequest Request;
 		Request.CommandName = NAME_None;
 		Request.TargetLocation = HitResult.Location;

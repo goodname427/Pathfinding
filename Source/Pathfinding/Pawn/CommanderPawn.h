@@ -95,10 +95,18 @@ protected:
 	
 	void BeginSelect();
 	void EndSelect(bool bAdditional, bool bSkipSelect = false);
-
+	
 	void Select(APFPawn* Pawn);
 	void Deselect(APFPawn* Pawn);
 	void DeselectAll();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSelect(APFPawn* Pawn);
+	UFUNCTION(Server, Reliable)
+	void ServerDeselect(APFPawn* Pawn);
+	UFUNCTION(Server, Reliable)
+	void ServerDeselectAll();
+	
 	
 	void LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint, FHitResult& OutResult) const;
 

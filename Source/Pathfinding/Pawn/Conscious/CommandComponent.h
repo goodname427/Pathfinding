@@ -23,7 +23,7 @@ struct FTargetRequest
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComponent*, Command);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandEndSignature, UCommandComponent*, Commad);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandEndSignature, UCommandComponent*, Command);
 
 /**
  * 
@@ -35,7 +35,7 @@ class PATHFINDING_API UCommandComponent : public UActorComponent
 
 public:
 	UFUNCTION(BlueprintNativeEvent)
-	FName GetCommandName();
+	FName GetCommandName() const;
 
 	UFUNCTION(BlueprintCallable)
 	AConsciousPawn* GetExecutePawn() const;
@@ -79,6 +79,6 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FTargetRequest Request;
 	
-	bool bExecuting;
-	bool bSucceeded;
+	bool bExecuting = false;
+	bool bSucceeded = false;
 };

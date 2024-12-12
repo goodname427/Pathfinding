@@ -21,9 +21,12 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
 public:
-	UCommandComponent* GetCommand() const;
+	UCommandComponent* GetCurrentCommand() const;
 	void ExecuteCommand(UCommandComponent* Command);
 	void CancelCommand();
+
+	UFUNCTION()
+	void OnCommandEnd(UCommandComponent* Command);
 
 public:
 	static FName CurrentCommandKeyName;

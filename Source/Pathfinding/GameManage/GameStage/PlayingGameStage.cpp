@@ -54,7 +54,7 @@ void FPlayingGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* 
 		APlayerController* PC = World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
 		if (PC != nullptr)
 		{
-			DEBUG_MESSAGE(TEXT("Set PlayerController [%s]"), *PC->GetName());
+			// DEBUG_MESSAGE(TEXT("Set PlayerController [%s]"), *PC->GetName());
 			PC->SetShowMouseCursor(true);
 			PC->SetInputMode(FInputModeGameAndUI().SetHideCursorDuringCapture(false));
 		}

@@ -48,7 +48,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 		return;
 	}
 	
-	if (ConsciousAIController->GetCommand() != nullptr)
+	if (ConsciousAIController->GetCurrentCommand() != nullptr)
 	{
 		ConsciousAIController->CancelCommand();
 	}
@@ -56,7 +56,11 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 	UCommandComponent* CommandToExecute = ResolveRequest(Request);
 
 	CommandToExecute->SetCommandArgs(Request);
-	ConsciousAIController->ExecuteCommand(CommandToExecute);
+
+	if (CommandToExecute->CanExecute())
+	{
+		ConsciousAIController->ExecuteCommand(CommandToExecute);
+	}
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequest(const FTargetRequest& Request)

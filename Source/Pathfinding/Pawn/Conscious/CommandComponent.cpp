@@ -6,7 +6,7 @@
 #include "ConsciousPawn.h"
 #include "PFUtils.h"
 
-FName UCommandComponent::GetCommandName_Implementation()
+FName UCommandComponent::GetCommandName_Implementation() const
 {
 	return NAME_None;
 }
@@ -43,6 +43,8 @@ void UCommandComponent::BeginExecute()
 	{
 		OnCommandBegin.Broadcast(this);
 	}
+
+	// DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(), *GetCommandName().ToString());
 	
 	InternalBeginExecute();
 }
