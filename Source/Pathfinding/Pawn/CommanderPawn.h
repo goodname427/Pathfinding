@@ -31,14 +31,14 @@ public:
 	
 protected:
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
-	class UCameraComponent* Camera;
+	class UCameraComponent* CameraComponent;
 
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
-	class USpringArmComponent* SpringArm;
+	class USpringArmComponent* SpringArmComponent;
 
 	// Static mesh
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UStaticMeshComponent* StaticMesh;
+	UStaticMeshComponent* StaticMeshComponent;
 
 protected:
 	// Camera Scale
@@ -63,10 +63,10 @@ protected:
 	void MoveVertical(float Value);
 	void MoveHorizontal(float Value);
 
-	virtual UPawnMovementComponent* GetMovementComponent() const override { return Movement; }
+	virtual UPawnMovementComponent* GetMovementComponent() const override { return MovementComponent; }
 
 	UPROPERTY(Category = "Control|Move", VisibleAnywhere)
-	UPawnMovementComponent* Movement;
+	UPawnMovementComponent* MovementComponent;
 
 	UPROPERTY(Category = "Control|Move", EditDefaultsOnly)
 	uint32 bEnableMouseMove : 1;

@@ -4,6 +4,7 @@
 #include "ConsciousPawn.h"
 
 #include "ConsciousAIController.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
 
 
@@ -44,7 +45,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 
 	if (!ConsciousAIController || !ConsciousAIController->GetBlackboardComponent())
 	{
-		DEBUG_MESSAGE(TEXT("ConsciousAIController Is Not Ready!"));
+		// DEBUG_MESSAGE(TEXT("ConsciousAIController Is Not Ready!"));
 		return;
 	}
 	

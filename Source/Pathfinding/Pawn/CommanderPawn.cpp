@@ -20,41 +20,43 @@ ACommanderPawn::ACommanderPawn()
 	INIT_DEFAULT_SUBOBJECT(RootComponent);
 
 	// Spring Arm
-	INIT_DEFAULT_SUBOBJECT(SpringArm);
-	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-60.0f, 0.0f, 0.0f));
-	SpringArm->TargetArmLength = 3000.f;
-	SpringArm->bEnableCameraLag = true;
-	SpringArm->CameraLagSpeed = 3.0f;
+	INIT_DEFAULT_SUBOBJECT(SpringArmComponent);
+	SpringArmComponent->SetupAttachment(RootComponent);
+	SpringArmComponent->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 50.0f), FRotator(-45.0f, 0.0f, 0.0f));
+	SpringArmComponent->TargetArmLength = 3000.f;
+	SpringArmComponent->bEnableCameraLag = true;
+	SpringArmComponent->CameraLagSpeed = 3.0f;
+	SpringArmComponent->bDoCollisionTest = false;
 
 	// Camera
-	INIT_DEFAULT_SUBOBJECT(Camera);
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	INIT_DEFAULT_SUBOBJECT(CameraComponent);
+	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 
 	// Movement
-	Movement = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("Movement");
-	Movement->UpdatedComponent = RootComponent;
+	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("MovementComponent");
+	MovementComponent->UpdatedComponent = RootComponent;
 
 	// Camera Scale
-	MinTargetArmLength = 3000.f;
-	MaxTargetArmLength = 5000.f;
+	MinTargetArmLength = 1500.f;
+	MaxTargetArmLength = 8000.f;
 	CameraScaleSpeed = 0.1f;
 	CameraScaleValue = 0.5f;
 
 	// Mouse Move
-	bEnableMouseMove = true;
+	bEnableMouseMove = false;
 
 	// Camera Rotate
 	bUseControllerRotationYaw = true;
-	CameraRotateSpeed = 100.f;
+	CameraRotateSpeed = 200.f;
 	bControlPressed = false;
 
 	// Select
 	LineTraceDistance = 100 * 100.f; // 100 m
 
 	// Flag
-	INIT_DEFAULT_SUBOBJECT(StaticMesh);
-	StaticMesh->SetupAttachment(RootComponent);
+	INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+	StaticMeshComponent->SetupAttachment(RootComponent);
+	StaticMeshComponent->SetCollisionProfileName(FName("NoCollision"));
 }
 
 // Called when the game starts or when spawned
@@ -62,7 +64,7 @@ void ACommanderPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SpringArm->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
+	SpringArmComponent->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
 	CameraScaleValue = 0.5f;
 
 	// Step = (ViewportSizeY * PawnMinSize) / (2 * tan(FOV / 2) * ArmLength)
@@ -85,7 +87,7 @@ void ACommanderPawn::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// Camera Arm Lerp
-	SpringArm->TargetArmLength = FMath::Lerp(SpringArm->TargetArmLength,
+	SpringArmComponent->TargetArmLength = FMath::Lerp(SpringArmComponent->TargetArmLength,
 	                                         FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, CameraScaleValue),
 	                                         DeltaTime * 4.f);
 
@@ -363,7 +365,7 @@ void ACommanderPawn::SelectBoxLineTracePawn(const APlayerController* PlayerContr
 	int32 ViewportSizeX, ViewportSizeY;
 	PlayerController->GetViewportSize(ViewportSizeX, ViewportSizeY);
 
-	const float SubFactor = ViewportSizeY / SpringArm->TargetArmLength;
+	const float SubFactor = ViewportSizeY / SpringArmComponent->TargetArmLength;
 	const float Step = FMath::Max(1.f, SubFactor * LineTraceStepFactor);
 
 	// DEBUG_MESSAGE(TEXT("Line Trace SubFactor: %.2f"), SubFactor);
@@ -432,26 +434,26 @@ void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 		// {
 		// 	DEBUG_MESSAGE(TEXT("Owner Of Pawn [%s] Is [%s]. Me [%s]"), *Pawn->GetName(), *Pawn->GetOwner()->GetName(), *GetName());
 		// }
-		FString PawnLocalRole;
-		switch (Pawn->GetLocalRole())
-		{
-		case ROLE_Authority:
-			PawnLocalRole = FString("ROLE_Authority");
-			break;
-		case ROLE_AutonomousProxy:
-			PawnLocalRole = FString("ROLE_AutonomousProxy");
-			break;
-		case ROLE_SimulatedProxy:
-			PawnLocalRole = FString("ROLE_SimulatedProxy");
-			break;
-		case ROLE_None:
-			PawnLocalRole = FString("ROLE_None");
-			break;
-		case ROLE_MAX:
-			PawnLocalRole = FString("ROLE_MAX");
-			break;
-		}
-		DEBUG_MESSAGE(TEXT("Role Of Pawn Is [%s]"), *PawnLocalRole);
+		// FString PawnLocalRole;
+		// switch (Pawn->GetLocalRole())
+		// {
+		// case ROLE_Authority:
+		// 	PawnLocalRole = FString("ROLE_Authority");
+		// 	break;
+		// case ROLE_AutonomousProxy:
+		// 	PawnLocalRole = FString("ROLE_AutonomousProxy");
+		// 	break;
+		// case ROLE_SimulatedProxy:
+		// 	PawnLocalRole = FString("ROLE_SimulatedProxy");
+		// 	break;
+		// case ROLE_None:
+		// 	PawnLocalRole = FString("ROLE_None");
+		// 	break;
+		// case ROLE_MAX:
+		// 	PawnLocalRole = FString("ROLE_MAX");
+		// 	break;
+		// }
+		// DEBUG_MESSAGE(TEXT("Role Of Pawn Is [%s]"), *PawnLocalRole);
 
 		AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn);
 		if (ConsciousPawn != nullptr)

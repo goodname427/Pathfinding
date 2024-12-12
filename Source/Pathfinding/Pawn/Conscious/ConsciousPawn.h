@@ -10,6 +10,7 @@
 
 struct FTargetRequest;
 class UCommandComponent;
+class UConsciousMovementComponent;
 
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
@@ -36,5 +37,5 @@ protected:
 	AConsciousAIController* ConsciousAIController;
 	
 	UPROPERTY(Transient, Category = "Command", VisibleAnywhere, BlueprintReadWrite)
-	TMap<FName, UCommandComponent*> Commands;	
+	TMap<FName, UCommandComponent*> Commands;
 };

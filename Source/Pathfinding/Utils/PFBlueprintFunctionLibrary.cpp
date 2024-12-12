@@ -43,6 +43,11 @@ APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
 
 void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent, int32 MaterialIndex)
 {
+	if (StaticMesh == nullptr || Parent == nullptr)
+	{
+		return;
+	}
+	
 	 StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
 }
 

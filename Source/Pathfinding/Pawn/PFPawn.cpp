@@ -14,14 +14,14 @@ APFPawn::APFPawn()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
-	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMesh);
+	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
 }
 
 void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMesh, MaterialParent, 0);
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMesh, GetOwnerColor());
+	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, MaterialParent, 0);
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
 void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -37,6 +37,7 @@ void APFPawn::SetOwner(AActor* NewOwner)
 	ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
 	if (CommanderPawn != nullptr)
 	{
+		DEBUG_FUNC_FLAG();
 		OwnerPlayer = CommanderPawn->GetPlayerState<APFPlayerState>();
 		OnRep_OwnerPlayer();
 	}
@@ -71,19 +72,19 @@ EPawnRole APFPawn::GetPawnRole(APFPawn* OtherPawn) const
 void APFPawn::OnRep_OwnerPlayer()
 {
 	// DEBUG_MESSAGE(TEXT("APFPawn::OnRep_OwnerPlayer [%s]"), *OwnerPlayer->GetPlayerName());
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMesh, GetOwnerColor());
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
 void APFPawn::OnSelected(ACommanderPawn* SelectCommander)
 {
 	bSelected = true;
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMesh, GetDefault<UPFGameSettings>()->PawnSelectedColor);
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetDefault<UPFGameSettings>()->PawnSelectedColor);
 }
 
 void APFPawn::OnDeselected()
 {
 	bSelected = false;
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMesh, GetOwnerColor());
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
 

@@ -5,10 +5,10 @@
 
 UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
 {
-	MaxSpeed = 1200.f;
-	Acceleration = 4000.f;
-	Deceleration = 8000.f;
-	TurningBoost = 8.0f;
+	MaxSpeed = 7200.f;
+	Acceleration = 24000.f;
+	Deceleration = 48000.f;
+	TurningBoost = 16.0f;
 	bPositionCorrected = false;
 
 	ResetMoveState();
