@@ -1,25 +1,50 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GameFramework/PawnMovementComponent.h"
-#include "CommanderPawnMovementComponent.generated.h"
+#include "ConsciousPawnMovementComponent.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class PATHFINDING_API UCommanderPawnMovementComponent : public UPawnMovementComponent
+USTRUCT(BlueprintType)
+struct FConsciousMoveData
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	float DeltaTime;
+
+	UPROPERTY()
+	FVector Location;
+
+	UPROPERTY()
+	FVector Velocity;
+
+	UPROPERTY()
+	FRotator Rotation;
+};
+
+UCLASS(ClassGroup=(Movement), meta=(BlueprintSpawnableComponent))
+class PATHFINDING_API UConsciousPawnMovementComponent : public UPawnMovementComponent
 {
 	GENERATED_BODY()
 
 public:
-	UCommanderPawnMovementComponent();
+	UConsciousPawnMovementComponent();
 
 private:
+	//Begin UActorComponent Interface
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+	//End UActorComponent Interface
+
+public:
+	UFUNCTION(NetMulticast, Reliable)
+	void NetMulticastUpdate(const FConsciousMoveData& MoveData);
+
+protected:
+	UPROPERTY(Category = "Network", EditAnywhere)
+	float NetworkTickInterval;
+
+	float LastUpdateTime;
 
 public:
 	virtual float GetMaxSpeed() const override { return MaxSpeed; }
@@ -30,15 +55,15 @@ protected:
 
 public:
 	/** Maximum velocity magnitude allowed for the controlled Pawn. */
-	UPROPERTY(Category = Movement, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
 	float MaxSpeed;
 
 	/** Acceleration applied by input (rate of change of velocity) */
-	UPROPERTY(Category = Movement, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
 	float Acceleration;
 
 	/** Deceleration applied when there is no input (rate of change of velocity) */
-	UPROPERTY(Category = Movement, EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
 	float Deceleration;
 
 	/**
@@ -46,7 +71,7 @@ public:
 	 * Velocity magnitude is not allowed to increase, that only happens due to normal acceleration. It may decrease with large direction changes.
 	 * Larger values apply extra force to reach the target direction more quickly, while a zero value disables any extra turn force.
 	 */
-	UPROPERTY(Category = FloatingPawnMovement, EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FloatingPawnMovement, meta = (ClampMin = "0", UIMin = "0"))
 	float TurningBoost;
 
 protected:

@@ -10,7 +10,7 @@
 
 struct FTargetRequest;
 class UCommandComponent;
-class UConsciousMovementComponent;
+class UConsciousPawnMovementComponent;
 
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn

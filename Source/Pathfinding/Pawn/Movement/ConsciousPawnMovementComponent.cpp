@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CommanderPawnMovementComponent.h"
+#include "ConsciousPawnMovementComponent.h"
 
-UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
+UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
 {
 	MaxSpeed = 7200.f;
 	Acceleration = 36000.f;
@@ -11,11 +11,14 @@ UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
 	TurningBoost = 16.0f;
 	bPositionCorrected = false;
 
+	LastUpdateTime = -1;
+	NetworkTickInterval = 1;
+
 	ResetMoveState();
 }
 
-void UCommanderPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                                   FActorComponentTickFunction* ThisTickFunction)
+void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+                                                    FActorComponentTickFunction* ThisTickFunction)
 {
 	if (ShouldSkipUpdate(DeltaTime))
 	{
@@ -48,39 +51,70 @@ void UCommanderPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 		LimitWorldBounds();
 		bPositionCorrected = false;
 
-		// Move actor
-		FVector Delta = Velocity * DeltaTime;
-
-		if (!Delta.IsNearlyZero(1e-6f))
+		float CurrentTime = GetWorld()->GetTimeSeconds();
+		if (CurrentTime > LastUpdateTime + DeltaTime)
 		{
-			const FVector OldLocation = UpdatedComponent->GetComponentLocation();
-			const FQuat Rotation = UpdatedComponent->GetComponentQuat();
-
-			FHitResult Hit(1.f);
-			SafeMoveUpdatedComponent(Delta, Rotation, true, Hit);
-
-			if (Hit.IsValidBlockingHit())
+			FConsciousMoveData NewData;
 			{
-				HandleImpact(Hit, DeltaTime, Delta);
-				// Try to slide the remaining distance along the surface.
-				SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
+				NewData.DeltaTime = CurrentTime - LastUpdateTime;
+				NewData.Velocity = Velocity;
+				NewData.Location = UpdatedComponent->GetComponentLocation();
+				NewData.Rotation = UpdatedComponent->GetComponentRotation();
 			}
+			
+			NetMulticastUpdate(NewData);
+			
+			LastUpdateTime = CurrentTime;
+		}
+	}
 
-			// Update velocity
-			// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
-			if (!bPositionCorrected)
-			{
-				const FVector NewLocation = UpdatedComponent->GetComponentLocation();
-				Velocity = ((NewLocation - OldLocation) / DeltaTime);
-			}
+	// Move actor
+	FVector Delta = Velocity * DeltaTime;
+
+	if (!Delta.IsNearlyZero(1e-6f))
+	{
+		const FVector OldLocation = UpdatedComponent->GetComponentLocation();
+		const FQuat Rotation = UpdatedComponent->GetComponentQuat();
+
+		FHitResult Hit(1.f);
+		SafeMoveUpdatedComponent(Delta, Rotation, true, Hit);
+
+		if (Hit.IsValidBlockingHit())
+		{
+			HandleImpact(Hit, DeltaTime, Delta);
+			// Try to slide the remaining distance along the surface.
+			SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
 		}
 
-		// Finalize
-		UpdateComponentVelocity();
+		// Update velocity
+		// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
+		if (!bPositionCorrected)
+		{
+			const FVector NewLocation = UpdatedComponent->GetComponentLocation();
+			Velocity = ((NewLocation - OldLocation) / DeltaTime);
+		}
+	}
+
+	// Finalize
+	UpdateComponentVelocity();
+}
+
+
+void UConsciousPawnMovementComponent::NetMulticastUpdate_Implementation(const FConsciousMoveData& MoveData)
+{
+	if (GetOwnerRole() != ROLE_Authority)
+	{
+		FVector OldLocation = UpdatedComponent->GetComponentLocation();
+		FVector Delta = MoveData.Location - OldLocation;
+
+		FHitResult Hit(1.f);
+		SafeMoveUpdatedComponent(Delta, MoveData.Rotation, true, Hit);
+
+		Velocity = MoveData.Velocity;
 	}
 };
 
-bool UCommanderPawnMovementComponent::LimitWorldBounds()
+bool UConsciousPawnMovementComponent::LimitWorldBounds()
 {
 	AWorldSettings* WorldSettings = PawnOwner ? PawnOwner->GetWorldSettings() : NULL;
 	if (!WorldSettings || !WorldSettings->bEnableWorldBoundsChecks || !UpdatedComponent)
@@ -98,7 +132,7 @@ bool UCommanderPawnMovementComponent::LimitWorldBounds()
 	return false;
 }
 
-void UCommanderPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTime)
+void UConsciousPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTime)
 {
 	const FVector ControlAcceleration = GetPendingInputVector().GetClampedToMaxSize(1.f);
 
@@ -141,8 +175,8 @@ void UCommanderPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTim
 	ConsumeInputVector();
 }
 
-bool UCommanderPawnMovementComponent::ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit,
-                                                            const FQuat& NewRotationQuat)
+bool UConsciousPawnMovementComponent::ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit,
+                                                             const FQuat& NewRotationQuat)
 {
 	bPositionCorrected |= Super::ResolvePenetrationImpl(Adjustment, Hit, NewRotationQuat);
 	return bPositionCorrected;
