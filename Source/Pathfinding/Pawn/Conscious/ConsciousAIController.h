@@ -15,19 +15,28 @@ class PATHFINDING_API AConsciousAIController : public AAIController
 public:
 	AConsciousAIController();
 
-protected:
-	virtual void BeginPlay() override;
-
-	virtual void OnPossess(APawn* InPawn) override;
-
 public:
 	UCommandComponent* GetCurrentCommand() const;
+
+	void PushCommand(UCommandComponent* Command);
+	void ClearAllCommands();
+
+	void ExecuteCommandQueue();
+
+protected:
+	void ExecuteNextCommand();
 	void ExecuteCommand(UCommandComponent* Command);
-	void CancelCommand();
+	void AbortCurrentCommand();
 
 	UFUNCTION()
-	void OnCommandEnd(UCommandComponent* Command);
+	void OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result);
 
+private:
+	TQueue<UCommandComponent*> CommandQueue;
+
+	UPROPERTY()
+	UCommandComponent* CurrentCommand;
+	
 public:
 	static FName CurrentCommandKeyName;
 };

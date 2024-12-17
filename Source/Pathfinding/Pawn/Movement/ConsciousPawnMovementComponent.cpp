@@ -54,17 +54,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 		float CurrentTime = GetWorld()->GetTimeSeconds();
 		if (CurrentTime > LastUpdateTime + DeltaTime)
 		{
-			FConsciousMoveData NewData;
-			{
-				NewData.DeltaTime = CurrentTime - LastUpdateTime;
-				NewData.Velocity = Velocity;
-				NewData.Location = UpdatedComponent->GetComponentLocation();
-				NewData.Rotation = UpdatedComponent->GetComponentRotation();
-			}
-			
-			NetMulticastUpdate(NewData);
-			
-			LastUpdateTime = CurrentTime;
+			BroadcastMovementState(CurrentTime);
 		}
 	}
 
@@ -97,6 +87,21 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 	// Finalize
 	UpdateComponentVelocity();
+}
+
+void UConsciousPawnMovementComponent::BroadcastMovementState(float CurrentTime)
+{
+	FConsciousMoveData NewData;
+	{
+		NewData.DeltaTime = CurrentTime - LastUpdateTime;
+		NewData.Velocity = Velocity;
+		NewData.Location = UpdatedComponent->GetComponentLocation();
+		NewData.Rotation = UpdatedComponent->GetComponentRotation();
+	}
+			
+	NetMulticastUpdate(NewData);
+			
+	LastUpdateTime = CurrentTime;
 }
 
 

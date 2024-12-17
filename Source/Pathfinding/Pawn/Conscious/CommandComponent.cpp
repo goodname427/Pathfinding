@@ -11,6 +11,11 @@ FName UCommandComponent::GetCommandName_Implementation() const
 	return NAME_None;
 }
 
+float UCommandComponent::GetRequiredTargetRadius_Implementation()
+{
+	return -1.0f;
+}
+
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
 {
 	return Cast<AConsciousPawn>(GetOwner());
@@ -44,24 +49,23 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(), *GetCommandName().ToString());
+	// DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(), *GetCommandName().ToString());
 	
 	InternalBeginExecute();
 }
 
-void UCommandComponent::EndExecute(bool bInSucceeded)
+void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 {
 	bExecuting = false;
-	bSucceeded = bInSucceeded;
 
-	InternalEndExecute();
+	InternalEndExecute(Result);
 	
 	if (OnCommandEnd.IsBound())
 	{
-		OnCommandEnd.Broadcast(this);
+		OnCommandEnd.Broadcast(this, Result);
 	}
 }
 
-void UCommandComponent::InternalEndExecute_Implementation()
+void UCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
 }

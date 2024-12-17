@@ -50,8 +50,4 @@ public:
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn")
 	float PawnMinSize;
-
-public:
-	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "AI", meta = (AllowedClasses = "BehaviorTree"))
-	FSoftObjectPath ConsciousPawnBehaviorTree;
 };

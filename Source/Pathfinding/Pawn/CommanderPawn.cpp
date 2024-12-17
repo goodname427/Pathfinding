@@ -51,7 +51,7 @@ ACommanderPawn::ACommanderPawn()
 	bControlPressed = false;
 
 	// Select
-	LineTraceDistance = 100 * 100.f; // 100 m
+	LineTraceDistance = 200 * 100.f; // 100 m
 
 	// Flag
 	INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);

@@ -16,54 +16,68 @@ AConsciousAIController::AConsciousAIController()
 	// Blackboard = CreateDefaultSubobject<UBlackboardComponent>(TEXT("BlackboardComponent"));
 }
 
-void AConsciousAIController::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AConsciousAIController::OnPossess(APawn* InPawn)
-{
-	Super::OnPossess(InPawn);
-	
-	UBehaviorTree* BehaviorTree;
-	if (GIsEditor)
-	{
-		BehaviorTree = Cast<UBehaviorTree>(GetDefault<UPFGameSettings>()->ConsciousPawnBehaviorTree.ResolveObject());
-	}
-	else 
-	{
-		BehaviorTree = Cast<UBehaviorTree>(GetDefault<UPFGameSettings>()->ConsciousPawnBehaviorTree.TryLoad());
-	}
-	
-	if (BehaviorTree)
-	{
-		// if (BehaviorTree->BlackboardAsset)
-		// {
-		// 	Blackboard->InitializeBlackboard(*BehaviorTree->BlackboardAsset);
-		// }
-		// DEBUG_FUNC_FLAG();
-		RunBehaviorTree(BehaviorTree);
-	}
-}
-
 UCommandComponent* AConsciousAIController::GetCurrentCommand() const
 {
-	return Cast<UCommandComponent>(Blackboard->GetValueAsObject(CurrentCommandKeyName));
+	return CurrentCommand;
+}
+
+void AConsciousAIController::PushCommand(UCommandComponent* Command)
+{
+	if (Command)
+	{
+		CommandQueue.Enqueue(Command);
+	}
+}
+
+void AConsciousAIController::ClearAllCommands()
+{
+	AbortCurrentCommand();
+
+	CommandQueue.Empty();
+}
+
+void AConsciousAIController::ExecuteCommandQueue()
+{
+	ExecuteNextCommand();
+}
+
+void AConsciousAIController::ExecuteNextCommand()
+{
+	if (CommandQueue.IsEmpty())
+	{
+		return;
+	}
+	
+	UCommandComponent* NextCommand;
+	CommandQueue.Dequeue(NextCommand);
+	ExecuteCommand(NextCommand);
 }
 
 void AConsciousAIController::ExecuteCommand(UCommandComponent* Command)
 {
 	Command->OnCommandEnd.AddDynamic(this, &AConsciousAIController::OnCommandEnd);
-	Blackboard->SetValueAsObject(CurrentCommandKeyName, Command);
+	CurrentCommand = Command;
+	Command->BeginExecute();
 }
 
-void AConsciousAIController::CancelCommand()
+void AConsciousAIController::AbortCurrentCommand()
 {
-	Blackboard->SetValueAsObject(CurrentCommandKeyName, nullptr);
+	if (CurrentCommand)
+	{
+		CurrentCommand->EndExecute(ECommandExecuteResult::Aborted);
+	}
 }
 
-void AConsciousAIController::OnCommandEnd(UCommandComponent* Command)
+void AConsciousAIController::OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result)
 {
-	CancelCommand();
 	Command->OnCommandEnd.RemoveDynamic(this, &AConsciousAIController::OnCommandEnd);
+
+	if (Result == ECommandExecuteResult::Success)
+	{
+		ExecuteNextCommand();
+	}
+	else
+	{
+		ClearAllCommands();
+	}
 }

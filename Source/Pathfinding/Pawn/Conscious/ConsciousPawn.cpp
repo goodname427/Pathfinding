@@ -6,6 +6,7 @@
 #include "ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
+#include "Command/MoveCommandComponent.h"
 
 
 // Sets default values
@@ -43,28 +44,94 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
-	if (!ConsciousAIController || !ConsciousAIController->GetBlackboardComponent())
+	if (!ConsciousAIController
+		// || !ConsciousAIController->GetBlackboardComponent()
+		)
 	{
 		// DEBUG_MESSAGE(TEXT("ConsciousAIController Is Not Ready!"));
 		return;
 	}
+
+	ConsciousAIController->ClearAllCommands();
+
+	static TArray<UCommandComponent*> CommandsToExecute;
+	ResolveRequest(CommandsToExecute, Request);
 	
-	if (ConsciousAIController->GetCurrentCommand() != nullptr)
+	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
-		ConsciousAIController->CancelCommand();
+		if (CommandToExecute->CanExecute())
+		{
+			CommandToExecute->SetCommandArgs(Request);
+			ConsciousAIController->PushCommand(CommandToExecute);
+		}
+		else
+		{
+			ConsciousAIController->ClearAllCommands();
+			break;
+		}
+	}
+	
+	ConsciousAIController->ExecuteCommandQueue();
+}
+
+void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
+{
+	OutCommandsToExecute.Reset();
+	UCommandComponent* RequestCommand = nullptr;
+	if (Request.CommandName != NAME_None)
+	{
+		if (UCommandComponent** RequestCommandPtr = Commands.Find(Request.CommandName))
+		{
+			RequestCommand = *RequestCommandPtr;
+		}
+	}
+	else
+	{
+		RequestCommand = ResolveRequestWithoutName(Request);
 	}
 
-	UCommandComponent* CommandToExecute = ResolveRequest(Request);
-
-	CommandToExecute->SetCommandArgs(Request);
-
-	if (CommandToExecute->CanExecute())
+	if (RequestCommand)
 	{
-		ConsciousAIController->ExecuteCommand(CommandToExecute);
+		if (RequestCommand->GetCommandName() != UMoveCommandComponent::MoveCommandName)
+		{
+			float RequiredTargetRadius = RequestCommand->GetRequiredTargetRadius();
+			if (RequiredTargetRadius >= 0)
+			{
+				UMoveCommandComponent* MoveCommand = GetMoveCommand();
+
+				if (MoveCommand)
+				{
+					MoveCommand->SetMoveCommandArgs(RequiredTargetRadius);
+					OutCommandsToExecute.Add(GetMoveCommand());
+				}
+			}
+		}
+		else
+		{
+			// Clear Move Command
+			UMoveCommandComponent* MoveCommand = Cast<UMoveCommandComponent>(RequestCommand);
+
+			if (MoveCommand)
+			{
+				MoveCommand->SetMoveCommandArgs(0);
+			}
+		}
+
+		OutCommandsToExecute.Add(RequestCommand);
 	}
 }
 
-UCommandComponent* AConsciousPawn::ResolveRequest(const FTargetRequest& Request)
+UMoveCommandComponent* AConsciousPawn::GetMoveCommand() const
 {
-	return Commands["Move"];
+	if (UCommandComponent* const* MoveCommandPtr = Commands.Find(UMoveCommandComponent::MoveCommandName))
+	{
+		return Cast<UMoveCommandComponent>(*MoveCommandPtr);
+	}
+
+	return nullptr;
+}
+
+UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)
+{
+	return GetMoveCommand();
 }

@@ -6,6 +6,7 @@
 #include "CommandComponent.h"
 #include "ConsciousAIController.h"
 #include "PFPawn.h"
+#include "Command/MoveCommandComponent.h"
 #include "ConsciousPawn.generated.h"
 
 struct FTargetRequest;
@@ -30,8 +31,18 @@ public:
 	void Receive(const FTargetRequest& Request);
 
 protected:
-	virtual UCommandComponent* ResolveRequest(const FTargetRequest& Request);
+	void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
+	UFUNCTION(BlueprintNativeEvent)
+	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
+
+	UFUNCTION(BlueprintCallable)
+	UMoveCommandComponent* GetMoveCommand() const;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	AConsciousAIController* GetConsciousAIController() const { return ConsciousAIController; } 
+	
 protected:
 	UPROPERTY()
 	AConsciousAIController* ConsciousAIController;

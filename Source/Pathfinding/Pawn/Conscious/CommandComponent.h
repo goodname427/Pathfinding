@@ -22,8 +22,17 @@ struct FTargetRequest
 	FVector TargetLocation;
 };
 
+UENUM(BlueprintType)
+enum class ECommandExecuteResult : uint8
+{
+	Success,
+	Failed,
+	Aborted,
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComponent*, Command);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandEndSignature, UCommandComponent*, Command);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandComponent*, Command, ECommandExecuteResult, Result);
 
 /**
  * 
@@ -34,12 +43,23 @@ class PATHFINDING_API UCommandComponent : public UActorComponent
 	GENERATED_BODY()
 
 public:
+	// Command Default Arguments
 	UFUNCTION(BlueprintNativeEvent)
 	FName GetCommandName() const;
 
+	UFUNCTION(BlueprintNativeEvent)
+	float GetRequiredTargetRadius();
+
+public:
+	// State Query
 	UFUNCTION(BlueprintCallable)
 	AConsciousPawn* GetExecutePawn() const;
 
+	UFUNCTION(BlueprintCallable)
+	bool IsExecuting() const { return bExecuting; }
+
+public:
+	// Execute
 	UFUNCTION(BlueprintCallable)
 	void SetCommandArgs(const FTargetRequest& InRequest);
 
@@ -50,15 +70,10 @@ public:
 	void BeginExecute();
 
 	UFUNCTION(BlueprintCallable)
-	void EndExecute(bool bInSucceeded);
-	
-	UFUNCTION(BlueprintCallable)
-	bool IsExecuting() const { return bExecuting; }
-
-	UFUNCTION(BlueprintCallable)
-	bool IsSucceeded() const { return bSucceeded;}
+	void EndExecute(ECommandExecuteResult Result);
 
 protected:
+	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalCanExecute();
 
@@ -66,19 +81,18 @@ protected:
 	void InternalBeginExecute();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void InternalEndExecute();
-	
+	void InternalEndExecute(ECommandExecuteResult Result);
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandBeginSignature OnCommandBegin;
-	
+
 	UPROPERTY(BlueprintAssignable)
 	FCommandEndSignature OnCommandEnd;
-	
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FTargetRequest Request;
-	
+
 	bool bExecuting = false;
-	bool bSucceeded = false;
 };

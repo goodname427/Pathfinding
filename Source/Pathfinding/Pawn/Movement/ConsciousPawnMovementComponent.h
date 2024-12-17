@@ -37,6 +37,8 @@ private:
 	//End UActorComponent Interface
 
 public:
+	void BroadcastMovementState(float CurrentTime);
+	
 	UFUNCTION(NetMulticast, Reliable)
 	void NetMulticastUpdate(const FConsciousMoveData& MoveData);
 
