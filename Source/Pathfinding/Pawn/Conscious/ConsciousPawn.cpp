@@ -44,9 +44,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
-	if (!ConsciousAIController
-		// || !ConsciousAIController->GetBlackboardComponent()
-		)
+	if (!ConsciousAIController)
 	{
 		// DEBUG_MESSAGE(TEXT("ConsciousAIController Is Not Ready!"));
 		return;
