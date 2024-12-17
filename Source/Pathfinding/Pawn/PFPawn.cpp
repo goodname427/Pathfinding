@@ -15,13 +15,19 @@ APFPawn::APFPawn()
 	bReplicates = true;
 	
 	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+
+	// StaticMeshComponent->bRenderCustomDepth = true;
 }
 
 void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, MaterialParent, 0);
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+
+	if (UMaterialInterface* FlagMaterial = Cast<UMaterialInterface>(GetDefault<UPFGameSettings>()->PawnFlagMaterial.TryLoad()))
+	{
+		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial, 0);
+		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+	}
 }
 
 void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -78,13 +84,15 @@ void APFPawn::OnRep_OwnerPlayer()
 void APFPawn::OnSelected(ACommanderPawn* SelectCommander)
 {
 	bSelected = true;
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetDefault<UPFGameSettings>()->PawnSelectedColor);
+	StaticMeshComponent->SetRenderCustomDepth(true);
+	// UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetDefault<UPFGameSettings>()->PawnSelectedColor);
 }
 
 void APFPawn::OnDeselected()
 {
 	bSelected = false;
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+	StaticMeshComponent->SetRenderCustomDepth(false);
+	// UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
 

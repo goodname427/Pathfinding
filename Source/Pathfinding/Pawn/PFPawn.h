@@ -36,9 +36,6 @@ protected:
 	// Static Mesh
 	UPROPERTY(Category = "StaticMesh", EditDefaultsOnly)
 	UStaticMeshComponent* StaticMeshComponent;
-
-	UPROPERTY(Category = "StaticMesh", EditDefaultsOnly)
-	UMaterialInterface* MaterialParent;
 	
 public:
 	// Owner

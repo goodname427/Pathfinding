@@ -50,4 +50,7 @@ public:
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn")
 	float PawnMinSize;
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn", meta = (AllowedClasses = "Material"))
+	FSoftObjectPath PawnFlagMaterial;
 };
