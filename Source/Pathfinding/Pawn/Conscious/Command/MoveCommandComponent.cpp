@@ -8,7 +8,12 @@
 #include "Conscious/ConsciousPawn.h"
 #include "Conscious/ConsciousAIController.h"
 
-FName UMoveCommandComponent::MoveCommandName = FName("Move");
+FName UMoveCommandComponent::CommandName = FName("Move");
+
+UMoveCommandComponent::UMoveCommandComponent(): AcceptanceRadius(-1)
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
 
 void UMoveCommandComponent::SetMoveCommandArgs(float InAcceptanceRadius)
 {
@@ -17,8 +22,7 @@ void UMoveCommandComponent::SetMoveCommandArgs(float InAcceptanceRadius)
 
 void UMoveCommandComponent::InternalBeginExecute_Implementation()
 {
-	AConsciousPawn* ConsciousPawn = GetExecutePawn();
-	AConsciousAIController* AIController = ConsciousPawn->GetConsciousAIController();
+	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
 	if (Request.TargetPawn)
@@ -33,8 +37,7 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 
 void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
-	AConsciousPawn* ConsciousPawn = GetExecutePawn();
-	AConsciousAIController* AIController = ConsciousPawn->GetConsciousAIController();
+	AConsciousAIController* AIController = GetExecuteController();
 
 	if (Result == ECommandExecuteResult::Aborted)
 	{
@@ -44,8 +47,7 @@ void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRes
 
 void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result)
 {
-	AConsciousPawn* ConsciousPawn = GetExecutePawn();
-	AConsciousAIController* AIController = ConsciousPawn->GetConsciousAIController();
+	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.RemoveDynamic(this, &ThisClass::OnMoveComplete);
 
@@ -78,6 +80,31 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 	// }
 	//
 	// DEBUG_MESSAGE(TEXT("%s"), *ResultName);
+
+	ECommandExecuteResult ExecuteResult = ECommandExecuteResult::Success;
+
+	if (Result != EPathFollowingResult::Success)
+	{
+		ExecuteResult = ECommandExecuteResult::Failed;
+	}
+	// else
+	// {
+	// 	float Distance;
+	// 	const FVector CurrentLocation = GetExecutePawn()->GetActorLocation();
+	// 	if (Request.TargetPawn)
+	// 	{
+	// 		Distance = FVector::Dist(CurrentLocation, Request.TargetPawn->GetActorLocation());
+	// 	}
+	// 	else
+	// 	{
+	// 		Distance = FVector::Dist(CurrentLocation, Request.TargetLocation);
+	// 	}
+	//
+	// 	if (Distance > AcceptanceRadius)
+	// 	{
+	// 		ExecuteResult = ECommandExecuteResult::Failed; 
+	// 	}
+	// }
 	
-	EndExecute(Result == EPathFollowingResult::Success ? ECommandExecuteResult::Success : ECommandExecuteResult::Failed);
+	EndExecute(ExecuteResult);
 }

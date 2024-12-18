@@ -415,7 +415,7 @@ void ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D&
 
 bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
 {
-	return Pawn != nullptr && Pawn->GetOwnerPlayer() == GetPlayerState<APFPlayerState>();
+	return Pawn != nullptr && Pawn->GetOwnerPlayer() == GetPlayerState();
 }
 
 void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)

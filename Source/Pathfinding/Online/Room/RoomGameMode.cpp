@@ -8,7 +8,7 @@
 
 ARoomGameMode::ARoomGameMode()
 {
-	// bUseSeamlessTravel = true;
+	bUseSeamlessTravel = true;
 
 	GameStateClass = ARoomGameState::StaticClass();
 }

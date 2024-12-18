@@ -38,7 +38,7 @@ public:
 	FPlayerLocationChangedSignature OnPlayerLocationChanged;
 
 private:
-	UPROPERTY(Transient, Replicated, ReplicatedUsing = OnRep_PlayerLocations)
+	UPROPERTY(Transient, ReplicatedUsing = OnRep_PlayerLocations)
 	TArray<APFPlayerState*> PlayerLocations;
 	UFUNCTION()
 	void OnRep_PlayerLocations();

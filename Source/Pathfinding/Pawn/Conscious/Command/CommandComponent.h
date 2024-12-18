@@ -8,6 +8,7 @@
 
 class APFPawn;
 class AConsciousPawn;
+class AConsciousAIController;
 
 USTRUCT(BlueprintType)
 struct FTargetRequest
@@ -32,7 +33,12 @@ enum class ECommandExecuteResult : uint8
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComponent*, Command);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandComponent*, Command, ECommandExecuteResult, Result);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandComponent*, Command, ECommandExecuteResult,
+                                             Result);
+
+#define IMPL_GET_COMMAND_NAME() \
+virtual FName GetCommandName_Implementation() const override { return CommandName; }
+
 
 /**
  * 
@@ -41,6 +47,9 @@ UCLASS(Blueprintable)
 class PATHFINDING_API UCommandComponent : public UActorComponent
 {
 	GENERATED_BODY()
+
+public:
+	UCommandComponent();
 
 public:
 	// Command Default Arguments
@@ -55,8 +64,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 	AConsciousPawn* GetExecutePawn() const;
 
+	template <class T>
+	T* GetExecutePawn() const { return Cast<T>(GetOwner()); }
+
+	UFUNCTION(BlueprintCallable)
+	AConsciousAIController* GetExecuteController() const;
+
 	UFUNCTION(BlueprintCallable)
 	bool IsExecuting() const { return bExecuting; }
+
+	UFUNCTION(BlueprintCallable)
+	const FTargetRequest& GetRequest() const { return Request; };
 
 public:
 	// Execute

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PFGameSettings.h"
-#include "PFPlayerState.h"
+#include "Battle/BattlePlayerState.h"
 #include "GameFramework/Pawn.h"
 #include "PFPawn.generated.h"
 
@@ -34,7 +34,7 @@ public:
 
 protected:
 	// Static Mesh
-	UPROPERTY(Category = "StaticMesh", EditDefaultsOnly)
+	UPROPERTY(Category = "StaticMesh", VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;
 	
 public:
@@ -42,7 +42,7 @@ public:
 	virtual void SetOwner(AActor* NewOwner) override;
 	
 	UFUNCTION(BlueprintCallable)
-	APFPlayerState* GetOwnerPlayer() const { return OwnerPlayer; }
+	ABattlePlayerState* GetOwnerPlayer() const { return OwnerPlayer; }
 
 	UFUNCTION(BlueprintCallable)
 	FLinearColor GetOwnerColor() const { return OwnerPlayer ? OwnerPlayer->GetPlayerColor() : GetDefault<UPFGameSettings>()->PawnNormalColor; }
@@ -52,7 +52,7 @@ public:
 	
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)
-	APFPlayerState* OwnerPlayer;
+	ABattlePlayerState* OwnerPlayer;
 
 	UFUNCTION()
 	void OnRep_OwnerPlayer();

@@ -14,7 +14,10 @@ APFPawn::APFPawn()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
-	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+	INIT_DEFAULT_SUBOBJECT(RootComponent);
+	
+	INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+	StaticMeshComponent->SetupAttachment(RootComponent);
 
 	// StaticMeshComponent->bRenderCustomDepth = true;
 }
@@ -26,7 +29,7 @@ void APFPawn::BeginPlay()
 	if (UMaterialInterface* FlagMaterial = Cast<UMaterialInterface>(GetDefault<UPFGameSettings>()->PawnFlagMaterial.TryLoad()))
 	{
 		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial, 0);
-		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
 	}
 }
 
@@ -39,12 +42,24 @@ void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 
 void APFPawn::SetOwner(AActor* NewOwner)
 {
+	if (OwnerPlayer)
+	{
+		OwnerPlayer->OnPlayerOwnedPawnRemoved(this);
+	}
+	
 	Super::SetOwner(NewOwner);
+
 	ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
 	if (CommanderPawn != nullptr)
 	{
-		DEBUG_FUNC_FLAG();
-		OwnerPlayer = CommanderPawn->GetPlayerState<APFPlayerState>();
+		// DEBUG_MESSAGE(TEXT("Set [%s]'s Owner To [%s]"), *GetName(), *CommanderPawn->GetName());
+		OwnerPlayer = CommanderPawn->GetPlayerState<ABattlePlayerState>();
+
+		if (OwnerPlayer)
+		{
+			OwnerPlayer->OnPlayerOwnedPawnAdd(this);
+		}
+		
 		OnRep_OwnerPlayer();
 	}
 }
@@ -77,8 +92,8 @@ EPawnRole APFPawn::GetPawnRole(APFPawn* OtherPawn) const
 
 void APFPawn::OnRep_OwnerPlayer()
 {
-	// DEBUG_MESSAGE(TEXT("APFPawn::OnRep_OwnerPlayer [%s]"), *OwnerPlayer->GetPlayerName());
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+	// DEBUG_MESSAGE(TEXT("%s__Pawn [%s] Set OwnerPlayer [%s]"), GetLocalRole() == ROLE_Authority ? TEXT("Server") : TEXT("Client"), *GetName(), OwnerPlayer ? *OwnerPlayer->GetPlayerName() : TEXT("NULL"));
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
 }
 
 void APFPawn::OnSelected(ACommanderPawn* SelectCommander)

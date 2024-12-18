@@ -3,21 +3,28 @@
 
 #include "BattleGameMode.h"
 
-#include <string>
-
 #include "BattleGameState.h"
 #include "BattleHUD.h"
+#include "BattlePlayerState.h"
 #include "CommanderPawn.h"
 #include "EngineUtils.h"
+#include "NavigationSystem.h"
 #include "PFUtils.h"
-#include "Engine/PlayerStartPIE.h"
+#include "Building/BaseCampPawn.h"
 #include "GameFramework/PlayerStart.h"
+#include "Kismet/GameplayStatics.h"
 
 ABattleGameMode::ABattleGameMode()
 {
+	bUseSeamlessTravel = true;
+	
 	GameStateClass = ABattleGameState::StaticClass();
+	PlayerStateClass = ABattlePlayerState::StaticClass();
 	HUDClass = ABattleHUD::StaticClass();
 	DefaultPawnClass = ACommanderPawn::StaticClass();
+
+	CollectorPawnClass = ACollectorPawn::StaticClass();
+	BaseCampPawnClass = ABaseCampPawn::StaticClass();
 }
 
 void ABattleGameMode::BeginPlay()
@@ -30,12 +37,35 @@ void ABattleGameMode::BeginPlay()
 		PFGameState->InitPlayerLocations();
 	}
 
+	// DEBUG_MESSAGE(TEXT("Num of Controller: %d"), GetWorld()->GetNumPlayerControllers());
+	// TArray<AActor*> FoundActors;
+	// UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACommanderPawn::StaticClass(), FoundActors);
+	// for (AActor* Actor : FoundActors)
+	// {
+	// 	DEBUG_MESSAGE(TEXT("Init Player[%s]"), *Actor->GetName());
+	// 	if (ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(Actor))
+	// 	{
+	// 		SpawnDefaultPawnsForCommander(CommanderPawn);
+	// 	}
+	// }
+
 	// AsyncTask(ENamedThreads::Type::GameThread, [this]()
 	// {
-	// 	
+	// 		
 	// });
 
 	// DEBUG_MESSAGE(TEXT("PlayerController Count [%d]"), GetWorld()->GetNumPlayerControllers());
+}
+
+void ABattleGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation)
+{
+	Super::FinishRestartPlayer(NewPlayer, StartRotation);
+
+	if (ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewPlayer->GetPawn()))
+	{
+		// DEBUG_MESSAGE(TEXT("Init Player[%s]"), *NewPlayer->GetName());
+		SpawnDefaultPawnsForCommander(CommanderPawn);
+	}
 }
 
 AActor* ABattleGameMode::ChoosePlayerStart_Implementation(AController* Player)
@@ -71,4 +101,19 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 
 	ErrorMessage = TEXT("Battle has Started");
+}
+
+void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn)
+{
+	CommanderPawn->SpawnPawn(BaseCampPawnClass, CommanderPawn->GetActorLocation());
+
+	FVector RandomLocation;
+	if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+		this,
+		CommanderPawn->GetActorLocation(),
+		RandomLocation,
+		1000.0f))
+	{
+		CommanderPawn->SpawnPawn(CollectorPawnClass, RandomLocation);
+	}
 }

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PFGameMode.h"
+#include "Conscious/CollectorPawn.h"
 #include "BattleGameMode.generated.h"
 
 /**
@@ -19,10 +20,21 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+
+	virtual void FinishRestartPlayer(AController* NewPlayer, const FRotator& StartRotation) override;
 	
 public:
-
 	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
 
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
+
+protected:
+	void SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn);
+	
+protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	TSubclassOf<ACollectorPawn> CollectorPawnClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	TSubclassOf<ABaseCampPawn> BaseCampPawnClass;
 };

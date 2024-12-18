@@ -40,7 +40,7 @@ void FPlayingGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* 
 	FString LevelName = FPaths::GetBaseFilename(LevelPathToPlay);
 	if (World != nullptr && World->GetName() == LevelName)
 	{
-		// GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
+		GameInstance->GetSubsystem<UWidgetSubsystem>()->Push(WidgetName);
 
 		// if (World->IsServer())
 		// {

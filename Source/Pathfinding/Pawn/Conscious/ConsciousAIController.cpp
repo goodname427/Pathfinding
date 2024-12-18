@@ -3,7 +3,9 @@
 
 #include "ConsciousAIController.h"
 
+#include "ConsciousPawn.h"
 #include "PFGameSettings.h"
+#include "PFPawn.h"
 #include "PFUtils.h"
 #include "BehaviorTree/BlackboardComponent.h"
 

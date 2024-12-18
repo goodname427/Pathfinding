@@ -4,36 +4,28 @@
 
 #include "CoreMinimal.h"
 #include "CommandComponent.h"
-#include "Navigation/PathFollowingComponent.h"
-#include "MoveCommandComponent.generated.h"
+#include "TransportCommandComponent.generated.h"
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class PATHFINDING_API UMoveCommandComponent final : public UCommandComponent
+class PATHFINDING_API UTransportCommandComponent : public UCommandComponent
 {
 	GENERATED_BODY()
 
 public:
-	UMoveCommandComponent();
-	
+	// Sets default values for this component's properties
+	UTransportCommandComponent();
+
 public:
 	IMPL_GET_COMMAND_NAME()
 	
-	virtual float GetRequiredTargetRadius_Implementation() override { return -1; }
-
-	void SetMoveCommandArgs(float InAcceptanceRadius);
-	
 protected:
+	virtual bool InternalCanExecute_Implementation() override;
+	
 	virtual void InternalBeginExecute_Implementation() override;
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 
-	UFUNCTION()
-	void OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result);
-
-private:
-	float AcceptanceRadius;
-	
 public:
 	static FName CommandName;
 };

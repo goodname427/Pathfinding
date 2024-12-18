@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommandComponent.h"
+#include "Conscious/Command/CommandComponent.h"
 #include "ConsciousAIController.h"
 #include "PFPawn.h"
 #include "Command/MoveCommandComponent.h"
@@ -28,25 +28,24 @@ protected:
 	virtual void PossessedBy(AController* NewController) override;
 	
 public:
-	void Receive(const FTargetRequest& Request);
+	void Receive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
 
 protected:
 	void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
 	UFUNCTION(BlueprintNativeEvent)
 	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
-
-	UFUNCTION(BlueprintCallable)
-	UMoveCommandComponent* GetMoveCommand() const;
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	AConsciousAIController* GetConsciousAIController() const { return ConsciousAIController; } 
-	
+
+	UFUNCTION(BlueprintCallable)
+	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
 protected:
-	UPROPERTY()
+	UPROPERTY(Transient)
 	AConsciousAIController* ConsciousAIController;
 	
-	UPROPERTY(Transient, Category = "Command", VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(Transient)
 	TMap<FName, UCommandComponent*> Commands;
 };

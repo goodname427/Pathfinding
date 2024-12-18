@@ -3,8 +3,13 @@
 
 #include "CommandComponent.h"
 
-#include "ConsciousPawn.h"
+#include "Conscious/ConsciousPawn.h"
 #include "PFUtils.h"
+
+UCommandComponent::UCommandComponent(): Request()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
 
 FName UCommandComponent::GetCommandName_Implementation() const
 {
@@ -13,12 +18,22 @@ FName UCommandComponent::GetCommandName_Implementation() const
 
 float UCommandComponent::GetRequiredTargetRadius_Implementation()
 {
-	return -1.0f;
+	return 10.0f;
 }
 
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
 {
 	return Cast<AConsciousPawn>(GetOwner());
+}
+
+AConsciousAIController* UCommandComponent::GetExecuteController() const
+{
+	if (const AConsciousPawn* ExecutePawn = GetExecutePawn())
+	{
+		return ExecutePawn->GetConsciousAIController();
+	}
+
+	return nullptr;
 }
 
 void UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
@@ -28,6 +43,7 @@ void UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
 
 void UCommandComponent::InternalBeginExecute_Implementation()
 {
+	
 }
 
 bool UCommandComponent::InternalCanExecute_Implementation()
@@ -42,6 +58,11 @@ bool UCommandComponent::CanExecute()
 
 void UCommandComponent::BeginExecute()
 {
+	if (bExecuting)
+	{
+		return;
+	}
+	
 	bExecuting = true;
 
 	if (OnCommandBegin.IsBound())
@@ -56,6 +77,11 @@ void UCommandComponent::BeginExecute()
 
 void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 {
+	if (!bExecuting)
+	{
+		return;
+	}
+	
 	bExecuting = false;
 
 	InternalEndExecute(Result);

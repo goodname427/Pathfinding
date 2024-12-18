@@ -30,7 +30,7 @@ APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
 )
 {
 	UWorld* World = WorldContextObject->GetWorld();
-
+	
 	// DEBUG_MESSAGE(TEXT("Spawn PFPawn [%s] at Location [(%s)] for Commander [%s]"), *PFPawnClass->GetName(), *Location.ToString(), *OwnerCommander->GetPlayerState()->GetPlayerName());
 	APFPawn* PFPawn = Cast<APFPawn>(World->SpawnActor(PFPawnClass, &Location, &Rotation));
 	if (PFPawn)
@@ -51,9 +51,9 @@ void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(USt
 	 StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
 }
 
-void UPFBlueprintFunctionLibrary::SetStaticMeshColor(UStaticMeshComponent* StaticMesh, FLinearColor Color)
+void UPFBlueprintFunctionLibrary::SetStaticMeshColor(UStaticMeshComponent* StaticMesh, FLinearColor Color, int32 MaterialIndex)
 {
-	UMaterialInstanceDynamic* Material = Cast<UMaterialInstanceDynamic>(StaticMesh->GetMaterial(0));
+	UMaterialInstanceDynamic* Material = Cast<UMaterialInstanceDynamic>(StaticMesh->GetMaterial(MaterialIndex));
 	if (Material)
 	{
 		// DEBUG_MESSAGE(TEXT("Set Static Mesh Color [%s]"), *Color.ToString());

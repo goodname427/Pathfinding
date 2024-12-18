@@ -5,10 +5,10 @@
 
 UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
 {
-	MaxSpeed = 7200.f;
-	Acceleration = 36000.f;
-	Deceleration = 72000.f;
-	TurningBoost = 16.0f;
+	MaxSpeed = 2400.f;
+	Acceleration = 12000.f;
+	Deceleration = 24000.f;
+	TurningBoost = 8.0f;
 	bPositionCorrected = false;
 
 	LastUpdateTime = -1;
@@ -52,7 +52,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 		bPositionCorrected = false;
 
 		float CurrentTime = GetWorld()->GetTimeSeconds();
-		if (CurrentTime > LastUpdateTime + DeltaTime)
+		if (CurrentTime > LastUpdateTime + NetworkTickInterval)
 		{
 			BroadcastMovementState(CurrentTime);
 		}
@@ -90,7 +90,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 }
 
 void UConsciousPawnMovementComponent::BroadcastMovementState(float CurrentTime)
-{
+{	
 	FConsciousMoveData NewData;
 	{
 		NewData.DeltaTime = CurrentTime - LastUpdateTime;

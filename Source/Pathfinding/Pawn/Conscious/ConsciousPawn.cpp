@@ -6,6 +6,7 @@
 #include "ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
+#include "PhysXInterfaceWrapperCore.h"
 #include "Command/MoveCommandComponent.h"
 
 
@@ -40,7 +41,7 @@ void AConsciousPawn::PossessedBy(AController* NewController)
 	ConsciousAIController = Cast<AConsciousAIController>(NewController);
 }
 
-void AConsciousPawn::Receive(const FTargetRequest& Request)
+void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewCommandQueue)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
@@ -50,26 +51,32 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 		return;
 	}
 
-	ConsciousAIController->ClearAllCommands();
+	if (bStartNewCommandQueue)
+	{
+		ConsciousAIController->ClearAllCommands();
+	}
 
 	static TArray<UCommandComponent*> CommandsToExecute;
 	ResolveRequest(CommandsToExecute, Request);
-	
+
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
+		CommandToExecute->SetCommandArgs(Request);
 		if (CommandToExecute->CanExecute())
 		{
-			CommandToExecute->SetCommandArgs(Request);
 			ConsciousAIController->PushCommand(CommandToExecute);
 		}
 		else
 		{
-			ConsciousAIController->ClearAllCommands();
+			// ConsciousAIController->ClearAllCommands();
 			break;
 		}
 	}
-	
-	ConsciousAIController->ExecuteCommandQueue();
+
+	if (bStartNewCommandQueue)
+	{
+		ConsciousAIController->ExecuteCommandQueue();
+	}
 }
 
 void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
@@ -90,17 +97,17 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 
 	if (RequestCommand)
 	{
-		if (RequestCommand->GetCommandName() != UMoveCommandComponent::MoveCommandName)
+		if (RequestCommand->GetCommandName() != UMoveCommandComponent::CommandName)
 		{
 			float RequiredTargetRadius = RequestCommand->GetRequiredTargetRadius();
 			if (RequiredTargetRadius >= 0)
 			{
-				UMoveCommandComponent* MoveCommand = GetMoveCommand();
+				UMoveCommandComponent* MoveCommand = GetMoveCommandComponent();
 
 				if (MoveCommand)
 				{
 					MoveCommand->SetMoveCommandArgs(RequiredTargetRadius);
-					OutCommandsToExecute.Add(GetMoveCommand());
+					OutCommandsToExecute.Add(MoveCommand);
 				}
 			}
 		}
@@ -119,9 +126,9 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	}
 }
 
-UMoveCommandComponent* AConsciousPawn::GetMoveCommand() const
+UMoveCommandComponent* AConsciousPawn::GetMoveCommandComponent() const
 {
-	if (UCommandComponent* const* MoveCommandPtr = Commands.Find(UMoveCommandComponent::MoveCommandName))
+	if (UCommandComponent* const* MoveCommandPtr = Commands.Find(UMoveCommandComponent::CommandName))
 	{
 		return Cast<UMoveCommandComponent>(*MoveCommandPtr);
 	}
@@ -131,5 +138,5 @@ UMoveCommandComponent* AConsciousPawn::GetMoveCommand() const
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)
 {
-	return GetMoveCommand();
+	return nullptr;
 }

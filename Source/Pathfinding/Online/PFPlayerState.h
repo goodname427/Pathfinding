@@ -40,12 +40,12 @@ public:
 	FLinearColor GetPlayerColor() const { return PlayerColor; }
 	
 protected:
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadOnly, Replicated)
+	UPROPERTY(Transient, Replicated)
 	int32 PlayerLocation;
 	
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(Transient, Replicated)
 	int32 TeamId;
 
-	UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(Transient, Replicated)
 	FLinearColor PlayerColor;
 };
