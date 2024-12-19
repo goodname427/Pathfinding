@@ -21,6 +21,14 @@ ACollectorPawn::ACollectorPawn(): CollectedResource(0), CollectedResourceType(ER
 	INIT_DEFAULT_SUBOBJECT(TransportCommandComponent);
 }
 
+void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue)
+{
+	if (bStartNewCommandQueue)
+	{
+		FindAndRecordNextResourceToCollect(nullptr);
+	}
+}
+
 UCommandComponent* ACollectorPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)
 {
 	if (Request.TargetPawn != nullptr)
@@ -64,11 +72,12 @@ void ACollectorPawn::FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCo
 			{
 				if (AResourcePawn* Resource = Cast<AResourcePawn>(Actor))
 				{
-					if (Resource == CurrentCollectedResource || Resource->GetResourceType() != CurrentCollectedResource->GetResourceType())
+					if (Resource == CurrentCollectedResource || Resource->GetResourceType() != CurrentCollectedResource
+						->GetResourceType())
 					{
 						continue;
 					}
-					
+
 					float CurrentDistance = FVector::Dist(Location, Resource->GetActorLocation());
 					if (NextResourceToCollect == nullptr || CurrentDistance < Distance)
 					{

@@ -19,6 +19,8 @@ class PATHFINDING_API ACommanderPawn : public APawn
 public:
 	ACommanderPawn();
 
+	virtual void PostInitProperties() override;
+
 protected:
 	virtual void BeginPlay() override;
 	

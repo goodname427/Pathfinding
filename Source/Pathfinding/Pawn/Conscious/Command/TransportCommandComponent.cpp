@@ -20,7 +20,7 @@ UTransportCommandComponent::UTransportCommandComponent()
 	// ...
 }
 
-bool UTransportCommandComponent::InternalCanExecute_Implementation()
+bool UTransportCommandComponent::InternalIsReachable_Implementation()
 {
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Request.TargetPawn))
 	{
@@ -54,6 +54,7 @@ void UTransportCommandComponent::InternalEndExecute_Implementation(ECommandExecu
 	if (Result == ECommandExecuteResult::Success)
 	{
 		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
+
 		FTargetRequest CollectRequest;
 		{
 			CollectRequest.CommandName = UCollectCommandComponent::CommandName;

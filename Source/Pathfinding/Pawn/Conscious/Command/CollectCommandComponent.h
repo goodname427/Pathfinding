@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommandComponent.h"
+#include "Conscious/CommandComponent.h"
 #include "Battle/BattlePlayerState.h"
 #include "Resource/ResourcePawn.h"
 #include "CollectCommandComponent.generated.h"
@@ -24,7 +24,7 @@ public:
 	bool CanCollect(const AResourcePawn* ResourcePawn) const;
 	
 protected:
-	virtual bool InternalCanExecute_Implementation() override;
+	virtual bool InternalIsReachable_Implementation() override;
 	
 	virtual void InternalBeginExecute_Implementation() override;
 

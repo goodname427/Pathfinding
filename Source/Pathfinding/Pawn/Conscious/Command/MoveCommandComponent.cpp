@@ -3,21 +3,33 @@
 
 #include "MoveCommandComponent.h"
 
-#include "ISourceControlProvider.h"
 #include "PFUtils.h"
 #include "Conscious/ConsciousPawn.h"
 #include "Conscious/ConsciousAIController.h"
+#include "Kismet/GameplayStatics.h"
 
 FName UMoveCommandComponent::CommandName = FName("Move");
 
-UMoveCommandComponent::UMoveCommandComponent(): AcceptanceRadius(-1)
+UMoveCommandComponent::UMoveCommandComponent(): CommandNeedMove(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
-void UMoveCommandComponent::SetMoveCommandArgs(float InAcceptanceRadius)
+void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
 {
-	AcceptanceRadius = InAcceptanceRadius;
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (IsExecuting() && CommandNeedMove && CommandNeedMove->IsTargetReachable())
+	{
+		GetExecuteController()->StopMovement();
+		EndExecute(ECommandExecuteResult::Success);
+	}
+}
+
+void UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedMove)
+{
+	CommandNeedMove = InCommandNeedMove;
 }
 
 void UMoveCommandComponent::InternalBeginExecute_Implementation()
@@ -27,11 +39,11 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
 	if (Request.TargetPawn)
 	{
-		AIController->MoveToActor(Request.TargetPawn, AcceptanceRadius);
+		AIController->MoveToActor(Request.TargetPawn, -1, false);
 	}
 	else
 	{
-		AIController->MoveToLocation(Request.TargetLocation, AcceptanceRadius);
+		AIController->MoveToLocation(Request.TargetLocation);
 	}
 }
 
@@ -56,55 +68,12 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 		return;
 	}
 
-	// FString ResultName;
-	// switch (Result)
-	// {
-	// case EPathFollowingResult::Aborted:
-	// 	ResultName = "Aborted";
-	// 	break;
-	// case EPathFollowingResult::Success:
-	// 	ResultName = "Success";
-	// 	break;
-	// case EPathFollowingResult::Blocked:
-	// 	ResultName = "Blocked";
-	// 	break;
-	// case EPathFollowingResult::Invalid:
-	// 	ResultName = "Invalid";
-	// 	break;
-	// case EPathFollowingResult::OffPath:
-	// 	ResultName = "OffPath";
-	// 	break;
-	// case EPathFollowingResult::Skipped_DEPRECATED:
-	// 	ResultName = "Skipped_DEPRECATED";
-	// 	break;
-	// }
-	//
-	// DEBUG_MESSAGE(TEXT("%s"), *ResultName);
-
 	ECommandExecuteResult ExecuteResult = ECommandExecuteResult::Success;
 
 	if (Result != EPathFollowingResult::Success)
 	{
 		ExecuteResult = ECommandExecuteResult::Failed;
 	}
-	// else
-	// {
-	// 	float Distance;
-	// 	const FVector CurrentLocation = GetExecutePawn()->GetActorLocation();
-	// 	if (Request.TargetPawn)
-	// 	{
-	// 		Distance = FVector::Dist(CurrentLocation, Request.TargetPawn->GetActorLocation());
-	// 	}
-	// 	else
-	// 	{
-	// 		Distance = FVector::Dist(CurrentLocation, Request.TargetLocation);
-	// 	}
-	//
-	// 	if (Distance > AcceptanceRadius)
-	// 	{
-	// 		ExecuteResult = ECommandExecuteResult::Failed; 
-	// 	}
-	// }
 	
 	EndExecute(ExecuteResult);
 }

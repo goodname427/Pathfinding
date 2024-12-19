@@ -31,7 +31,7 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
-bool UCollectCommandComponent::InternalCanExecute_Implementation()
+bool UCollectCommandComponent::InternalIsReachable_Implementation()
 {
 	if (const AResourcePawn* ResourcePawn = Cast<AResourcePawn>(Request.TargetPawn))
 	{

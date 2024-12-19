@@ -16,9 +16,9 @@ FName UCommandComponent::GetCommandName_Implementation() const
 	return NAME_None;
 }
 
-float UCommandComponent::GetRequiredTargetRadius_Implementation()
+float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 {
-	return 10.0f;
+	return 250.0f;
 }
 
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
@@ -41,9 +41,55 @@ void UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
 	Request = InRequest;
 }
 
+bool UCommandComponent::IsReachable()
+{
+	return GetExecutePawn() != nullptr && InternalIsReachable();
+}
+
+bool UCommandComponent::IsTargetReachable() const
+{
+	const float RequiredTargetRadius = GetRequiredTargetRadius();
+	if (RequiredTargetRadius < 0)
+	{
+		return true;
+	}
+
+	const AConsciousPawn* ExecutePawn = GetExecutePawn();
+
+	if (!Request.TargetPawn)
+	{
+		return FVector::Dist(Request.TargetLocation, ExecutePawn->GetActorLocation()) <= RequiredTargetRadius;
+	}
+
+	const FVector CurrentLocation = ExecutePawn->GetActorLocation();
+
+	TArray<FHitResult> HitResults;
+	// FCollisionQueryParams Params;
+	// Params.AddIgnoredActor(ExecutePawn);
+
+	GetWorld()->SweepMultiByChannel(
+		HitResults,
+		CurrentLocation,
+		CurrentLocation,
+		FQuat::Identity,
+		ECC_Camera,
+		FCollisionShape::MakeSphere(RequiredTargetRadius),
+		FCollisionQueryParams::DefaultQueryParam
+	);
+
+	for (const FHitResult& Hit : HitResults)
+	{
+		if (Hit.Actor == Request.TargetPawn)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void UCommandComponent::InternalBeginExecute_Implementation()
 {
-	
 }
 
 bool UCommandComponent::InternalCanExecute_Implementation()
@@ -53,7 +99,7 @@ bool UCommandComponent::InternalCanExecute_Implementation()
 
 bool UCommandComponent::CanExecute()
 {
-	return GetExecutePawn() != nullptr && InternalCanExecute();
+	return IsTargetReachable() && InternalCanExecute();
 }
 
 void UCommandComponent::BeginExecute()
@@ -62,7 +108,7 @@ void UCommandComponent::BeginExecute()
 	{
 		return;
 	}
-	
+
 	bExecuting = true;
 
 	if (OnCommandBegin.IsBound())
@@ -70,8 +116,9 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	// DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(), *GetCommandName().ToString());
-	
+	DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(),
+	              *GetCommandName().ToString());
+
 	InternalBeginExecute();
 }
 
@@ -81,15 +128,20 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 	{
 		return;
 	}
-	
+
 	bExecuting = false;
 
 	InternalEndExecute(Result);
-	
+
 	if (OnCommandEnd.IsBound())
 	{
 		OnCommandEnd.Broadcast(this, Result);
 	}
+}
+
+bool UCommandComponent::InternalIsReachable_Implementation()
+{
+	return true;
 }
 
 void UCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)

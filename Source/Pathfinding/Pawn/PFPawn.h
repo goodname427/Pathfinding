@@ -26,30 +26,44 @@ class PATHFINDING_API APFPawn : public APawn
 public:
 	APFPawn();
 
+	virtual void PostInitProperties() override;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+public:
+	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
+	
 protected:
 	// Static Mesh
 	UPROPERTY(Category = "StaticMesh", VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;
-	
+
+	UPROPERTY(Category = "StaticMesh | AdjustLocation", EditAnywhere, BlueprintReadOnly)
+	uint32 bAdjustLocationToGround : 1;
+
+	UPROPERTY(Category = "StaticMesh | AdjustLocation", EditAnywhere, BlueprintReadOnly)
+	float LocationToGroundOffset;
+
 public:
 	// Owner
 	virtual void SetOwner(AActor* NewOwner) override;
-	
+
 	UFUNCTION(BlueprintCallable)
 	ABattlePlayerState* GetOwnerPlayer() const { return OwnerPlayer; }
 
 	UFUNCTION(BlueprintCallable)
-	FLinearColor GetOwnerColor() const { return OwnerPlayer ? OwnerPlayer->GetPlayerColor() : GetDefault<UPFGameSettings>()->PawnNormalColor; }
+	FLinearColor GetOwnerColor() const
+	{
+		return OwnerPlayer ? OwnerPlayer->GetPlayerColor() : GetDefault<UPFGameSettings>()->PawnNormalColor;
+	}
 
 	UFUNCTION(BlueprintCallable)
 	EPawnRole GetPawnRole(APFPawn* OtherPawn) const;
-	
+
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)
 	ABattlePlayerState* OwnerPlayer;
@@ -61,10 +75,38 @@ public:
 	// Select
 	virtual void OnSelected(class ACommanderPawn* SelectCommander);
 	virtual void OnDeselected();
-	
+	virtual void OnTarget(class ACommanderPawn* TargetCommander);
+
 	bool HasSelected() const { return bSelected; }
 
 private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelected : 1;
+
+public:
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	                         class AController* EventInstigator, AActor* DamageCauser) override;;
+
+	virtual bool ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
+	                              AActor* DamageCauser) const override;
+
+protected:
+	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,
+	                                      class AController* EventInstigator, AActor* DamageCauser) override;
+
+protected:
+	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadOnly, Replicated)
+	int32 CurrentHealth;
+
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	int32 MaxHealth;
+
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	int32 Attack;
+
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	float AttackSpeed;
+
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	int32 Defense;
 };

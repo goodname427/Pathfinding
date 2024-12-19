@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Conscious/Command/CommandComponent.h"
+#include "Conscious/CommandComponent.h"
 #include "ConsciousAIController.h"
 #include "PFPawn.h"
 #include "Command/MoveCommandComponent.h"
@@ -31,6 +31,9 @@ public:
 	void Receive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
 
 protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void OnReceive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
+	
 	void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
 	UFUNCTION(BlueprintNativeEvent)

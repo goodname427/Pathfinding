@@ -57,15 +57,15 @@ protected:
 
 public:
 	/** Maximum velocity magnitude allowed for the controlled Pawn. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
 	float MaxSpeed;
 
 	/** Acceleration applied by input (rate of change of velocity) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
 	float Acceleration;
 
 	/** Deceleration applied when there is no input (rate of change of velocity) */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = PFCameraPawnMovement)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement)
 	float Deceleration;
 
 	/**
@@ -73,7 +73,7 @@ public:
 	 * Velocity magnitude is not allowed to increase, that only happens due to normal acceleration. It may decrease with large direction changes.
 	 * Larger values apply extra force to reach the target direction more quickly, while a zero value disables any extra turn force.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = FloatingPawnMovement, meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Movement, meta = (ClampMin = "0", UIMin = "0"))
 	float TurningBoost;
 
 protected:
@@ -86,4 +86,38 @@ protected:
 	/** Set to true when a position correction is applied. Used to avoid recalculating velocity when this occurs. */
 	UPROPERTY(Transient)
 	uint32 bPositionCorrected : 1;
+
+	// Ground detection parameters
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float GroundTraceDistance = 100.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float GroundOffset = 0.0f;
+
+	// Maximum angle (in degrees) of slopes that can be traversed
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "60.0"))
+	float MaxSlopeAngle = 45.0f;
+
+	// Angle threshold to differentiate between steps and slopes
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true", ClampMin = "0.0", ClampMax = "45.0"))
+	float StepDetectionAngle = 10.0f;
+
+	// Force applied downward to keep the pawn grounded
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float GroundStickForce = 5.0f;
+
+	// Speed of position smoothing (higher values = faster adjustment)
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true", ClampMin = "1.0"))
+	float PositionSmoothingSpeed = 15.0f;
+
+	// Ground detection parameters
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float ForwardCheckDistance = 50.0f;
+
+	// Minimum and maximum ground stick force
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float MinGroundStickForce = 5.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Movement", meta = (AllowPrivateAccess = "true"))
+	float MaxGroundStickForce = 20.0f;
 };

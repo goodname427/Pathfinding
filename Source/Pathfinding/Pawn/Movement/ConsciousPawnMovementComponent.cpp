@@ -3,6 +3,8 @@
 
 #include "ConsciousPawnMovementComponent.h"
 
+#include "Components/CapsuleComponent.h"
+
 UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
 {
 	MaxSpeed = 2400.f;
@@ -76,12 +78,119 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 			SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
 		}
 
-		// Update velocity
-		// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
-		if (!bPositionCorrected)
+		// Improved ground and step detection
+		const FVector MovedLocation = UpdatedComponent->GetComponentLocation();
+		
+		// Get capsule component and its properties
+		UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(UpdatedComponent);
+		if (!CapsuleComponent)
 		{
-			const FVector NewLocation = UpdatedComponent->GetComponentLocation();
-			Velocity = ((NewLocation - OldLocation) / DeltaTime);
+			return;
+		}
+
+		const float CapsuleRadius = CapsuleComponent->GetScaledCapsuleRadius();
+		const float CapsuleHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
+
+		// Setup sweep parameters based on capsule size
+		FCollisionShape SweepShape = FCollisionShape::MakeSphere(CapsuleRadius * 0.5f);  // 使用胶囊体半径的一半作为扫描球体
+		FCollisionQueryParams QueryParams;
+		QueryParams.AddIgnoredActor(PawnOwner);
+
+		// Forward ground detection to prevent floating at edges
+		FVector ForwardLocation = MovedLocation + (Velocity.GetSafeNormal2D() * ForwardCheckDistance);
+
+		// Check points for ground detection
+		TArray<FVector> CheckPoints = {
+			MovedLocation,                    // Current position
+			ForwardLocation,                  // Forward position
+			MovedLocation + FVector(-CapsuleRadius,0,0), // Left
+			MovedLocation + FVector(CapsuleRadius,0,0),  // Right
+			MovedLocation + FVector(0,-CapsuleRadius,0), // Forward
+			MovedLocation + FVector(0,CapsuleRadius,0)   // Back
+		};
+
+		// Perform multiple ground checks
+		bool bHasGroundContact = false;
+		FHitResult BestHit;
+		float ClosestDistance = GroundTraceDistance;
+		
+		for (const FVector& CheckPoint : CheckPoints)
+		{
+			FHitResult GroundHit;
+			FVector TraceStart = CheckPoint;
+			FVector TraceEnd = CheckPoint + FVector::DownVector * GroundTraceDistance;
+			
+			if (GetWorld()->SweepSingleByChannel(
+				GroundHit,
+				TraceStart,
+				TraceEnd,
+				FQuat::Identity,
+				ECC_Visibility,
+				SweepShape,
+				QueryParams
+			))
+			{
+				if (GroundHit.bBlockingHit)
+				{
+					float Distance = (GroundHit.Location - CheckPoint).Size();
+					if (!bHasGroundContact || Distance < ClosestDistance)
+					{
+						bHasGroundContact = true;
+						ClosestDistance = Distance;
+						BestHit = GroundHit;
+					}
+				}
+			}
+		}
+		
+		if (bHasGroundContact)
+		{
+			// Calculate slope angle using the hit normal
+			float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(BestHit.Normal, FVector::UpVector)));
+			
+			if (SlopeAngle <= MaxSlopeAngle)
+			{
+				FVector TargetLocation;
+				
+				// Handle steps and slopes differently
+				if (SlopeAngle > StepDetectionAngle) // It's a slope
+				{
+					// Project velocity onto slope plane
+					FVector ProjectedVelocity = FVector::VectorPlaneProject(Velocity, BestHit.Normal);
+					Velocity = ProjectedVelocity;
+					
+					TargetLocation = BestHit.ImpactPoint;
+				}
+				else // It's potentially a step or flat ground
+				{
+					// Maintain horizontal velocity
+					Velocity.Z = 0.0f;
+					
+					TargetLocation = BestHit.ImpactPoint;
+				}
+				
+				// Use exponential smoothing for height adjustment
+				FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
+				FVector NewLocation = CurrentLocation;
+				
+				// Set Z position with capsule offset
+				NewLocation.Z = TargetLocation.Z + CapsuleHalfHeight;
+				
+				UpdatedComponent->SetWorldLocation(NewLocation);
+				
+				// Apply adaptive ground stick force
+				if (!bPositionCorrected)
+				{
+					float GroundDistance = FMath::Abs(CurrentLocation.Z - (TargetLocation.Z + CapsuleHalfHeight));
+					float StickForce = FMath::GetMappedRangeValueClamped(
+						FVector2D(0.0f, CapsuleRadius), // 使用胶囊体半径作为检测范围
+						FVector2D(MinGroundStickForce, MaxGroundStickForce),
+						GroundDistance
+					);
+					
+					Velocity += FVector::DownVector * StickForce;
+				}
+			}
 		}
 	}
 
@@ -109,11 +218,8 @@ void UConsciousPawnMovementComponent::NetMulticastUpdate_Implementation(const FC
 {
 	if (GetOwnerRole() != ROLE_Authority)
 	{
-		FVector OldLocation = UpdatedComponent->GetComponentLocation();
-		FVector Delta = MoveData.Location - OldLocation;
-
-		FHitResult Hit(1.f);
-		SafeMoveUpdatedComponent(Delta, MoveData.Rotation, true, Hit);
+		UpdatedComponent->SetWorldLocation(MoveData.Location);
+		UpdatedComponent->SetWorldRotation(MoveData.Rotation);
 
 		Velocity = MoveData.Velocity;
 	}

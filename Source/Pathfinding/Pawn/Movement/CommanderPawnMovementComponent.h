@@ -46,7 +46,7 @@ public:
 	 * Velocity magnitude is not allowed to increase, that only happens due to normal acceleration. It may decrease with large direction changes.
 	 * Larger values apply extra force to reach the target direction more quickly, while a zero value disables any extra turn force.
 	 */
-	UPROPERTY(Category = FloatingPawnMovement, EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
+	UPROPERTY(Category = Movement, EditAnywhere, BlueprintReadWrite, meta = (ClampMin = "0", UIMin = "0"))
 	float TurningBoost;
 
 protected:

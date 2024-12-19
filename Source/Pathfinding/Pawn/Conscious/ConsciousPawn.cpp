@@ -6,7 +6,7 @@
 #include "ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
-#include "PhysXInterfaceWrapperCore.h"
+
 #include "Command/MoveCommandComponent.h"
 
 
@@ -18,6 +18,15 @@ AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr)
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+	
+	
+
+	// RootComponent->SetSimulatePhysics();
+	// StaticMeshComponent->SetSimulatePhysics(true);
+	// StaticMeshComponent->SetConstraintMode(EDOFMode::XYPlane);
+	// StaticMeshComponent->BodyInstance.bLockXRotation = true;
+	// StaticMeshComponent->BodyInstance.bLockYRotation = true;
+	// StaticMeshComponent->bApplyImpulseOnDamage = false;
 }
 
 void AConsciousPawn::BeginPlay()
@@ -51,6 +60,8 @@ void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewComman
 		return;
 	}
 
+	OnReceive(Request, bStartNewCommandQueue);
+
 	if (bStartNewCommandQueue)
 	{
 		ConsciousAIController->ClearAllCommands();
@@ -61,22 +72,17 @@ void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewComman
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
-		CommandToExecute->SetCommandArgs(Request);
-		if (CommandToExecute->CanExecute())
-		{
-			ConsciousAIController->PushCommand(CommandToExecute);
-		}
-		else
-		{
-			// ConsciousAIController->ClearAllCommands();
-			break;
-		}
+		ConsciousAIController->PushCommand(CommandToExecute);
 	}
 
 	if (bStartNewCommandQueue)
 	{
 		ConsciousAIController->ExecuteCommandQueue();
 	}
+}
+
+void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue)
+{
 }
 
 void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
@@ -95,10 +101,17 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 		RequestCommand = ResolveRequestWithoutName(Request);
 	}
 
+
 	if (RequestCommand)
 	{
 		if (RequestCommand->GetCommandName() != UMoveCommandComponent::CommandName)
 		{
+			RequestCommand->SetCommandArgs(Request);
+			if (!RequestCommand->IsReachable())
+			{
+				return;
+			}
+			
 			float RequiredTargetRadius = RequestCommand->GetRequiredTargetRadius();
 			if (RequiredTargetRadius >= 0)
 			{
@@ -106,7 +119,13 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 
 				if (MoveCommand)
 				{
-					MoveCommand->SetMoveCommandArgs(RequiredTargetRadius);
+					MoveCommand->SetCommandArgs(Request);
+					MoveCommand->SetMoveCommandArgs(RequestCommand);
+					if (!MoveCommand->IsReachable())
+					{
+						return;
+					}
+					
 					OutCommandsToExecute.Add(MoveCommand);
 				}
 			}
@@ -118,7 +137,12 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 
 			if (MoveCommand)
 			{
-				MoveCommand->SetMoveCommandArgs(0);
+				MoveCommand->SetCommandArgs(Request);
+				MoveCommand->SetMoveCommandArgs(nullptr);
+				if (!MoveCommand->IsReachable())
+				{
+					return;
+				}
 			}
 		}
 

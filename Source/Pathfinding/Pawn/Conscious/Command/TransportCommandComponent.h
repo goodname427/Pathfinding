@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommandComponent.h"
+#include "Conscious/CommandComponent.h"
 #include "TransportCommandComponent.generated.h"
 
 
@@ -20,9 +20,10 @@ public:
 	IMPL_GET_COMMAND_NAME()
 	
 protected:
-	virtual bool InternalCanExecute_Implementation() override;
+	virtual bool InternalIsReachable_Implementation() override;
 	
 	virtual void InternalBeginExecute_Implementation() override;
+
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 

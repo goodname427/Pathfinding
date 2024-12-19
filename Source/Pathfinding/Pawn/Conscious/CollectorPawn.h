@@ -21,6 +21,8 @@ public:
 	ACollectorPawn();
 
 public:
+	virtual void OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue) override;
+	
 	virtual UCommandComponent* ResolveRequestWithoutName_Implementation(const FTargetRequest& Request) override;
 
 	void FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCollectedResource);

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommandComponent.h"
+#include "Conscious/CommandComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "MoveCommandComponent.generated.h"
 
@@ -15,13 +15,15 @@ class PATHFINDING_API UMoveCommandComponent final : public UCommandComponent
 
 public:
 	UMoveCommandComponent();
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 public:
 	IMPL_GET_COMMAND_NAME()
 	
-	virtual float GetRequiredTargetRadius_Implementation() override { return -1; }
+	virtual float GetRequiredTargetRadius_Implementation() const override { return -1; }
 
-	void SetMoveCommandArgs(float InAcceptanceRadius);
+	void SetMoveCommandArgs(UCommandComponent* InCommandNeedMove);
 	
 protected:
 	virtual void InternalBeginExecute_Implementation() override;
@@ -32,7 +34,8 @@ protected:
 	void OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 
 private:
-	float AcceptanceRadius;
+	UPROPERTY()
+	UCommandComponent* CommandNeedMove;
 	
 public:
 	static FName CommandName;

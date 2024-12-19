@@ -5,7 +5,6 @@
 
 #include "BattleHUD.h"
 #include "PFBlueprintFunctionLibrary.h"
-#include "PFPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "PFUtils.h"
 #include "Net/UnrealNetwork.h"
@@ -59,10 +58,9 @@ ACommanderPawn::ACommanderPawn()
 	StaticMeshComponent->SetCollisionProfileName(FName("NoCollision"));
 }
 
-// Called when the game starts or when spawned
-void ACommanderPawn::BeginPlay()
+void ACommanderPawn::PostInitProperties()
 {
-	Super::BeginPlay();
+	Super::PostInitProperties();
 
 	SpringArmComponent->TargetArmLength = FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, 0.5f);
 	CameraScaleValue = 0.5f;
@@ -81,7 +79,11 @@ void ACommanderPawn::BeginPlay()
 	LineTraceStepFactor = GetDefault<UPFGameSettings>()->PawnMinSize * 0.5f;
 }
 
-// Called every frame
+void ACommanderPawn::BeginPlay()
+{
+	Super::BeginPlay();
+}
+
 void ACommanderPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -409,7 +411,7 @@ void ACommanderPawn::LineTrace(const APlayerController* Player, const FVector2D&
 	LineEnd = LineStart + LineEnd * LineTraceDistance;
 
 	// static TArray<FHitResult> TempHitResults;
-	GetWorld()->LineTraceSingleByChannel(OutResult, LineStart, LineEnd, ECollisionChannel::ECC_Visibility);
+	GetWorld()->LineTraceSingleByChannel(OutResult, LineStart, LineEnd, ECC_Camera);
 	// DrawDebugLine(GetWorld(), LineStart, LineEnd, FColor::Yellow, false, 5);
 }
 
@@ -491,6 +493,11 @@ void ACommanderPawn::TargetPressed()
 		Request.CommandName = NAME_None;
 		Request.TargetLocation = HitResult.Location;
 		Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
+
+		if (Request.TargetPawn)
+		{
+			Request.TargetPawn->OnTarget(this);
+		}
 
 		Send(Request);
 	}

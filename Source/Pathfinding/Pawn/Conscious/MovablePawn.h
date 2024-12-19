@@ -22,6 +22,9 @@ public:
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const override { return MoveCommandComponent; }
 
 protected:
+	UPROPERTY(Category = "Movable", VisibleDefaultsOnly)
+	UCapsuleComponent* CapsuleComponent;
+	
 	UPROPERTY(Category = "Movable", VisibleAnywhere)
 	UPawnMovementComponent* MovementComponent;
 

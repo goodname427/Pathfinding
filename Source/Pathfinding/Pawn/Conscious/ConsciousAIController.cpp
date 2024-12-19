@@ -4,14 +4,10 @@
 #include "ConsciousAIController.h"
 
 #include "ConsciousPawn.h"
-#include "PFGameSettings.h"
-#include "PFPawn.h"
-#include "PFUtils.h"
-#include "BehaviorTree/BlackboardComponent.h"
 
 FName AConsciousAIController::CurrentCommandKeyName = FName("CurrentCommand");
 
-AConsciousAIController::AConsciousAIController()
+AConsciousAIController::AConsciousAIController(): CurrentCommand(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -52,7 +48,15 @@ void AConsciousAIController::ExecuteNextCommand()
 	
 	UCommandComponent* NextCommand;
 	CommandQueue.Dequeue(NextCommand);
-	ExecuteCommand(NextCommand);
+
+	if (NextCommand->CanExecute())
+	{
+		ExecuteCommand(NextCommand);
+	}
+	else
+	{
+		ClearAllCommands();	
+	}
 }
 
 void AConsciousAIController::ExecuteCommand(UCommandComponent* Command)
@@ -67,13 +71,15 @@ void AConsciousAIController::AbortCurrentCommand()
 	if (CurrentCommand)
 	{
 		CurrentCommand->EndExecute(ECommandExecuteResult::Aborted);
+		CurrentCommand = nullptr;
 	}
 }
 
 void AConsciousAIController::OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result)
 {
 	Command->OnCommandEnd.RemoveDynamic(this, &AConsciousAIController::OnCommandEnd);
-
+	CurrentCommand = nullptr;
+	
 	if (Result == ECommandExecuteResult::Success)
 	{
 		ExecuteNextCommand();

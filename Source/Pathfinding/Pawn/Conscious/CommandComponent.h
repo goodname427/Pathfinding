@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PFPawn.h"
 #include "UObject/Object.h"
 #include "CommandComponent.generated.h"
 
@@ -21,6 +22,8 @@ struct FTargetRequest
 	APFPawn* TargetPawn;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector TargetLocation;
+	
+	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
 };
 
 UENUM(BlueprintType)
@@ -57,7 +60,7 @@ public:
 	FName GetCommandName() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	float GetRequiredTargetRadius();
+	float GetRequiredTargetRadius() const;
 
 public:
 	// State Query
@@ -82,6 +85,12 @@ public:
 	void SetCommandArgs(const FTargetRequest& InRequest);
 
 	UFUNCTION(BlueprintCallable)
+	bool IsReachable();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTargetReachable() const;
+	
+	UFUNCTION(BlueprintCallable)
 	bool CanExecute();
 
 	UFUNCTION(BlueprintCallable)
@@ -92,6 +101,9 @@ public:
 
 protected:
 	// Internal Implementation
+	UFUNCTION(BlueprintNativeEvent)
+	bool InternalIsReachable();
+		
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalCanExecute();
 
