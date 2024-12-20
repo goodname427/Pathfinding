@@ -31,13 +31,13 @@ AMovablePawn::AMovablePawn()
 	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UConsciousPawnMovementComponent>(
 		TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
-
-	StaticMeshComponent->SetupAttachment(CapsuleComponent);
+	
 	StaticMeshComponent->AlwaysLoadOnClient = true;
 	StaticMeshComponent->AlwaysLoadOnServer = true;
 	StaticMeshComponent->bCastDynamicShadow = true;
 	StaticMeshComponent->bAffectDynamicIndirectLighting = true;
 	StaticMeshComponent->PrimaryComponentTick.TickGroup = TG_PrePhysics;
+
 	StaticMeshComponent->SetupAttachment(CapsuleComponent);
 	static FName MeshCollisionProfileName(TEXT("CharacterMesh"));
 	StaticMeshComponent->SetCollisionProfileName(MeshCollisionProfileName);

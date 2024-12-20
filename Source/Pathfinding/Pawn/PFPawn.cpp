@@ -15,22 +15,13 @@ APFPawn::APFPawn()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 	
-	// INIT_DEFAULT_SUBOBJECT(RootComponent);
-	
 	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
-	// StaticMeshComponent->SetupAttachment(RootComponent);
-
-	// Physics
-	// StaticMeshComponent->SetSimulatePhysics(false);
-	// StaticMeshComponent->SetConstraintMode(EDOFMode::XYPlane);
-	// StaticMeshComponent->bApplyImpulseOnDamage = false;
 
 	// Collision
 	StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	bAdjustLocationToGround = true;
 	LocationToGroundOffset = 0;
 
-	// State
 	MaxHealth = 100;
 	Attack = 1;
 	AttackSpeed = 1;
@@ -72,6 +63,11 @@ void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, OwnerPlayer);
+	DOREPLIFETIME(ThisClass, CurrentHealth);
+	DOREPLIFETIME(ThisClass, MaxHealth);
+	DOREPLIFETIME(ThisClass, Attack);
+	DOREPLIFETIME(ThisClass, AttackSpeed);
+	DOREPLIFETIME(ThisClass, Defense);
 }
 
 void APFPawn::SetOwner(AActor* NewOwner)

@@ -323,6 +323,11 @@ void ACommanderPawn::Select(APFPawn* Pawn)
 	{
 		Pawn->OnSelected(this);
 		ServerSelect(Pawn);
+		
+		if (OnSelectedPawnChanged.IsBound())
+		{
+			OnSelectedPawnChanged.Broadcast(this);
+		}
 	}
 }
 
@@ -332,6 +337,11 @@ void ACommanderPawn::Deselect(APFPawn* Pawn)
 	{
 		Pawn->OnDeselected();
 		ServerDeselect(Pawn);
+
+		if (OnSelectedPawnChanged.IsBound())
+		{
+			OnSelectedPawnChanged.Broadcast(this);
+		}
 	}
 }
 

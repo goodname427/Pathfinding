@@ -3,10 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EditorCategoryUtils.h"
 #include "PFGameSettings.h"
 #include "Battle/BattlePlayerState.h"
 #include "GameFramework/Pawn.h"
 #include "PFPawn.generated.h"
+
+USTRUCT(BlueprintType)
+struct FPFPawnData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	FName Name;
+
+	FPFPawnData()
+	{
+		Name = NAME_None;
+	}
+};
 
 UENUM()
 enum class EPawnRole : uint8
@@ -82,7 +97,7 @@ public:
 private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelected : 1;
-
+	
 public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 	                         class AController* EventInstigator, AActor* DamageCauser) override;;
@@ -93,20 +108,23 @@ public:
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,
 	                                      class AController* EventInstigator, AActor* DamageCauser) override;
-
+	
 protected:
-	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadOnly, Replicated)
-	int32 CurrentHealth;
+	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)
+	FPFPawnData Data;
 
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadWrite, Replicated)
+	int32 CurrentHealth;
+	
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 MaxHealth;
 
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Attack;
 
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	float AttackSpeed;
 
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadOnly, Replicated, meta = (ClampMin = 0))
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Defense;
 };

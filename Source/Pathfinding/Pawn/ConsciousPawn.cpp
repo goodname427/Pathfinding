@@ -18,14 +18,6 @@ AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr)
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
-
-	// RootComponent->SetSimulatePhysics();
-	// StaticMeshComponent->SetSimulatePhysics(true);
-	// StaticMeshComponent->SetConstraintMode(EDOFMode::XYPlane);
-	// StaticMeshComponent->BodyInstance.bLockXRotation = true;
-	// StaticMeshComponent->BodyInstance.bLockYRotation = true;
-	// StaticMeshComponent->bApplyImpulseOnDamage = false;
 }
 
 void AConsciousPawn::BeginPlay()

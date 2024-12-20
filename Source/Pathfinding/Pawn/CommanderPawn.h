@@ -11,6 +11,8 @@
 #include "Movement/CommanderPawnMovementComponent.h"
 #include "CommanderPawn.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSelectedPawnChangedSignature, ACommanderPawn*, CommanderPawn);
+
 UCLASS()
 class PATHFINDING_API ACommanderPawn : public APawn
 {
@@ -86,6 +88,10 @@ private:
 	UPROPERTY(Transient, Category = "Control|CameraRotate", VisibleAnywhere)
 	uint32 bControlPressed : 1;
 
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Select")
+	FSelectedPawnChangedSignature OnSelectedPawnChanged;
+	
 protected:
 	// Select
 	void SelectPressed();
@@ -108,7 +114,6 @@ protected:
 	void ServerDeselect(APFPawn* Pawn);
 	UFUNCTION(Server, Reliable)
 	void ServerDeselectAll();
-	
 	
 	void LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint, FHitResult& OutResult) const;
 
