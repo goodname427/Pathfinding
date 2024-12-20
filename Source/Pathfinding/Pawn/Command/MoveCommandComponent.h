@@ -37,7 +37,4 @@ protected:
 private:
 	UPROPERTY()
 	UCommandComponent* CommandNeedToMove;
-	
-public:
-	static FName CommandName;
 };

@@ -33,7 +33,4 @@ protected:
 protected:
 	UPROPERTY(Category = "Collect", EditAnywhere)
 	TSet<EResourceType> ResourceTypesToAllowCollecting;
-	
-public:
-	static FName CommandName;
 };

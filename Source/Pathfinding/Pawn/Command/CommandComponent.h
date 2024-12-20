@@ -16,14 +16,56 @@ struct FTargetRequest
 {
 	GENERATED_USTRUCT_BODY()
 
+	FTargetRequest(): TargetPawn(nullptr)
+	{
+	}
+
+	explicit FTargetRequest(FName InCommandName) : CommandName(InCommandName), TargetPawn(nullptr)
+	{
+	}
+
+	explicit FTargetRequest(APFPawn* InTargetPawn): TargetPawn(InTargetPawn)
+	{
+	}
+
+	explicit FTargetRequest(const FVector& InTargetLocation): TargetPawn(nullptr), TargetLocation(InTargetLocation)
+	{
+	}
+
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn): CommandName(InCommandName), TargetPawn(InTargetPawn)
+	{
+	}
+
+	FTargetRequest(FName InCommandName, const FVector& InTargetLocation): CommandName(InCommandName),
+	                                                                      TargetPawn(nullptr),
+	                                                                      TargetLocation(InTargetLocation)
+	{
+	}
+
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation):
+		CommandName(InCommandName), TargetPawn(InTargetPawn), TargetLocation(InTargetLocation)
+	{
+	}
+
+	template<class TCommand>
+	static FTargetRequest Make()
+	{
+		return FTargetRequest(TCommand::CommandName);
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CommandName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APFPawn* TargetPawn;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector TargetLocation;
-	
+
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
+
+	APFPawn* GetTargetPawn() const { return TargetPawn; }
+
+	template <class T>
+	T* GetTargetPawn() const { return Cast<T>(TargetPawn); }
 };
 
 UENUM(BlueprintType)
@@ -40,6 +82,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandCompo
                                              Result);
 
 #define IMPL_GET_COMMAND_NAME() \
+static FName CommandName; \
 virtual FName GetCommandName_Implementation() const override { return CommandName; }
 
 
@@ -87,7 +130,7 @@ public:
 	// Check whether the command args is reachable, it will be check in advance
 	UFUNCTION(BlueprintCallable)
 	bool IsReachable();
-	
+
 	UFUNCTION(BlueprintCallable)
 	bool IsTargetReachable() const;
 
@@ -105,7 +148,7 @@ protected:
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalIsReachable();
-		
+
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalCanExecute();
 

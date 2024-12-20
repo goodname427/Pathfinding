@@ -33,6 +33,11 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 
 bool UCollectCommandComponent::InternalIsReachable_Implementation()
 {
+	if (GetExecutePawn<ACollectorPawn>() == nullptr)
+	{
+		return false;
+	}
+	
 	if (const AResourcePawn* ResourcePawn = Cast<AResourcePawn>(Request.TargetPawn))
 	{
 		if (CanCollect(ResourcePawn))
@@ -46,7 +51,7 @@ bool UCollectCommandComponent::InternalIsReachable_Implementation()
 
 void UCollectCommandComponent::InternalBeginExecute_Implementation()
 {
-	AResourcePawn* Resource = Cast<AResourcePawn>(Request.TargetPawn);
+	AResourcePawn* Resource = Request.GetTargetPawn<AResourcePawn>();
 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
 	if (Resource && Collector)
@@ -68,9 +73,8 @@ void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecute
 
 		Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
 
-		FTargetRequest TransportRequest;
+		FTargetRequest TransportRequest = FTargetRequest::Make<UTransportCommandComponent>();
 		{
-			TransportRequest.CommandName = UTransportCommandComponent::CommandName;
 			TransportRequest.TargetPawn = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
 		}
 

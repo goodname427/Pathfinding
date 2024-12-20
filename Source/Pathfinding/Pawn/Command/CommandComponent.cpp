@@ -5,6 +5,7 @@
 
 #include "ConsciousPawn.h"
 #include "PFUtils.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UCommandComponent::UCommandComponent(): Request()
 {
@@ -39,7 +40,7 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 bool UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
 {
 	Request = InRequest;
-
+	
 	return IsReachable();
 }
 

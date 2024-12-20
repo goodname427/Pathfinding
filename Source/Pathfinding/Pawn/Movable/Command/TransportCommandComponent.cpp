@@ -22,6 +22,11 @@ UTransportCommandComponent::UTransportCommandComponent()
 
 bool UTransportCommandComponent::InternalIsReachable_Implementation()
 {
+	if (GetExecutePawn<ACollectorPawn>() == nullptr)
+	{
+		return false;
+	}
+	
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Request.TargetPawn))
 	{
 		if (BaseCampPawn->GetPawnRole(GetExecutePawn()) == EPawnRole::Self)
@@ -35,7 +40,7 @@ bool UTransportCommandComponent::InternalIsReachable_Implementation()
 
 void UTransportCommandComponent::InternalBeginExecute_Implementation()
 {
-	ABaseCampPawn* BaseCamp = Cast<ABaseCampPawn>(Request.TargetPawn);
+	ABaseCampPawn* BaseCamp = Request.GetTargetPawn<ABaseCampPawn>();
 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
 	if (BaseCamp && Collector)
@@ -55,9 +60,8 @@ void UTransportCommandComponent::InternalEndExecute_Implementation(ECommandExecu
 	{
 		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
-		FTargetRequest CollectRequest;
+		FTargetRequest CollectRequest = FTargetRequest::Make<UCollectCommandComponent>();
 		{
-			CollectRequest.CommandName = UCollectCommandComponent::CommandName;
 			CollectRequest.TargetPawn = Collector->GetNextResourceToCollect();
 			// DEBUG_MESSAGE(TEXT("Collect Resource [%s]"), *CollectRequest.TargetPawn->GetName());
 		}

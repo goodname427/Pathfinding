@@ -26,7 +26,4 @@ protected:
 
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
-
-public:
-	static FName CommandName;
 };
