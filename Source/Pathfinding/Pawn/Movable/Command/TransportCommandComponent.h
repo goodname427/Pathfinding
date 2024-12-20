@@ -7,7 +7,7 @@
 #include "TransportCommandComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UTransportCommandComponent : public UCommandComponent
 {
 	GENERATED_BODY()
@@ -17,7 +17,7 @@ public:
 	UTransportCommandComponent();
 
 public:
-	IMPL_GET_COMMAND_NAME()
+	DECLARE_COMMAND_NAME()
 	
 protected:
 	virtual bool InternalIsReachable_Implementation() override;

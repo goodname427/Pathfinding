@@ -8,7 +8,7 @@
 #include "MoveCommandComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UMoveCommandComponent final : public UCommandComponent
 {
 	GENERATED_BODY()
@@ -19,7 +19,7 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 	
 public:
-	IMPL_GET_COMMAND_NAME()
+	DECLARE_COMMAND_NAME()
 	
 	virtual float GetRequiredTargetRadius_Implementation() const override { return -1; }
 

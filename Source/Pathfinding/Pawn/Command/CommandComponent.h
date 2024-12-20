@@ -81,15 +81,15 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComp
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandComponent*, Command, ECommandExecuteResult,
                                              Result);
 
-#define IMPL_GET_COMMAND_NAME() \
+#define DECLARE_COMMAND_NAME() \
 static FName CommandName; \
 virtual FName GetCommandName_Implementation() const override { return CommandName; }
 
 
 /**
- * 
+ * Command component that can only be attached to ConsciousPawn
  */
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UCommandComponent : public UActorComponent
 {
 	GENERATED_BODY()

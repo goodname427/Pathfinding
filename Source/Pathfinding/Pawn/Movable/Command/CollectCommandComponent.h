@@ -9,7 +9,7 @@
 #include "CollectCommandComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UCollectCommandComponent : public UCommandComponent
 {
 	GENERATED_BODY()
@@ -19,7 +19,7 @@ public:
 	UCollectCommandComponent();
 
 public:
-	IMPL_GET_COMMAND_NAME()
+	DECLARE_COMMAND_NAME()
 
 	bool CanCollect(const AResourcePawn* ResourcePawn) const;
 	
