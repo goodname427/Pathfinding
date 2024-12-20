@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Conscious/CommandComponent.h"
+#include "CommandComponent.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "MoveCommandComponent.generated.h"
 
@@ -23,7 +23,8 @@ public:
 	
 	virtual float GetRequiredTargetRadius_Implementation() const override { return -1; }
 
-	void SetMoveCommandArgs(UCommandComponent* InCommandNeedMove);
+	// Set args for move command, return true whether it's reachable
+	bool SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest);
 	
 protected:
 	virtual void InternalBeginExecute_Implementation() override;
@@ -35,7 +36,7 @@ protected:
 
 private:
 	UPROPERTY()
-	UCommandComponent* CommandNeedMove;
+	UCommandComponent* CommandNeedToMove;
 	
 public:
 	static FName CommandName;

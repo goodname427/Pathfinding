@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Conscious/ConsciousPawn.h"
+#include "ConsciousPawn.h"
 #include "PFPawn.h"
 #include "GameFramework/Pawn.h"
 #include "Camera/CameraComponent.h"

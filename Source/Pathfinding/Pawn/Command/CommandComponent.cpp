@@ -3,7 +3,7 @@
 
 #include "CommandComponent.h"
 
-#include "Conscious/ConsciousPawn.h"
+#include "ConsciousPawn.h"
 #include "PFUtils.h"
 
 UCommandComponent::UCommandComponent(): Request()
@@ -36,9 +36,11 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 	return nullptr;
 }
 
-void UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
+bool UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
 {
 	Request = InRequest;
+
+	return IsReachable();
 }
 
 bool UCommandComponent::IsReachable()

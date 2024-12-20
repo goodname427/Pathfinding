@@ -6,7 +6,7 @@
 #include "CollectCommandComponent.h"
 #include "PFUtils.h"
 #include "Building/BaseCampPawn.h"
-#include "Conscious/CollectorPawn.h"
+#include "Movable/CollectorPawn.h"
 
 FName UTransportCommandComponent::CommandName = FName("Transport");
 

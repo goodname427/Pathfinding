@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "Conscious/CommandComponent.h"
+#include "Command/CommandComponent.h"
 #include "ConsciousAIController.generated.h"
 
 UCLASS()

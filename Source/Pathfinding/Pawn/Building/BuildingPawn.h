@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Conscious/ConsciousPawn.h"
+#include "ConsciousPawn.h"
 #include "BuildingPawn.generated.h"
 
 UCLASS()

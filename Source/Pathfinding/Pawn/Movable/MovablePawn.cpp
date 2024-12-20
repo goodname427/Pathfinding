@@ -28,7 +28,8 @@ AMovablePawn::AMovablePawn()
 
 	LocationToGroundOffset = CapsuleComponent->GetScaledCapsuleHalfHeight();
 
-	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UConsciousPawnMovementComponent>(TEXT("MovementComponent"));
+	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UConsciousPawnMovementComponent>(
+		TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 
 	StaticMeshComponent->SetupAttachment(CapsuleComponent);
@@ -42,6 +43,11 @@ AMovablePawn::AMovablePawn()
 	StaticMeshComponent->SetCollisionProfileName(MeshCollisionProfileName);
 	StaticMeshComponent->SetGenerateOverlapEvents(false);
 	StaticMeshComponent->SetCanEverAffectNavigation(false);
-	
+
 	INIT_DEFAULT_SUBOBJECT(MoveCommandComponent);
+}
+
+UCommandComponent* AMovablePawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)
+{
+	return MoveCommandComponent;
 }

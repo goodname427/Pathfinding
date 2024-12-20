@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ConsciousPawn.h"
+#include "Command/MoveCommandComponent.h"
 #include "Movement/ConsciousPawnMovementComponent.h"
 #include "MovablePawn.generated.h"
 
@@ -16,15 +17,18 @@ public:
 	// Sets default values for this pawn's properties
 	AMovablePawn();
 
+protected:
+	virtual UCommandComponent* ResolveRequestWithoutName_Implementation(const FTargetRequest& Request) override;
+	
 public:
 	virtual UPawnMovementComponent* GetMovementComponent() const override { return MovementComponent; };
 
-	virtual UMoveCommandComponent* GetMoveCommandComponent() const override { return MoveCommandComponent; }
-
+	virtual UMoveCommandComponent* GetMoveCommandComponent() const override { return MoveCommandComponent; };
+	
 protected:
 	UPROPERTY(Category = "Movable", VisibleDefaultsOnly)
 	UCapsuleComponent* CapsuleComponent;
-	
+
 	UPROPERTY(Category = "Movable", VisibleAnywhere)
 	UPawnMovementComponent* MovementComponent;
 

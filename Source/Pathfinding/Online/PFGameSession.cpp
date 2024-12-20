@@ -6,7 +6,7 @@
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSessionSettings.h"
 #include "PFGameInstance.h"
-#include "PFPlayerController.h"
+#include "Controller/PFPlayerController.h"
 #include "PFUtils.h"
 #include "GameFramework/GameModeBase.h"
 #include "GameFramework/GameSession.h"

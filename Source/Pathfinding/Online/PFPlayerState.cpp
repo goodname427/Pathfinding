@@ -4,8 +4,7 @@
 #include "PFPlayerState.h"
 
 #include "PFGameState.h"
-#include "PFPlayerController.h"
-#include "PFUtils.h"
+#include "Controller/PFPlayerController.h"
 #include "Net/UnrealNetwork.h"
 
 void APFPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

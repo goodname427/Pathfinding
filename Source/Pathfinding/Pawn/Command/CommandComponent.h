@@ -82,14 +82,16 @@ public:
 public:
 	// Execute
 	UFUNCTION(BlueprintCallable)
-	void SetCommandArgs(const FTargetRequest& InRequest);
+	bool SetCommandArgs(const FTargetRequest& InRequest);
 
+	// Check whether the command args is reachable, it will be check in advance
 	UFUNCTION(BlueprintCallable)
 	bool IsReachable();
-
+	
 	UFUNCTION(BlueprintCallable)
 	bool IsTargetReachable() const;
-	
+
+	// Check whether the current status can be executed
 	UFUNCTION(BlueprintCallable)
 	bool CanExecute();
 

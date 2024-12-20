@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BuildingPawn.h"
-#include "Conscious/CollectorPawn.h"
+#include "Movable/CollectorPawn.h"
 #include "BaseCampPawn.generated.h"
 
 UCLASS()

@@ -7,7 +7,7 @@
 #include "PFGameSession.h"
 #include "PFGameState.h"
 #include "PFHUD.h"
-#include "PFPlayerController.h"
+#include "Controller/PFPlayerController.h"
 #include "PFPlayerState.h"
 
 APFGameMode::APFGameMode()

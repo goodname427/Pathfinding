@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PFPawn.h"
-#include "Conscious/CollectorPawn.h"
+#include "Movable/CollectorPawn.h"
 #include "ResourcePawn.generated.h"
 
 UCLASS()

@@ -3,33 +3,39 @@
 
 #include "MoveCommandComponent.h"
 
-#include "PFUtils.h"
-#include "Conscious/ConsciousPawn.h"
-#include "Conscious/ConsciousAIController.h"
-#include "Kismet/GameplayStatics.h"
+#include "ConsciousPawn.h"
+#include "Controller/ConsciousAIController.h"
 
 FName UMoveCommandComponent::CommandName = FName("Move");
 
-UMoveCommandComponent::UMoveCommandComponent(): CommandNeedMove(nullptr)
+UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
 void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                          FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (IsExecuting() && CommandNeedMove && CommandNeedMove->IsTargetReachable())
+	if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetReachable())
 	{
 		GetExecuteController()->StopMovement();
 		EndExecute(ECommandExecuteResult::Success);
 	}
 }
 
-void UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedMove)
+bool UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest)
 {
-	CommandNeedMove = InCommandNeedMove;
+	CommandNeedToMove = InCommandNeedToMove;
+
+	if (CommandNeedToMove == nullptr)
+	{
+		return SetCommandArgs(InRequest);
+	}
+
+	// Move command reachable check
+	return CommandNeedToMove->GetRequiredTargetRadius() >= 0 && SetCommandArgs(InRequest);
 }
 
 void UMoveCommandComponent::InternalBeginExecute_Implementation()
@@ -74,6 +80,6 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 	{
 		ExecuteResult = ECommandExecuteResult::Failed;
 	}
-	
+
 	EndExecute(ExecuteResult);
 }

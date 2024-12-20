@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Conscious/CommandComponent.h"
-#include "ConsciousAIController.h"
+#include "Command/CommandComponent.h"
+#include "Controller/ConsciousAIController.h"
+#include "Command/MoveCommandComponent.h"
 #include "PFPawn.h"
 #include "Command/MoveCommandComponent.h"
 #include "ConsciousPawn.generated.h"
@@ -34,8 +35,10 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReceive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
 	
-	void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
+	virtual void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
+	UCommandComponent* ResolveRequestCommand(const FTargetRequest& Request);
+	
 	UFUNCTION(BlueprintNativeEvent)
 	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
 	
@@ -45,6 +48,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
+	
 protected:
 	UPROPERTY(Transient)
 	AConsciousAIController* ConsciousAIController;

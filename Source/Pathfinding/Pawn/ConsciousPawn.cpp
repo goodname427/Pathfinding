@@ -3,11 +3,11 @@
 
 #include "ConsciousPawn.h"
 
-#include "ConsciousAIController.h"
+#include "Controller/ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
-
 #include "Command/MoveCommandComponent.h"
+#include "CookOnTheSide/CookOnTheFlyServer.h"
 
 
 // Sets default values
@@ -18,8 +18,7 @@ AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr)
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-	
-	
+
 
 	// RootComponent->SetSimulatePhysics();
 	// StaticMeshComponent->SetSimulatePhysics(true);
@@ -88,6 +87,45 @@ void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request, boo
 void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
 {
 	OutCommandsToExecute.Reset();
+	UCommandComponent* RequestCommand = ResolveRequestCommand(Request);
+
+	UMoveCommandComponent* MoveCommandComponent = GetMoveCommandComponent();
+	// no move command
+	if (MoveCommandComponent == nullptr)
+	{
+		if (RequestCommand && RequestCommand->GetRequiredTargetRadius() < 0 && RequestCommand->SetCommandArgs(Request))
+		{
+			OutCommandsToExecute.Add(MoveCommandComponent);
+		}
+	}
+	// add move command if the request command need to move
+	else
+	{
+		// ignore move command
+		if (RequestCommand == MoveCommandComponent)
+		{
+			if (MoveCommandComponent->SetMoveCommandArgs(nullptr, Request))
+			{
+				OutCommandsToExecute.Add(MoveCommandComponent);;
+			}
+		}
+		else
+		{
+			if (RequestCommand->SetCommandArgs(Request))
+			{
+				if (MoveCommandComponent->SetMoveCommandArgs(RequestCommand, Request))
+				{
+					OutCommandsToExecute.Add(MoveCommandComponent);
+				}
+
+				OutCommandsToExecute.Add(RequestCommand);
+			}
+		}
+	}
+}
+
+UCommandComponent* AConsciousPawn::ResolveRequestCommand(const FTargetRequest& Request)
+{
 	UCommandComponent* RequestCommand = nullptr;
 	if (Request.CommandName != NAME_None)
 	{
@@ -101,62 +139,15 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 		RequestCommand = ResolveRequestWithoutName(Request);
 	}
 
-
-	if (RequestCommand)
-	{
-		if (RequestCommand->GetCommandName() != UMoveCommandComponent::CommandName)
-		{
-			RequestCommand->SetCommandArgs(Request);
-			if (!RequestCommand->IsReachable())
-			{
-				return;
-			}
-			
-			float RequiredTargetRadius = RequestCommand->GetRequiredTargetRadius();
-			if (RequiredTargetRadius >= 0)
-			{
-				UMoveCommandComponent* MoveCommand = GetMoveCommandComponent();
-
-				if (MoveCommand)
-				{
-					MoveCommand->SetCommandArgs(Request);
-					MoveCommand->SetMoveCommandArgs(RequestCommand);
-					if (!MoveCommand->IsReachable())
-					{
-						return;
-					}
-					
-					OutCommandsToExecute.Add(MoveCommand);
-				}
-			}
-		}
-		else
-		{
-			// Clear Move Command
-			UMoveCommandComponent* MoveCommand = Cast<UMoveCommandComponent>(RequestCommand);
-
-			if (MoveCommand)
-			{
-				MoveCommand->SetCommandArgs(Request);
-				MoveCommand->SetMoveCommandArgs(nullptr);
-				if (!MoveCommand->IsReachable())
-				{
-					return;
-				}
-			}
-		}
-
-		OutCommandsToExecute.Add(RequestCommand);
-	}
+	return RequestCommand;
 }
 
 UMoveCommandComponent* AConsciousPawn::GetMoveCommandComponent() const
 {
-	if (UCommandComponent* const* MoveCommandPtr = Commands.Find(UMoveCommandComponent::CommandName))
+	if (UCommandComponent* const* Command = Commands.Find(UMoveCommandComponent::CommandName))
 	{
-		return Cast<UMoveCommandComponent>(*MoveCommandPtr);
+		return Cast<UMoveCommandComponent>(*Command);
 	}
-
 	return nullptr;
 }
 

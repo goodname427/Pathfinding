@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "PFGameMode.h"
-#include "Conscious/CollectorPawn.h"
+#include "Movable/CollectorPawn.h"
 #include "BattleGameMode.generated.h"
 
 /**
