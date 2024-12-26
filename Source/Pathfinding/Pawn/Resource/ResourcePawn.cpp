@@ -10,7 +10,7 @@ AResourcePawn::AResourcePawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	ResourcePoint = 0;
+	ResourcePoint = 1;
 	MaxHealth = 0;
 	Attack = 0;
 	AttackSpeed = 0;

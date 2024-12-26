@@ -39,9 +39,9 @@ public:
 	int32 GetResourcePoint() const { return ResourcePoint; };
 
 protected:
-	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(Category = "State|Resource", EditDefaultsOnly, BlueprintReadOnly)
 	FResourceData ResourceData;
 
-	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
+	UPROPERTY(Category = "State|Resource", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 1))
 	int32 ResourcePoint;
 };
