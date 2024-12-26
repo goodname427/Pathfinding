@@ -3,6 +3,7 @@
 
 #include "ConsciousPawnMovementComponent.h"
 
+#include "PFUtils.h"
 #include "Components/CapsuleComponent.h"
 
 UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
@@ -12,9 +13,6 @@ UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
 	Deceleration = 24000.f;
 	TurningBoost = 8.0f;
 	bPositionCorrected = false;
-
-	LastUpdateTime = -1;
-	NetworkTickInterval = 1;
 
 	ResetMoveState();
 }
@@ -52,12 +50,10 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 		LimitWorldBounds();
 		bPositionCorrected = false;
-
-		float CurrentTime = GetWorld()->GetTimeSeconds();
-		if (CurrentTime > LastUpdateTime + NetworkTickInterval)
-		{
-			BroadcastMovementState(CurrentTime);
-		}
+	}
+	else
+	{
+		Velocity = FVector::ZeroVector;
 	}
 
 	// Move actor
@@ -197,33 +193,6 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 	// Finalize
 	UpdateComponentVelocity();
 }
-
-void UConsciousPawnMovementComponent::BroadcastMovementState(float CurrentTime)
-{	
-	FConsciousMoveData NewData;
-	{
-		NewData.DeltaTime = CurrentTime - LastUpdateTime;
-		NewData.Velocity = Velocity;
-		NewData.Location = UpdatedComponent->GetComponentLocation();
-		NewData.Rotation = UpdatedComponent->GetComponentRotation();
-	}
-			
-	NetMulticastUpdate(NewData);
-			
-	LastUpdateTime = CurrentTime;
-}
-
-
-void UConsciousPawnMovementComponent::NetMulticastUpdate_Implementation(const FConsciousMoveData& MoveData)
-{
-	if (GetOwnerRole() != ROLE_Authority)
-	{
-		UpdatedComponent->SetWorldLocation(MoveData.Location);
-		UpdatedComponent->SetWorldRotation(MoveData.Rotation);
-
-		Velocity = MoveData.Velocity;
-	}
-};
 
 bool UConsciousPawnMovementComponent::LimitWorldBounds()
 {
