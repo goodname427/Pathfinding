@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CommanderPawn.h"
 #include "PFHUD.h"
 #include "BattleHUD.generated.h"
 
@@ -14,17 +15,23 @@ class PATHFINDING_API ABattleHUD : public APFHUD
 {
 	GENERATED_BODY()
 
-public:
-	virtual void DrawHUD() override;
+protected:
+	virtual void BeginPlay() override;
+
+protected:
+	UPROPERTY()
+	ACommanderPawn* OwningCommanderPawn;
 	
 public:
-	void BeginDrawSelectBox();
-	FBox2D EndDrawSelectBox();
+	virtual void DrawHUD() override;
 
-private:
+protected:
 	void DrawSelectBox() const;
 
 private:
-	int32 bDrawingSelectBox : 1;
+	uint32 bSelectBoxBeginMousePosHasSet : 1;
 	FVector2D SelectBoxBeginMousePos;
+
+protected:
+	void DrawTargetingHint() const;
 };

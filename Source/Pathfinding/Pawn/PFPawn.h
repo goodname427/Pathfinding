@@ -14,7 +14,7 @@ struct FPFPawnData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Name;
 
 	FPFPawnData()
@@ -50,6 +50,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 	
 protected:
@@ -113,7 +114,7 @@ protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)
 	FPFPawnData Data;
 
-	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadWrite, Replicated)
+	UPROPERTY(Transient, Category = "State", VisibleAnywhere, BlueprintReadWrite, Replicated)
 	int32 CurrentHealth;
 	
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))

@@ -194,26 +194,52 @@ void ACommanderPawn::MouseHorizontal(float Value)
 void ACommanderPawn::SelectPressed()
 {
 	bDoubleClick = false;
-	BeginSelect();
+
+	if (!bTargeting)
+	{
+		BeginSelect();
+	}
+	else
+	{
+		Target(TargetingCommandName);
+	}
 }
 
 void ACommanderPawn::SelectReleased()
 {
-	EndSelect(false, bDoubleClick);
+	if (!bTargeting)
+	{
+		EndSelect(false, bDoubleClick);
+	}
 }
 
 void ACommanderPawn::Select_CtrlPressed()
 {
-	BeginSelect();
+	if (!bTargeting)
+	{
+		BeginSelect();
+	}
+	else
+	{
+		Target(TargetingCommandName);
+	}
 }
 
 void ACommanderPawn::Select_CtrlReleased()
 {
-	EndSelect(true);
+	if (!bTargeting)
+	{
+		EndSelect(true);
+	}
 }
 
 void ACommanderPawn::SelectDoubleClick()
 {
+	if (bTargeting)
+	{
+		return;
+	}
+	
 	// double-click a pawn to select all pawns on the screen which are of the same class as the clicked pawn 
 	bDoubleClick = true;
 	APlayerController* PlayerController = GetController<APlayerController>();
@@ -249,72 +275,80 @@ void ACommanderPawn::SelectDoubleClick()
 
 void ACommanderPawn::BeginSelect()
 {
-	bSelectPressed = true;
-
-	APlayerController* PlayerController = GetController<APlayerController>();
-	if (PlayerController != nullptr)
+	if (bSelecting)
 	{
-		ABattleHUD* HUD = PlayerController->GetHUD<ABattleHUD>();
-		if (HUD != nullptr)
-		{
-			HUD->BeginDrawSelectBox();
-		}
+		EndSelect(false, true);
+	}
+	
+	bSelecting = true;
+	
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController)
+	{
+		PlayerController->GetMousePosition(SelectBoxBeginMousePos.X, SelectBoxBeginMousePos.Y);
 	}
 }
 
 void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 {
-	bSelectPressed = false;
+	if (!bSelecting)
+	{
+		return;
+	}
+	
+	bSelecting = false;
+	
+	if (bSkipSelect)
+	{
+		return;
+	}
 
-	APlayerController* PlayerController = GetController<APlayerController>();
+	const APlayerController* PlayerController = GetController<APlayerController>();
+	FBox2D SelectBox;
 	if (PlayerController != nullptr)
 	{
-		ABattleHUD* HUD = PlayerController->GetHUD<ABattleHUD>();
-		if (HUD != nullptr)
+		FVector2D MousePosition;
+		PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+		SelectBox = FBox2D(FVector2D::Min(SelectBoxBeginMousePos, MousePosition),
+		                   FVector2D::Max(SelectBoxBeginMousePos, MousePosition));
+	}
+
+	static FMultiLineTraceResult Result;
+	SelectBoxLineTracePawn(PlayerController, SelectBox, Result);
+
+	// deselect all selected pawns
+	// - if we have selected other's pawn when additional select owned pawn
+	// - it's not additional
+	if (!bAdditional
+		|| (Result.bHasOwned && !IsOwned(GetFirstSelectedPawn())))
+	{
+		// deselected
+		DeselectAll();
+	}
+
+	if (bAdditional || Result.bHasOwned)
+	{
+		// only select owned pawn when using additional select or there is owned pawn in hit pawns
+		for (APFPawn* Pawn : Result.HitPawns)
 		{
-			const FBox2D SelectBox = HUD->EndDrawSelectBox();
-
-			if (bSkipSelect)
+			if (IsOwned(Pawn))
 			{
-				return;
+				Select(Pawn);
 			}
-
-			static FMultiLineTraceResult Result;
-			SelectBoxLineTracePawn(PlayerController, SelectBox, Result);
-
-			// deselect all selected pawns
-			// - if we have selected other's pawn when additional select owned pawn
-			// - it's not additional
-			if (!bAdditional
-				|| (Result.bHasOwned && !IsOwned(GetFirstSelectedPawn())))
-			{
-				// deselected
-				DeselectAll();
-			}
-
-			if (bAdditional || Result.bHasOwned)
-			{
-				// only select owned pawn when using additional select or there is owned pawn in hit pawns
-				for (APFPawn* Pawn : Result.HitPawns)
-				{
-					if (IsOwned(Pawn))
-					{
-						Select(Pawn);
-					}
-				}
-			}
-			else if (Result.FirstOthersPawn != nullptr)
-			{
-				Select(Result.FirstOthersPawn);
-			}
-
-			// DEBUG_MESSAGE(TEXT("Selected Actors [%d]"), SelectedPawns.Num());
-			// for (AActor* Actor : SelectedPawns)
-			// {
-			// 	DEBUG_MESSAGE(TEXT("Selected Actor [%s]"), *Actor->GetName());
-			// }
 		}
 	}
+	else if (Result.FirstOthersPawn != nullptr)
+	{
+		Select(Result.FirstOthersPawn);
+	}
+
+	// DEBUG_MESSAGE(TEXT("Selected Actors [%d]"), SelectedPawns.Num());
+	// for (AActor* Actor : SelectedPawns)
+	// {
+	// 	DEBUG_MESSAGE(TEXT("Selected Actor [%s]"), *Actor->GetName());
+	// }
+
+	
 }
 
 void ACommanderPawn::Select(APFPawn* Pawn)
@@ -352,6 +386,11 @@ void ACommanderPawn::DeselectAll()
 		Pawn->OnDeselected();
 	}
 	ServerDeselectAll();
+
+	if (OnSelectedPawnChanged.IsBound())
+	{
+		OnSelectedPawnChanged.Broadcast(this);
+	}
 }
 
 void ACommanderPawn::ServerSelect_Implementation(APFPawn* Pawn)
@@ -478,13 +517,42 @@ void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 	// DEBUG_MESSAGE(TEXT("SelectPawns Sent / All [%d / %d]"), NumSent, SelectedPawns.Num());
 }
 
+void ACommanderPawn::BeginTarget(FName InTargetingCommandName)
+{
+	bTargeting = true;
+	TargetingCommandName = InTargetingCommandName;
+}
+
+void ACommanderPawn::EndTarget()
+{
+	bTargeting = false;
+	TargetingCommandName = NAME_None;
+}
+
 void ACommanderPawn::TargetPressed()
+{
+	if (!bTargeting)
+	{
+		Target();
+	}
+	else
+	{
+		EndTarget();
+	}
+}
+
+void ACommanderPawn::TargetReleased()
+{
+	// keep
+}
+
+void ACommanderPawn::Target(FName CommandName)
 {
 	if (SelectedPawns.Num() == 0)
 	{
 		return;
 	}
-
+	
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController != nullptr)
 	{
@@ -500,7 +568,7 @@ void ACommanderPawn::TargetPressed()
 		}
 
 		FTargetRequest Request;
-		Request.CommandName = NAME_None;
+		Request.CommandName = CommandName;
 		Request.TargetLocation = HitResult.Location;
 		Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
 
@@ -511,11 +579,11 @@ void ACommanderPawn::TargetPressed()
 
 		Send(Request);
 	}
-}
 
-void ACommanderPawn::TargetReleased()
-{
-	// keep
+	if (bTargeting)
+	{
+		EndTarget();
+	}
 }
 
 void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)

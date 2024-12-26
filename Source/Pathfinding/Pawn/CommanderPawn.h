@@ -11,6 +11,14 @@
 #include "Movement/CommanderPawnMovementComponent.h"
 #include "CommanderPawn.generated.h"
 
+UENUM(BlueprintType)
+enum class ECommanderState: uint8
+{
+	None,
+	Selecting,
+	Targeting,
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSelectedPawnChangedSignature, ACommanderPawn*, CommanderPawn);
 
 UCLASS()
@@ -25,14 +33,14 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 protected:
 	UPROPERTY(Category = "Camera", VisibleAnywhere)
 	class UCameraComponent* CameraComponent;
@@ -91,19 +99,19 @@ private:
 public:
 	UPROPERTY(BlueprintAssignable, Category = "Select")
 	FSelectedPawnChangedSignature OnSelectedPawnChanged;
-	
+
 protected:
 	// Select
 	void SelectPressed();
 	void SelectReleased();
+	void SelectDoubleClick();
+
 	void Select_CtrlPressed();
 	void Select_CtrlReleased();
-	
-	void SelectDoubleClick();
-	
+
 	void BeginSelect();
 	void EndSelect(bool bAdditional, bool bSkipSelect = false);
-	
+
 	void Select(APFPawn* Pawn);
 	void Deselect(APFPawn* Pawn);
 	void DeselectAll();
@@ -114,7 +122,7 @@ protected:
 	void ServerDeselect(APFPawn* Pawn);
 	UFUNCTION(Server, Reliable)
 	void ServerDeselectAll();
-	
+
 	void LineTrace(const APlayerController* Player, const FVector2D& ScreenPoint, FHitResult& OutResult) const;
 
 	struct FMultiLineTraceResult
@@ -123,24 +131,28 @@ protected:
 		bool bHasOwned;
 		APFPawn* FirstOthersPawn;
 	};
-	void SelectBoxLineTracePawn(const APlayerController* PlayerController, const FBox2D& SelectBox, FMultiLineTraceResult& OutResult) const;
 
+	void SelectBoxLineTracePawn(const APlayerController* PlayerController, const FBox2D& SelectBox,
+	                            FMultiLineTraceResult& OutResult) const;
+
+public:
+	bool IsSelecting() const { return bSelecting; }
+	
 private:
 	uint32 bDoubleClick : 1;
-	
-	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
-	uint32 bSelectPressed : 1;
+	uint32 bSelecting : 1;
+	FVector2D SelectBoxBeginMousePos;;
 
+protected:
 	float LineTraceStepFactor;
-
 	// by cm
 	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
 	float LineTraceDistance;
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	bool IsOwned(APFPawn* Pawn) const;
-	
+
 	UFUNCTION(BlueprintCallable)
 	APFPawn* GetFirstSelectedPawn() const { return SelectedPawns.Num() > 0 ? SelectedPawns[0] : nullptr; };
 
@@ -149,15 +161,31 @@ private:
 	TArray<APFPawn*> SelectedPawns;
 
 public:
+	// target
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void Send(const FTargetRequest& Request);
 
+	UFUNCTION(BlueprintCallable)
+	void BeginTarget(FName InTargetingCommandName);
+
+	UFUNCTION(BlueprintCallable)
+	void EndTarget();
+
 protected:
-	// target
 	void TargetPressed();
 	void TargetReleased();
 
+	void Target(FName CommandName = NAME_None);
 
+public:
+	bool IsTargeting() const { return bTargeting; };
+	FName GetTargetingCommandName() const { return TargetingCommandName; }
+	
+private:
+	uint32 bTargeting : 1;
+
+	FName TargetingCommandName;
+	
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void Test();

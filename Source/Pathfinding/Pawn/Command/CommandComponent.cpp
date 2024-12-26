@@ -7,19 +7,16 @@
 #include "PFUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-UCommandComponent::UCommandComponent(): Request()
+UCommandComponent::UCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-}
-
-FName UCommandComponent::GetCommandName_Implementation() const
-{
-	return NAME_None;
+	CommandName = NAME_None;
+	RequiredTargetRadius = 250.f;
 }
 
 float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 {
-	return 250.0f;
+	return RequiredTargetRadius;
 }
 
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
@@ -51,8 +48,8 @@ bool UCommandComponent::IsReachable()
 
 bool UCommandComponent::IsTargetReachable() const
 {
-	const float RequiredTargetRadius = GetRequiredTargetRadius();
-	if (RequiredTargetRadius < 0)
+	const float TargetRadius = GetRequiredTargetRadius();
+	if (TargetRadius < 0)
 	{
 		return true;
 	}
@@ -61,7 +58,7 @@ bool UCommandComponent::IsTargetReachable() const
 
 	if (!Request.TargetPawn)
 	{
-		return FVector::Dist(Request.TargetLocation, ExecutePawn->GetActorLocation()) <= RequiredTargetRadius;
+		return FVector::Dist(Request.TargetLocation, ExecutePawn->GetActorLocation()) <= TargetRadius;
 	}
 
 	const FVector CurrentLocation = ExecutePawn->GetActorLocation();
@@ -76,7 +73,7 @@ bool UCommandComponent::IsTargetReachable() const
 		CurrentLocation,
 		FQuat::Identity,
 		ECC_Camera,
-		FCollisionShape::MakeSphere(RequiredTargetRadius),
+		FCollisionShape::MakeSphere(TargetRadius),
 		FCollisionQueryParams::DefaultQueryParam
 	);
 

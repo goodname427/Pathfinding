@@ -6,11 +6,13 @@
 #include "ConsciousPawn.h"
 #include "Controller/ConsciousAIController.h"
 
-FName UMoveCommandComponent::CommandName = FName("Move");
+FName UMoveCommandComponent::StaticCommandName = FName("Move");
 
 UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	CommandName = StaticCommandName;
 }
 
 void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,

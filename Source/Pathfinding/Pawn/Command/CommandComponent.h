@@ -50,7 +50,7 @@ struct FTargetRequest
 	template<class TCommand>
 	static FTargetRequest Make()
 	{
-		return FTargetRequest(TCommand::CommandName);
+		return FTargetRequest(TCommand::StaticCommandName);
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -82,9 +82,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandCompo
                                              Result);
 
 #define DECLARE_COMMAND_NAME() \
-static FName CommandName; \
-virtual FName GetCommandName_Implementation() const override { return CommandName; }
-
+static FName StaticCommandName;
 
 /**
  * Command component that can only be attached to ConsciousPawn
@@ -99,11 +97,16 @@ public:
 
 public:
 	// Command Default Arguments
-	UFUNCTION(BlueprintNativeEvent)
-	FName GetCommandName() const;
+	FName GetCommandName() const { return CommandName; };
 
 	UFUNCTION(BlueprintNativeEvent)
 	float GetRequiredTargetRadius() const;
+
+protected:
+	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
+	FName CommandName;
+	UPROPERTY(Category = "Command", EditDefaultsOnly)
+	float RequiredTargetRadius;
 
 public:
 	// State Query
@@ -166,7 +169,7 @@ public:
 	FCommandEndSignature OnCommandEnd;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Transient, Category = "Command", VisibleAnywhere, BlueprintReadOnly)
 	FTargetRequest Request;
 
 	bool bExecuting = false;

@@ -9,16 +9,13 @@
 #include "Building/BaseCampPawn.h"
 #include "Resource/ResourcePawn.h"
 
-FName UCollectCommandComponent::CommandName = FName("Collect");
+FName UCollectCommandComponent::StaticCommandName = FName("Collect");
 
-// Sets default values for this component's properties
 UCollectCommandComponent::UCollectCommandComponent(): ResourceTypesToAllowCollecting({EResourceType::Coin})
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	CommandName = StaticCommandName;	
 }
 
 bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) const

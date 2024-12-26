@@ -48,6 +48,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
+
+	UFUNCTION(BlueprintCallable)
+	UMoveCommandComponent* GetCommandComponent(FName CommandName) const;
+
+	UFUNCTION(BlueprintCallable)
+	const TMap<FName, UCommandComponent*>& GetAllCommands() const { return Commands; }
 	
 protected:
 	UPROPERTY(Transient)

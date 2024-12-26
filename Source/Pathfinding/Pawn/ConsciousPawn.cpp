@@ -136,7 +136,12 @@ UCommandComponent* AConsciousPawn::ResolveRequestCommand(const FTargetRequest& R
 
 UMoveCommandComponent* AConsciousPawn::GetMoveCommandComponent() const
 {
-	if (UCommandComponent* const* Command = Commands.Find(UMoveCommandComponent::CommandName))
+	return GetCommandComponent(UMoveCommandComponent::StaticCommandName);
+}
+
+UMoveCommandComponent* AConsciousPawn::GetCommandComponent(FName CommandName) const
+{
+	if (UCommandComponent* const* Command = Commands.Find(CommandName))
 	{
 		return Cast<UMoveCommandComponent>(*Command);
 	}

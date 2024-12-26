@@ -4,52 +4,58 @@
 #include "BattleHUD.h"
 
 #include "CanvasItem.h"
+#include "CommanderPawn.h"
 #include "Engine/Canvas.h"
+
+void ABattleHUD::BeginPlay()
+{
+	Super::BeginPlay();
+	OwningCommanderPawn = Cast<ACommanderPawn>(GetOwningPawn());
+}
 
 void ABattleHUD::DrawHUD()
 {
 	Super::DrawHUD();
 
-	if (bDrawingSelectBox)
+	if (OwningCommanderPawn && OwningCommanderPawn->IsSelecting())
 	{
+		if (!bSelectBoxBeginMousePosHasSet)
+		{
+			APlayerController* PlayerController = GetOwningPlayerController();
+			if (PlayerController)
+			{
+				bSelectBoxBeginMousePosHasSet = true;
+				PlayerController->GetMousePosition(SelectBoxBeginMousePos.X, SelectBoxBeginMousePos.Y);
+			}
+		}
+
 		DrawSelectBox();
 	}
-}
-
-void ABattleHUD::BeginDrawSelectBox()
-{
-	if (bDrawingSelectBox)
+	else if (bSelectBoxBeginMousePosHasSet)
 	{
-		EndDrawSelectBox();
-	}
-	
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController)
-	{
-		bDrawingSelectBox = true;
-		PlayerController->GetMousePosition(SelectBoxBeginMousePos.X, SelectBoxBeginMousePos.Y);
-	}
-}
-
-FBox2D ABattleHUD::EndDrawSelectBox()
-{
-	if (!bDrawingSelectBox)
-	{
-		return FBox2D();
+		bSelectBoxBeginMousePosHasSet = false;
 	}
 
-	FVector2D MousePos;
-	APlayerController* PlayerController = GetOwningPlayerController();
-	if (PlayerController)
+	if (OwningCommanderPawn && OwningCommanderPawn->IsTargeting())
 	{
-		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
+		DrawTargetingHint();
 	}
-	
-	bDrawingSelectBox = false;
-	return FBox2D(FVector2D::Min(SelectBoxBeginMousePos, MousePos), FVector2D::Max(SelectBoxBeginMousePos, MousePos));
 }
 
 void ABattleHUD::DrawSelectBox() const
+{
+	const APlayerController* PlayerController = GetOwningPlayerController();
+	if (PlayerController)
+	{
+		FVector2D MousePos;
+		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
+
+		FCanvasBoxItem BoxItem(SelectBoxBeginMousePos, MousePos - SelectBoxBeginMousePos);
+		Canvas->DrawItem(BoxItem);
+	}
+}
+
+void ABattleHUD::DrawTargetingHint() const
 {
 	APlayerController* PlayerController = GetOwningPlayerController();
 	if (PlayerController)
@@ -57,7 +63,8 @@ void ABattleHUD::DrawSelectBox() const
 		FVector2D MousePos;
 		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
 
-		FCanvasBoxItem BoxItem(SelectBoxBeginMousePos, MousePos - SelectBoxBeginMousePos);
+		FCanvasTextItem BoxItem(MousePos + FVector2D(10, 10), FText::FromString(OwningCommanderPawn->GetTargetingCommandName().ToString()),
+		                        GEngine->GetLargeFont(), FColor::Red);
 		Canvas->DrawItem(BoxItem);
 	}
 }

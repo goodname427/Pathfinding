@@ -8,16 +8,13 @@
 #include "Building/BaseCampPawn.h"
 #include "Movable/CollectorPawn.h"
 
-FName UTransportCommandComponent::CommandName = FName("Transport");
+FName UTransportCommandComponent::StaticCommandName = FName("Transport");
 
-// Sets default values for this component's properties
 UTransportCommandComponent::UTransportCommandComponent()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
-	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
 
-	// ...
+	CommandName = StaticCommandName;
 }
 
 bool UTransportCommandComponent::InternalIsReachable_Implementation()
