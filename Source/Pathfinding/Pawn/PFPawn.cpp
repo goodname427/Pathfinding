@@ -5,22 +5,33 @@
 #include "CommanderPawn.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
+#include "WidgetSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
+FName APFPawn::StateWidgetClassName = FName("PFPawnStateBar");
 
 // Sets default values
 APFPawn::APFPawn()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
-	
+
 	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
 
 	// Collision
 	StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	bAdjustLocationToGround = true;
 	LocationToGroundOffset = 0;
+
+	// State
+	INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
+	StateWidgetComponent->SetRelativeLocation(FVector::ZeroVector);
+	if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
+		StateWidgetClassName))
+	{
+		StateWidgetComponent->SetWidgetClass(*WidgetClassPtr);
+	}
 
 	MaxHealth = 100;
 	Attack = 1;
@@ -38,23 +49,34 @@ void APFPawn::PostInitProperties()
 void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Set Flag Material
-	if (UMaterialInterface* FlagMaterial = Cast<UMaterialInterface>(GetDefault<UPFGameSettings>()->PawnFlagMaterial.TryLoad()))
+	if (UMaterialInterface* FlagMaterial = Cast<UMaterialInterface>(
+		GetDefault<UPFGameSettings>()->PawnFlagMaterial.TryLoad()))
 	{
 		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial, 0);
 		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
 	}
 
+	const FVector ActorLocation = GetActorLocation();
+
 	// Set location to ground
 	if (bAdjustLocationToGround)
 	{
 		FHitResult Hit;
-		GetWorld()->LineTraceSingleByChannel(Hit, GetActorLocation(), GetActorLocation() + FVector::DownVector * 100, ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation, ActorLocation + FVector::DownVector * 100,
+		                                     ECC_Visibility);
 		if (Hit.bBlockingHit)
 		{
 			SetActorLocation(Hit.Location + FVector::UpVector + LocationToGroundOffset);
 		}
+	}
+
+	FHitResult Hit;
+	GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation + FVector::UpVector * 100, ActorLocation + FVector::DownVector * 100, ECC_Camera);
+	if (Hit.bBlockingHit)
+	{
+		StateWidgetComponent->SetRelativeLocation(Hit.Location + FVector::UpVector - ActorLocation);
 	}
 }
 
@@ -76,7 +98,7 @@ void APFPawn::SetOwner(AActor* NewOwner)
 	{
 		OwnerPlayer->OnPlayerOwnedPawnRemoved(this);
 	}
-	
+
 	Super::SetOwner(NewOwner);
 
 	ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
@@ -89,7 +111,7 @@ void APFPawn::SetOwner(AActor* NewOwner)
 		{
 			OwnerPlayer->OnPlayerOwnedPawnAdd(this);
 		}
-		
+
 		OnRep_OwnerPlayer();
 	}
 }
@@ -106,7 +128,7 @@ EPawnRole APFPawn::GetPawnRole(APFPawn* OtherPawn) const
 	{
 		return EPawnRole::Neutrality;
 	}
-	
+
 	if (OwnerPlayer == OtherOwnerPlayer)
 	{
 		return EPawnRole::Self;
@@ -164,14 +186,14 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 	{
 		CurrentHealth = FMath::Max(0, CurrentHealth - ActualDamage);
 	}
-	
+
 	return ActualDamage;
 }
 
 bool APFPawn::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
                                AActor* DamageCauser) const
 {
-	if(!Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser))
+	if (!Super::ShouldTakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser))
 	{
 		return false;
 	}
@@ -188,6 +210,3 @@ float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent co
 
 	return ActualDamage;
 }
-
-
-

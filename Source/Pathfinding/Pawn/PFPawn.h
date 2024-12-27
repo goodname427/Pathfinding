@@ -3,9 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EditorCategoryUtils.h"
 #include "PFGameSettings.h"
 #include "Battle/BattlePlayerState.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/Pawn.h"
 #include "PFPawn.generated.h"
 
@@ -132,4 +132,10 @@ protected:
 
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Defense;
+
+protected:
+	static FName StateWidgetClassName;
+	
+	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadOnly)
+	UWidgetComponent* StateWidgetComponent;
 };

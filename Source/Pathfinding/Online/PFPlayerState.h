@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 // #include "PFGameState.h"
+#include "PFGameSettings.h"
 #include "GameFramework/PlayerState.h"
 #include "PFPlayerState.generated.h"
 
+class UCamp;
 class APFPlayerController;
 /**
  * 
@@ -39,6 +41,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FLinearColor GetPlayerColor() const { return PlayerColor; }
 	
+	UFUNCTION(BlueprintCallable)
+	const UCamp* GetCampInfo() const { return CampInfo; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetCampInfo(const UCamp* InCampInfo) { CampInfo = InCampInfo; }
+	
 protected:
 	UPROPERTY(Transient, Replicated)
 	int32 PlayerLocation;
@@ -48,4 +56,7 @@ protected:
 
 	UPROPERTY(Transient, Replicated)
 	FLinearColor PlayerColor;
+
+	UPROPERTY(Transient, Replicated)
+	const UCamp* CampInfo;
 };

@@ -14,6 +14,7 @@ void APFPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(APFPlayerState, PlayerLocation);
 	DOREPLIFETIME(APFPlayerState, TeamId);
 	DOREPLIFETIME(APFPlayerState, PlayerColor);
+	DOREPLIFETIME(APFPlayerState, CampInfo);
 }
 
 void APFPlayerState::CopyProperties(APlayerState* PlayerState)
@@ -26,6 +27,7 @@ void APFPlayerState::CopyProperties(APlayerState* PlayerState)
 		PFPlayerState->PlayerLocation = PlayerLocation;
 		PFPlayerState->TeamId = TeamId;
 		PFPlayerState->PlayerColor = PlayerColor;
+		PFPlayerState->CampInfo = CampInfo;
 	}
 }
 

@@ -6,7 +6,9 @@
 #include "BattleGameState.h"
 #include "BattleHUD.h"
 #include "BattlePlayerState.h"
+#include "Camp.h"
 #include "CommanderPawn.h"
+#include "EditorCategoryUtils.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "PFUtils.h"
@@ -22,9 +24,6 @@ ABattleGameMode::ABattleGameMode()
 	PlayerStateClass = ABattlePlayerState::StaticClass();
 	HUDClass = ABattleHUD::StaticClass();
 	DefaultPawnClass = ACommanderPawn::StaticClass();
-
-	CollectorPawnClass = ACollectorPawn::StaticClass();
-	BaseCampPawnClass = ABaseCampPawn::StaticClass();
 }
 
 void ABattleGameMode::BeginPlay()
@@ -105,19 +104,39 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 
 void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn)
 {
-	CommanderPawn->SpawnPawn(BaseCampPawnClass, CommanderPawn->GetActorLocation());
+	APFPlayerState* PS = CommanderPawn->GetPlayerState<APFPlayerState>();
+	const UCamp* Camp = nullptr;
+	if (PS)
+	{
+		DEBUG_FUNC_FLAG();
+		Camp = PS->GetCampInfo();
+		if (!Camp)
+		{
+			Camp = UCamp::GetRandomlyCamp();
+			PS->SetCampInfo(Camp);
+		}
+	}
+
+	if (!Camp)
+	{
+		return;
+	}
+	
+	CommanderPawn->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderPawn->GetActorLocation());
 
 	FVector RandomLocation;
-
-	for (int32 i = 0; i < NumCollectorPawnsAtBegin; i++)
+	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
-		if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-			this,
-			CommanderPawn->GetActorLocation(),
-			RandomLocation,
-			1000.0f))
+		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
-			CommanderPawn->SpawnPawn(CollectorPawnClass, RandomLocation);
+			if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+				this,
+				CommanderPawn->GetActorLocation(),
+				RandomLocation,
+				1000.0f))
+			{
+				CommanderPawn->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
+			}
 		}
 	}
 }
