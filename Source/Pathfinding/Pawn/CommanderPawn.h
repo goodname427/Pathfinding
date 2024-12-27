@@ -100,6 +100,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Select")
 	FSelectedPawnChangedSignature OnSelectedPawnChanged;
 
+public:
+	UFUNCTION(BlueprintCallable)
+	void Select(APFPawn* Pawn);
+
+	UFUNCTION(BlueprintCallable)
+	void Deselect(APFPawn* Pawn);
+
+	UFUNCTION(BlueprintCallable)
+	void DeselectAll();
+
 protected:
 	// Select
 	void SelectPressed();
@@ -111,11 +121,7 @@ protected:
 
 	void BeginSelect();
 	void EndSelect(bool bAdditional, bool bSkipSelect = false);
-
-	void Select(APFPawn* Pawn);
-	void Deselect(APFPawn* Pawn);
-	void DeselectAll();
-
+	
 	UFUNCTION(Server, Reliable)
 	void ServerSelect(APFPawn* Pawn);
 	UFUNCTION(Server, Reliable)
@@ -137,7 +143,7 @@ protected:
 
 public:
 	bool IsSelecting() const { return bSelecting; }
-	
+
 private:
 	uint32 bDoubleClick : 1;
 	uint32 bSelecting : 1;
@@ -148,13 +154,19 @@ protected:
 	// by cm
 	UPROPERTY(Category = "Select|LineTrace", EditDefaultsOnly)
 	float LineTraceDistance;
-	
+
 public:
 	UFUNCTION(BlueprintCallable)
 	bool IsOwned(APFPawn* Pawn) const;
 
 	UFUNCTION(BlueprintCallable)
 	APFPawn* GetFirstSelectedPawn() const { return SelectedPawns.Num() > 0 ? SelectedPawns[0] : nullptr; };
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<APFPawn*>& GetSelectedPawns() const { return SelectedPawns; };
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<APFPawn*>& GetSortedSelectedPawns() const;
 
 private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, Replicated)
@@ -180,12 +192,12 @@ protected:
 public:
 	bool IsTargeting() const { return bTargeting; };
 	FName GetTargetingCommandName() const { return TargetingCommandName; }
-	
+
 private:
 	uint32 bTargeting : 1;
 
 	FName TargetingCommandName;
-	
+
 public:
 	UFUNCTION(BlueprintNativeEvent)
 	void Test();

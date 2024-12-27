@@ -17,7 +17,7 @@
 ABattleGameMode::ABattleGameMode()
 {
 	bUseSeamlessTravel = true;
-	
+
 	GameStateClass = ABattleGameState::StaticClass();
 	PlayerStateClass = ABattlePlayerState::StaticClass();
 	HUDClass = ABattleHUD::StaticClass();
@@ -108,12 +108,16 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 	CommanderPawn->SpawnPawn(BaseCampPawnClass, CommanderPawn->GetActorLocation());
 
 	FVector RandomLocation;
-	if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-		this,
-		CommanderPawn->GetActorLocation(),
-		RandomLocation,
-		1000.0f))
+
+	for (int32 i = 0; i < NumCollectorPawnsAtBegin; i++)
 	{
-		CommanderPawn->SpawnPawn(CollectorPawnClass, RandomLocation);
+		if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+			this,
+			CommanderPawn->GetActorLocation(),
+			RandomLocation,
+			1000.0f))
+		{
+			CommanderPawn->SpawnPawn(CollectorPawnClass, RandomLocation);
+		}
 	}
 }

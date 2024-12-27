@@ -32,9 +32,12 @@ protected:
 	void SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn);
 	
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	UPROPERTY(Category="Classes|Battle", EditAnywhere, BlueprintReadWrite, meta=(ClampMin=1))
+	int32 NumCollectorPawnsAtBegin;
+	
+	UPROPERTY(Category="Classes|Battle", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ACollectorPawn> CollectorPawnClass;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Classes)
+	UPROPERTY(Category="Classes|Battle", EditAnywhere, BlueprintReadWrite)
 	TSubclassOf<ABaseCampPawn> BaseCampPawnClass;
 };

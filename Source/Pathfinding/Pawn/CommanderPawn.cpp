@@ -469,6 +469,21 @@ bool ACommanderPawn::IsOwned(APFPawn* Pawn) const
 	return Pawn != nullptr && Pawn->GetOwnerPlayer() == GetPlayerState();
 }
 
+const TArray<APFPawn*>& ACommanderPawn::GetSortedSelectedPawns() const
+{
+	// Create a copy of selected pawns
+	static TArray<APFPawn*> SortedSelectedPawns;
+	SortedSelectedPawns = SelectedPawns;
+
+	// Sort the array using correct parameter types
+	SortedSelectedPawns.Sort([](APFPawn& L, APFPawn& R)
+	{
+		return L.GetClass()->GetName() < R.GetClass()->GetName();
+	});
+
+	return SortedSelectedPawns;  // Return the sorted array by value
+}
+
 void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("SelectPawns Count [%d]"), SelectedPawns.Num());

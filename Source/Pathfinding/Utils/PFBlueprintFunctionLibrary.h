@@ -29,7 +29,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static ACommanderPawn* GetCommanderPawnByController(AController* Controller);
-	
+
 	UFUNCTION(BlueprintCallable)
 	static APFPawn* SpawnPawnForCommander(
 		UObject* WorldContextObject,
@@ -41,8 +41,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent, int32 MaterialIndex = 0);
-	
+	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,
+	                                                       int32 MaterialIndex = 0);
+
 	UFUNCTION(BlueprintCallable)
 	static void SetStaticMeshColor(UStaticMeshComponent* StaticMesh, FLinearColor Color, int32 MaterialIndex = 0);
 };
