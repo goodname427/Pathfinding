@@ -30,9 +30,6 @@ class PATHFINDING_API UCamp : public UObject
 	GENERATED_BODY()
 
 public:
-	static const TArray<UCamp*>& GetAllCamps();
-	static const UCamp* GetRandomlyCamp();
-
 	FString GetCampName() const { return CampName; }
 	FString GetCampDescription() const { return CampDescription; }
 	TArray<FDefaultPawnInfo> GetDefaultPawnInfos() const { return DefaultPawnInfos; }

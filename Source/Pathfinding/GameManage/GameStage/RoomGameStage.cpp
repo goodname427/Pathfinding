@@ -86,6 +86,24 @@ void FRoomGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 void FRoomGameStage::OnExitStage(UPFGameInstance* GameInstance)
 {
 	GameInstance->GetSubsystem<UWidgetSubsystem>()->Clear();
+
+	if (UWorld* World = GameInstance->GetWorld())
+	{
+		if (World->IsServer())
+		{
+			const UPFGameSettings* Settings = GetDefault<UPFGameSettings>();
+			for (auto PCIter = World->GetPlayerControllerIterator(); PCIter; ++PCIter)
+			{
+				if (APFPlayerState* PS = PCIter->Get()->GetPlayerState<APFPlayerState>())
+				{
+					if (PS->GetCampInfo() == nullptr)
+					{
+						PS->SetCampInfo(Settings->GetRandomlyCamp());
+					}
+				}
+			}
+		}
+	}
 }
 
 void FRoomGameStage::OnWorldBeginPlay(UPFGameInstance* GameInstance, UWorld* World)

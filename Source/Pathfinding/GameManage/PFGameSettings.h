@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Camp.h"
 #include "Engine/DeveloperSettings.h"
 #include "PFGameSettings.generated.h"
 
@@ -36,6 +37,13 @@ class PATHFINDING_API UPFGameSettings : public UDeveloperSettings
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Map")
 	TArray<FMapInfo> Maps;
+
+public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Camp")
+	TArray<TSubclassOf<UCamp>> CampClasses;
+
+	UFUNCTION(BlueprintCallable, Category = "Camp")
+	const UCamp* GetRandomlyCamp() const;
 	
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
