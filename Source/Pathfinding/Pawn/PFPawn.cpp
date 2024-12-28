@@ -26,7 +26,7 @@ APFPawn::APFPawn()
 
 	// State
 	INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
-	StateWidgetComponent->SetRelativeLocation(FVector::ZeroVector);
+	StateWidgetComponent->SetRelativeLocation(FVector::UpVector * 2);
 	if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
 		StateWidgetClassName))
 	{
@@ -72,12 +72,13 @@ void APFPawn::BeginPlay()
 		}
 	}
 
-	FHitResult Hit;
-	GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation + FVector::UpVector * 100, ActorLocation + FVector::DownVector * 100, ECC_Camera);
-	if (Hit.bBlockingHit)
-	{
-		StateWidgetComponent->SetRelativeLocation(Hit.Location + FVector::UpVector - ActorLocation);
-	}
+	// FHitResult Hit;
+	// GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation + FVector::UpVector * 100, ActorLocation + FVector::DownVector * 100, ECC_Camera);
+	// if (Hit.bBlockingHit)
+	// {
+	// 	DEBUG_MESSAGE(TEXT("%s"), *(Hit.Location + FVector::UpVector - ActorLocation).ToString());
+	// 	StateWidgetComponent->SetRelativeLocation(Hit.Location + FVector::UpVector - ActorLocation);
+	// }
 }
 
 void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
