@@ -4,27 +4,28 @@
 #include "MoveCommandComponent.h"
 
 #include "ConsciousPawn.h"
+#include "PFUtils.h"
 #include "Controller/ConsciousAIController.h"
 
 FName UMoveCommandComponent::StaticCommandName = FName("Move");
 
 UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
-	CommandName = StaticCommandName;
+	Data.CommandName = StaticCommandName;
 }
 
 void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
                                           FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetReachable())
-	{
-		GetExecuteController()->StopMovement();
-		EndExecute(ECommandExecuteResult::Success);
-	}
+	
+	// if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetInRequiredRadius())
+	// {
+	// 	GetExecuteController()->StopMovement();
+	// 	EndExecute(ECommandExecuteResult::Success);
+	// }
 }
 
 bool UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest)

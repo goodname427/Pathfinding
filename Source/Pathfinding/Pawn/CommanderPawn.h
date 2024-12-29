@@ -178,7 +178,7 @@ public:
 	void Send(const FTargetRequest& Request);
 
 	UFUNCTION(BlueprintCallable)
-	void BeginTarget(FName InTargetingCommandName);
+	void BeginTarget(UCommandComponent* InTargetingCommand);
 
 	UFUNCTION(BlueprintCallable)
 	void EndTarget();
@@ -187,16 +187,17 @@ protected:
 	void TargetPressed();
 	void TargetReleased();
 
-	void Target(FName CommandName = NAME_None);
+	void Target(UCommandComponent* Command = nullptr);
 
 public:
 	bool IsTargeting() const { return bTargeting; };
-	FName GetTargetingCommandName() const { return TargetingCommandName; }
+	FName GetTargetingCommandName() const { return TargetingCommand->GetCommandName(); }
 
 private:
 	uint32 bTargeting : 1;
 
-	FName TargetingCommandName;
+	UPROPERTY(Transient)
+	UCommandComponent* TargetingCommand;
 
 public:
 	UFUNCTION(BlueprintNativeEvent)

@@ -96,9 +96,9 @@ void FRoomGameStage::OnExitStage(UPFGameInstance* GameInstance)
 			{
 				if (APFPlayerState* PS = PCIter->Get()->GetPlayerState<APFPlayerState>())
 				{
-					if (PS->GetCampInfo() == nullptr)
+					if (PS->GetCamp() == nullptr)
 					{
-						PS->SetCampInfo(Settings->GetRandomlyCamp());
+						PS->SetCamp(Settings->GetRandomlyCamp());
 					}
 				}
 			}

@@ -42,10 +42,10 @@ public:
 	FLinearColor GetPlayerColor() const { return PlayerColor; }
 	
 	UFUNCTION(BlueprintCallable)
-	const UCamp* GetCampInfo() const { return CampInfo; }
+	const UCamp* GetCamp() const { return Camp; }
 
 	UFUNCTION(BlueprintCallable)
-	void SetCampInfo(const UCamp* InCampInfo) { CampInfo = InCampInfo; }
+	void SetCamp(const UCamp* InCampInfo) { Camp = InCampInfo; }
 	
 protected:
 	UPROPERTY(Transient, Replicated)
@@ -58,5 +58,5 @@ protected:
 	FLinearColor PlayerColor;
 
 	UPROPERTY(Transient, Replicated)
-	const UCamp* CampInfo;
+	const UCamp* Camp;
 };

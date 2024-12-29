@@ -9,23 +9,19 @@
 // Sets default values
 ABaseCampPawn::ABaseCampPawn()
 {
-	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
 }
 
 void ABaseCampPawn::TransportBy(ACollectorPawn* CollectorPawn)
 {
-	if (CollectorPawn->CollectedResource == 0 || CollectorPawn->CollectedResourceType == EResourceType::None)
+	if (!CollectorPawn->CollectedResource.IsValid())
 	{
 		return;
 	}
-	
-	ABattlePlayerState* PS = GetOwnerPlayer();
-	
-	PS->SetResource(CollectorPawn->CollectedResourceType,
-	                PS->GetResource(CollectorPawn->CollectedResourceType) + CollectorPawn->
-	                CollectedResource);
 
-	CollectorPawn->CollectedResource = 0;
-	CollectorPawn->CollectedResourceType = EResourceType::None;
+	ABattlePlayerState* PS = GetOwnerPlayer();
+
+	PS->AddResource(CollectorPawn->CollectedResource);
+
+	CollectorPawn->CollectedResource.Point = 0;
+	CollectorPawn->CollectedResource.Type = EResourceType::None;
 }

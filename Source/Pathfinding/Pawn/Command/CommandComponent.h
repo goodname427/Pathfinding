@@ -7,43 +7,71 @@
 #include "UObject/Object.h"
 #include "CommandComponent.generated.h"
 
+class UCommandComponent;
 class APFPawn;
 class AConsciousPawn;
 class AConsciousAIController;
+
+USTRUCT(BlueprintType)
+struct FCommandData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName CommandName;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget"))
+	float RequiredTargetRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bNeedToTarget;
+
+	FCommandData()
+	{
+		CommandName = "";
+		RequiredTargetRadius = 250.f;
+		bNeedToTarget = true;
+	}
+
+	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
+};
 
 USTRUCT(BlueprintType)
 struct FTargetRequest
 {
 	GENERATED_USTRUCT_BODY()
 
-	FTargetRequest(): TargetPawn(nullptr)
+	FTargetRequest(): TargetPawn(nullptr), Command(nullptr)
 	{
 	}
 
-	explicit FTargetRequest(FName InCommandName) : CommandName(InCommandName), TargetPawn(nullptr)
+	explicit FTargetRequest(FName InCommandName) : CommandName(InCommandName), TargetPawn(nullptr), Command(nullptr)
 	{
 	}
 
-	explicit FTargetRequest(APFPawn* InTargetPawn): TargetPawn(InTargetPawn)
+	explicit FTargetRequest(APFPawn* InTargetPawn): TargetPawn(InTargetPawn), Command(nullptr)
 	{
 	}
 
-	explicit FTargetRequest(const FVector& InTargetLocation): TargetPawn(nullptr), TargetLocation(InTargetLocation)
+	explicit FTargetRequest(const FVector& InTargetLocation): TargetPawn(nullptr), TargetLocation(InTargetLocation),
+	                                                          Command(nullptr)
 	{
 	}
 
-	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn): CommandName(InCommandName), TargetPawn(InTargetPawn)
+	explicit FTargetRequest(UCommandComponent* InCommand);
+
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn): CommandName(InCommandName), TargetPawn(InTargetPawn),
+	                                                            Command(nullptr)
 	{
 	}
 
 	FTargetRequest(FName InCommandName, const FVector& InTargetLocation): CommandName(InCommandName),
 	                                                                      TargetPawn(nullptr),
-	                                                                      TargetLocation(InTargetLocation)
+	                                                                      TargetLocation(InTargetLocation),
+	                                                                      Command(nullptr)
 	{
 	}
 
 	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation):
-		CommandName(InCommandName), TargetPawn(InTargetPawn), TargetLocation(InTargetLocation)
+		CommandName(InCommandName), TargetPawn(InTargetPawn), TargetLocation(InTargetLocation), Command(nullptr)
 	{
 	}
 
@@ -53,12 +81,27 @@ struct FTargetRequest
 		return FTargetRequest(TCommand::StaticCommandName);
 	}
 
+	template<class TCommand>
+	static FTargetRequest Make(APFPawn* InTargetPawn)
+	{
+		return FTargetRequest(TCommand::StaticCommandName, InTargetPawn);
+	}
+
+	template<class TCommand>
+	static FTargetRequest Make(const FVector InTargetLocation)
+	{
+		return FTargetRequest(TCommand::StaticCommandName, InTargetLocation);
+	}
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CommandName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APFPawn* TargetPawn;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector TargetLocation;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
+	UCommandComponent* Command;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
 
@@ -87,7 +130,7 @@ static FName StaticCommandName;
 /**
  * Command component that can only be attached to ConsciousPawn
  */
-UCLASS(Blueprintable, ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
+UCLASS(Abstract, Blueprintable, ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UCommandComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -97,16 +140,16 @@ public:
 
 public:
 	// Command Default Arguments
-	FName GetCommandName() const { return CommandName; };
+	FName GetCommandName() const { return Data.CommandName; };
 
 	UFUNCTION(BlueprintNativeEvent)
 	float GetRequiredTargetRadius() const;
 
+	bool IsNeedToTarget() const { return Data.bNeedToTarget; };
+
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
-	FName CommandName;
-	UPROPERTY(Category = "Command", EditDefaultsOnly)
-	float RequiredTargetRadius;
+	FCommandData Data;
 
 public:
 	// State Query
@@ -135,7 +178,7 @@ public:
 	bool IsReachable();
 
 	UFUNCTION(BlueprintCallable)
-	bool IsTargetReachable() const;
+	bool IsTargetInRequiredRadius() const;
 
 	// Check whether the current status can be executed
 	UFUNCTION(BlueprintCallable)
@@ -169,7 +212,6 @@ public:
 	FCommandEndSignature OnCommandEnd;
 
 protected:
-	UPROPERTY(Transient, Category = "Command", VisibleAnywhere, BlueprintReadOnly)
 	FTargetRequest Request;
 
 	bool bExecuting = false;

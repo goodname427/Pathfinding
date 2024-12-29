@@ -7,16 +7,21 @@
 #include "PFUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+FTargetRequest::FTargetRequest(UCommandComponent* InCommand): TargetPawn(nullptr)
+{
+	Command = InCommand;
+	
+	CommandName = Command ? InCommand->GetCommandName() : NAME_None;
+}
+
 UCommandComponent::UCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
-	CommandName = NAME_None;
-	RequiredTargetRadius = 250.f;
 }
 
 float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 {
-	return RequiredTargetRadius;
+	return Data.GetRequiredTargetRadius();
 }
 
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
@@ -37,7 +42,7 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 bool UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
 {
 	Request = InRequest;
-	
+
 	return IsReachable();
 }
 
@@ -46,7 +51,7 @@ bool UCommandComponent::IsReachable()
 	return GetExecutePawn() != nullptr && InternalIsReachable();
 }
 
-bool UCommandComponent::IsTargetReachable() const
+bool UCommandComponent::IsTargetInRequiredRadius() const
 {
 	const float TargetRadius = GetRequiredTargetRadius();
 	if (TargetRadius < 0)
@@ -99,7 +104,7 @@ bool UCommandComponent::InternalCanExecute_Implementation()
 
 bool UCommandComponent::CanExecute()
 {
-	return IsTargetReachable() && InternalCanExecute();
+	return IsTargetInRequiredRadius() && InternalCanExecute();
 }
 
 void UCommandComponent::BeginExecute()
@@ -116,8 +121,11 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	// DEBUG_MESSAGE(TEXT("Conscious Pawn [%s] Execute Command [%s]"), *GetExecutePawn()->GetName(),
-	//               *GetCommandName().ToString());
+	// DEBUG_MESSAGE(
+	// 	TEXT("Conscious Pawn [%s] Execute Command [%s]"),
+	// 	*GetExecutePawn()->GetName(),
+	// 	*GetCommandName().ToString()
+	// );
 
 	InternalBeginExecute();
 }

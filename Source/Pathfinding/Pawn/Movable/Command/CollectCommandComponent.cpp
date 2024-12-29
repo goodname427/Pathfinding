@@ -15,7 +15,7 @@ UCollectCommandComponent::UCollectCommandComponent(): ResourceTypesToAllowCollec
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	CommandName = StaticCommandName;	
+	Data.CommandName = StaticCommandName;	
 }
 
 bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) const

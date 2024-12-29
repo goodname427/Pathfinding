@@ -18,6 +18,26 @@ enum class EResourceType : uint8
 
 constexpr int32 GNumResourceType = 1;
 
+USTRUCT(BlueprintType)
+struct FResourceInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	EResourceType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 Point;
+
+	FResourceInfo()
+	{
+		Type = EResourceType::None;
+		Point = 0;
+	}
+
+	bool IsValid() const  { return Type != EResourceType::None && Point > 0; }
+};
+
 /**
  * 
  */
@@ -42,6 +62,18 @@ public:
 	void SetResource(EResourceType ResourceType, int32 InValue)
 	{
 		Resources[static_cast<int32>(ResourceType) - 1] = InValue;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	void AddResource(EResourceType ResourceType, int32 InValue)
+	{
+		SetResource(ResourceType, InValue + GetResource(ResourceType));
+	}
+	
+	void AddResource(const FResourceInfo& ResourceInfo)
+	{
+		
+		AddResource(ResourceInfo.Type, ResourceInfo.Point);
 	}
 
 protected:

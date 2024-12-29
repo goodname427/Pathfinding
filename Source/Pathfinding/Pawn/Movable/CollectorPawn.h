@@ -39,6 +39,5 @@ protected:
 	UPROPERTY(Transient)
 	AResourcePawn* NextResourceToCollect;
 	
-	int32 CollectedResource;
-	EResourceType CollectedResourceType;
+	FResourceInfo CollectedResource;
 };

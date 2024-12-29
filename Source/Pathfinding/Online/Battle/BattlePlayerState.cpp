@@ -10,6 +10,11 @@
 ABattlePlayerState::ABattlePlayerState()
 {
 	Resources.SetNum(GNumResourceType);
+
+	if (Resources.Num() > 0)
+	{
+		Resources[0] = 100;
+	}
 }
 
 void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

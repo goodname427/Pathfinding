@@ -12,13 +12,16 @@
 
 
 // Sets default values
-ACollectorPawn::ACollectorPawn(): CollectedResource(0), CollectedResourceType(EResourceType::None)
+ACollectorPawn::ACollectorPawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	INIT_DEFAULT_SUBOBJECT(CollectCommandComponent);
 	INIT_DEFAULT_SUBOBJECT(TransportCommandComponent);
+
+	CollectedResource.Type = EResourceType::None;
+	CollectedResource.Point = 0;
 }
 
 void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue)

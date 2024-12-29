@@ -11,10 +11,10 @@
 
 
 // Sets default values
-AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr)
+AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr), ConsciousData()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
@@ -63,6 +63,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewComman
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
+		// DEBUG_MESSAGE(TEXT("ConsciousAIController Push Command [%s]"), *CommandToExecute->GetCommandName().ToString());
 		ConsciousAIController->PushCommand(CommandToExecute);
 	}
 
@@ -81,13 +82,18 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	OutCommandsToExecute.Reset();
 	UCommandComponent* RequestCommand = ResolveRequestCommand(Request);
 
+	if (RequestCommand == nullptr)
+	{
+		return;
+	}
+		
 	UMoveCommandComponent* MoveCommandComponent = GetMoveCommandComponent();
 	// no move command
 	if (MoveCommandComponent == nullptr)
 	{
 		if (RequestCommand && RequestCommand->GetRequiredTargetRadius() < 0 && RequestCommand->SetCommandArgs(Request))
 		{
-			OutCommandsToExecute.Add(MoveCommandComponent);
+			OutCommandsToExecute.Add(RequestCommand);
 		}
 	}
 	// add move command if the request command need to move
@@ -119,7 +125,11 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 UCommandComponent* AConsciousPawn::ResolveRequestCommand(const FTargetRequest& Request)
 {
 	UCommandComponent* RequestCommand = nullptr;
-	if (Request.CommandName != NAME_None)
+	if (Request.Command != nullptr && Request.Command->GetExecutePawn() == this)
+	{
+		RequestCommand = Request.Command;
+	}
+	else if (Request.CommandName != NAME_None)
 	{
 		if (UCommandComponent** RequestCommandPtr = Commands.Find(Request.CommandName))
 		{
@@ -146,6 +156,26 @@ UMoveCommandComponent* AConsciousPawn::GetCommandComponent(FName CommandName) co
 		return Cast<UMoveCommandComponent>(*Command);
 	}
 	return nullptr;
+}
+
+const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
+{
+	static TArray<UCommandComponent*> CommandArray;
+
+	Commands.GenerateValueArray(CommandArray);
+
+	return CommandArray;
+}
+
+const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd)
+{
+	UCommandComponent* NewCommand = Cast<UCommandComponent>(AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
+	if (NewCommand)
+	{
+		Commands.Add(NewCommand->GetCommandName(), NewCommand);
+	}
+
+	return NewCommand;
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

@@ -14,6 +14,20 @@ struct FTargetRequest;
 class UCommandComponent;
 class UConsciousPawnMovementComponent;
 
+
+
+USTRUCT(BlueprintType)
+struct FConsciousData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TMap<EResourceType, int32> ResourcesToAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float SpawnDuration;
+};
+
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
 {
@@ -53,12 +67,22 @@ public:
 	UMoveCommandComponent* GetCommandComponent(FName CommandName) const;
 
 	UFUNCTION(BlueprintCallable)
-	const TMap<FName, UCommandComponent*>& GetAllCommands() const { return Commands; }
+	const TArray<UCommandComponent*>& GetAllCommands() const;
+
+	UFUNCTION(BlueprintCallable)
+	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 	
 protected:
 	UPROPERTY(Transient)
 	AConsciousAIController* ConsciousAIController;
 	
-	UPROPERTY(Transient)
-	TMap<FName, UCommandComponent*> Commands;
+	TMultiMap<FName, UCommandComponent*> Commands;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	const FConsciousData& GetConsciousData() const { return ConsciousData; }
+	
+protected:
+	UPROPERTY(Category = "State|Conscious", EditDefaultsOnly, BlueprintReadOnly)
+	FConsciousData ConsciousData;
 };

@@ -31,13 +31,13 @@ void AResourcePawn::CollectBy(ACollectorPawn* CollectorPawn)
 		return;
 	}
 	
-	if (CollectorPawn->CollectedResourceType != ResourceData.ResourceType)
+	if (CollectorPawn->CollectedResource.Type != ResourceData.ResourceType)
 	{
-		CollectorPawn->CollectedResource = 0;
+		CollectorPawn->CollectedResource.Point = 0;
 	}
 
-	CollectorPawn->CollectedResourceType = ResourceData.ResourceType;
-	CollectorPawn->CollectedResource += 1;
+	CollectorPawn->CollectedResource.Type = ResourceData.ResourceType;
+	CollectorPawn->CollectedResource.Point += 1;
 
 	ResourcePoint -= 1;
 	if (ResourcePoint <= 0)

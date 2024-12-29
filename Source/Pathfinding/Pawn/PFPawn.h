@@ -83,7 +83,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	EPawnRole GetPawnRole(APFPawn* OtherPawn) const;
-
+	
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)
 	ABattlePlayerState* OwnerPlayer;

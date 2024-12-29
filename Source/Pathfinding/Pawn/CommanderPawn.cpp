@@ -4,6 +4,7 @@
 #include "CommanderPawn.h"
 
 #include "BattleHUD.h"
+#include "NavigationSystem.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "PFUtils.h"
@@ -32,7 +33,8 @@ ACommanderPawn::ACommanderPawn()
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 
 	// Movement
-	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>("MovementComponent");
+	MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UCommanderPawnMovementComponent>(
+		"MovementComponent");
 	MovementComponent->UpdatedComponent = RootComponent;
 
 	// Camera Scale
@@ -90,8 +92,9 @@ void ACommanderPawn::Tick(float DeltaTime)
 
 	// Camera Arm Lerp
 	SpringArmComponent->TargetArmLength = FMath::Lerp(SpringArmComponent->TargetArmLength,
-	                                         FMath::Lerp(MinTargetArmLength, MaxTargetArmLength, CameraScaleValue),
-	                                         DeltaTime * 4.f);
+	                                                  FMath::Lerp(MinTargetArmLength, MaxTargetArmLength,
+	                                                              CameraScaleValue),
+	                                                  DeltaTime * 4.f);
 
 	// Mouse Move
 	if (bEnableMouseMove)
@@ -201,7 +204,7 @@ void ACommanderPawn::SelectPressed()
 	}
 	else
 	{
-		Target(TargetingCommandName);
+		Target(TargetingCommand);
 	}
 }
 
@@ -221,7 +224,7 @@ void ACommanderPawn::Select_CtrlPressed()
 	}
 	else
 	{
-		Target(TargetingCommandName);
+		Target(TargetingCommand);
 	}
 }
 
@@ -239,7 +242,7 @@ void ACommanderPawn::SelectDoubleClick()
 	{
 		return;
 	}
-	
+
 	// double-click a pawn to select all pawns on the screen which are of the same class as the clicked pawn 
 	bDoubleClick = true;
 	APlayerController* PlayerController = GetController<APlayerController>();
@@ -279,9 +282,9 @@ void ACommanderPawn::BeginSelect()
 	{
 		EndSelect(false, true);
 	}
-	
+
 	bSelecting = true;
-	
+
 	APlayerController* PlayerController = GetController<APlayerController>();
 	if (PlayerController)
 	{
@@ -295,9 +298,9 @@ void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 	{
 		return;
 	}
-	
+
 	bSelecting = false;
-	
+
 	if (bSkipSelect)
 	{
 		return;
@@ -347,8 +350,6 @@ void ACommanderPawn::EndSelect(bool bAdditional, bool bSkipSelect)
 	// {
 	// 	DEBUG_MESSAGE(TEXT("Selected Actor [%s]"), *Actor->GetName());
 	// }
-
-	
 }
 
 void ACommanderPawn::Select(APFPawn* Pawn)
@@ -357,7 +358,7 @@ void ACommanderPawn::Select(APFPawn* Pawn)
 	{
 		Pawn->OnSelected(this);
 		ServerSelect(Pawn);
-		
+
 		if (OnSelectedPawnChanged.IsBound())
 		{
 			OnSelectedPawnChanged.Broadcast(this);
@@ -481,14 +482,13 @@ const TArray<APFPawn*>& ACommanderPawn::GetSortedSelectedPawns() const
 		return L.GetClass()->GetName() < R.GetClass()->GetName();
 	});
 
-	return SortedSelectedPawns;  // Return the sorted array by value
+	return SortedSelectedPawns; // Return the sorted array by value
 }
 
 void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("SelectPawns Count [%d]"), SelectedPawns.Num());
 
-	int32 NumSent = 0;
 	for (APFPawn* Pawn : SelectedPawns)
 	{
 		if (!IsOwned(Pawn))
@@ -496,52 +496,36 @@ void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 			return;
 		}
 
-		// if (Pawn->GetOwner() == this)
-		// {
-		// 	DEBUG_MESSAGE(TEXT("Owner Of Pawn [%s] Is [%s]. Me [%s]"), *Pawn->GetName(), *Pawn->GetOwner()->GetName(), *GetName());
-		// }
-		// FString PawnLocalRole;
-		// switch (Pawn->GetLocalRole())
-		// {
-		// case ROLE_Authority:
-		// 	PawnLocalRole = FString("ROLE_Authority");
-		// 	break;
-		// case ROLE_AutonomousProxy:
-		// 	PawnLocalRole = FString("ROLE_AutonomousProxy");
-		// 	break;
-		// case ROLE_SimulatedProxy:
-		// 	PawnLocalRole = FString("ROLE_SimulatedProxy");
-		// 	break;
-		// case ROLE_None:
-		// 	PawnLocalRole = FString("ROLE_None");
-		// 	break;
-		// case ROLE_MAX:
-		// 	PawnLocalRole = FString("ROLE_MAX");
-		// 	break;
-		// }
-		// DEBUG_MESSAGE(TEXT("Role Of Pawn Is [%s]"), *PawnLocalRole);
-
 		AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn);
 		if (ConsciousPawn != nullptr)
 		{
-			NumSent++;
 			ConsciousPawn->Receive(Request);
 		}
 	}
-
-	// DEBUG_MESSAGE(TEXT("SelectPawns Sent / All [%d / %d]"), NumSent, SelectedPawns.Num());
 }
 
-void ACommanderPawn::BeginTarget(FName InTargetingCommandName)
+void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)
 {
-	bTargeting = true;
-	TargetingCommandName = InTargetingCommandName;
+	if (InTargetingCommand == nullptr)
+	{
+		return;
+	}
+
+	if (InTargetingCommand->IsNeedToTarget())
+	{
+		bTargeting = true;
+		TargetingCommand = InTargetingCommand;
+	}
+	else
+	{
+		Send(FTargetRequest(InTargetingCommand));
+	}
 }
 
 void ACommanderPawn::EndTarget()
 {
 	bTargeting = false;
-	TargetingCommandName = NAME_None;
+	TargetingCommand = nullptr;
 }
 
 void ACommanderPawn::TargetPressed()
@@ -561,13 +545,17 @@ void ACommanderPawn::TargetReleased()
 	// keep
 }
 
-void ACommanderPawn::Target(FName CommandName)
+void ACommanderPawn::Target(UCommandComponent* Command)
 {
 	if (SelectedPawns.Num() == 0)
 	{
+		if (bTargeting)
+		{
+			EndTarget();
+		}
 		return;
 	}
-	
+
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController != nullptr)
 	{
@@ -577,22 +565,21 @@ void ACommanderPawn::Target(FName CommandName)
 		FHitResult HitResult;
 		LineTrace(PlayerController, MousePosition, HitResult);
 
-		if (!HitResult.IsValidBlockingHit())
+		if (HitResult.IsValidBlockingHit())
 		{
-			return;
+			FTargetRequest Request;
+			Request.CommandName = Command ? Command->GetCommandName() : NAME_None;
+			Request.TargetLocation = HitResult.Location;
+			Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
+			Request.Command = Command;
+
+			if (Request.TargetPawn)
+			{
+				Request.TargetPawn->OnTarget(this);
+			}
+
+			Send(Request);
 		}
-
-		FTargetRequest Request;
-		Request.CommandName = CommandName;
-		Request.TargetLocation = HitResult.Location;
-		Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
-
-		if (Request.TargetPawn)
-		{
-			Request.TargetPawn->OnTarget(this);
-		}
-
-		Send(Request);
 	}
 
 	if (bTargeting)
@@ -603,7 +590,20 @@ void ACommanderPawn::Target(FName CommandName)
 
 void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
 {
-	UPFBlueprintFunctionLibrary::SpawnPawnForCommander(this, PawnClass, this, Location, FRotator(0, 0, 0));
+	APFPawn* Pawn = UPFBlueprintFunctionLibrary::SpawnPawnForCommander(this, PawnClass, this, Location,
+	                                                                   FRotator(0, 0, 0));
+
+	if (AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn))
+	{
+		if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+			this,
+			GetActorLocation(),
+			Location,
+			1000.0f))
+		{
+			ConsciousPawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(Location));
+		}
+	}
 }
 
 void ACommanderPawn::Test_Implementation()

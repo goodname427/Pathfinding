@@ -108,7 +108,11 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 	const UCamp* Camp = nullptr;
 	if (PS)
 	{
-		Camp = PS->GetCampInfo();
+		Camp = PS->GetCamp();
+		if (Camp == nullptr)
+		{
+			PS->SetCamp(GetDefault<UPFGameSettings>()->GetRandomlyCamp());
+		}
 	}
 
 	if (!Camp)
