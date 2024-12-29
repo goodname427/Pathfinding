@@ -32,10 +32,6 @@ AMovablePawn::AMovablePawn()
 		TEXT("MovementComponent"));
 	MovementComponent->UpdatedComponent = RootComponent;
 	
-	StaticMeshComponent->AlwaysLoadOnClient = true;
-	StaticMeshComponent->AlwaysLoadOnServer = true;
-	StaticMeshComponent->bCastDynamicShadow = true;
-	StaticMeshComponent->bAffectDynamicIndirectLighting = true;
 	StaticMeshComponent->PrimaryComponentTick.TickGroup = TG_PrePhysics;
 
 	StaticMeshComponent->SetupAttachment(CapsuleComponent);

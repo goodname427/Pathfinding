@@ -21,6 +21,12 @@ APFPawn::APFPawn()
 
 	// Collision
 	StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+	StaticMeshComponent->AlwaysLoadOnClient = true;
+	StaticMeshComponent->AlwaysLoadOnServer = true;
+	StaticMeshComponent->bCastDynamicShadow = true;
+	StaticMeshComponent->bAffectDynamicIndirectLighting = true;
+	
+	// Adjust Location
 	bAdjustLocationToGround = true;
 	LocationToGroundOffset = 0;
 
