@@ -73,8 +73,9 @@ void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecute
 		FTargetRequest TransportRequest = FTargetRequest::Make<UTransportCommandComponent>();
 		{
 			TransportRequest.TargetPawn = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
+			TransportRequest.Type = ETargetRequestType::Append;
 		}
 
-		Collector->Receive(TransportRequest, false);
+		Collector->Receive(TransportRequest);
 	}
 }

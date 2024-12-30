@@ -19,17 +19,23 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	float GetNormalizedProgress() const { return 1 - RemainedProgress / ProgressDuration; }	
+	float GetNormalizedProgress() const { return 1.0f - RemainedProgress / GetProgressDuration(); }	
 
 	UFUNCTION(BlueprintNativeEvent)
 	float GetProgressDuration() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UObject* GetProgressIcon() const;
 
 protected:
 	virtual bool InternalIsReachable_Implementation() override;
 	
 protected:
-	UPROPERTY(Category = "Command|Progress", EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(Category = "Command|Progress", EditAnywhere)
 	float ProgressDuration;
+
+	UPROPERTY(Category = "Command|Progress", EditAnywhere, meta=(AllowedClasses="Texture"))
+	UObject* ProgressIcon;
 
 	float RemainedProgress;
 	

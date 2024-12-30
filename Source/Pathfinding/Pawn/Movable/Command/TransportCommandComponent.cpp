@@ -61,8 +61,9 @@ void UTransportCommandComponent::InternalEndExecute_Implementation(ECommandExecu
 		{
 			CollectRequest.TargetPawn = Collector->GetNextResourceToCollect();
 			// DEBUG_MESSAGE(TEXT("Collect Resource [%s]"), *CollectRequest.TargetPawn->GetName());
+			CollectRequest.Type = ETargetRequestType::Append;
 		}
 
-		Collector->Receive(CollectRequest, false);
+		Collector->Receive(CollectRequest);
 	}
 }

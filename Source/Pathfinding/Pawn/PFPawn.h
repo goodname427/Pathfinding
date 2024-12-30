@@ -113,6 +113,9 @@ public:
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,
 	                                      class AController* EventInstigator, AActor* DamageCauser) override;
+
+public:
+	const FPFPawnData& GetData() const { return Data; }
 	
 protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)

@@ -5,7 +5,10 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "Command/CommandComponent.h"
+#include "Command/ProgressCommandComponent.h"
 #include "ConsciousAIController.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandUpdatedSignature, AConsciousAIController*, AIController);
 
 UCLASS()
 class PATHFINDING_API AConsciousAIController : public AAIController
@@ -16,27 +19,46 @@ public:
 	AConsciousAIController();
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FCommandUpdatedSignature OnCommandUpdated;
+	
+	UFUNCTION(BlueprintCallable)
 	UCommandComponent* GetCurrentCommand() const;
 
-	void PushCommand(UCommandComponent* Command);
-	void ClearAllCommands();
+	UFUNCTION(BlueprintCallable)
+	const TArray<UCommandComponent*>& GetCommandsInQueue() const { return CommandQueue; }
 
-	void ExecuteCommandQueue();
+	UFUNCTION(BlueprintCallable)
+	const FTargetRequest& GetRequestAt(int32 Index) const { return RequestQueue[Index];}
+
+	UFUNCTION(BlueprintCallable)
+	UProgressCommandComponent* GetCurrentProgressCommand() const {return Cast<UProgressCommandComponent>(GetCurrentCommand()); }
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UProgressCommandComponent*>& GetProgressCommandsInQueue() const;
+
+	void PushCommand(UCommandComponent* CommandToPush);
+	void PopCommand(const FTargetRequest& PopRequest);
+	void ClearCommands();
+
+	void ExecuteNextCommand();
+	void AbortCurrentCommand();
 
 protected:
-	void ExecuteNextCommand();
 	void ExecuteCommand(UCommandComponent* Command);
-	void AbortCurrentCommand();
 
 	UFUNCTION()
 	void OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result);
 
 private:
-	TQueue<UCommandComponent*> CommandQueue;
+	UPROPERTY(Transient)
+	TArray<UCommandComponent*> CommandQueue;
 
-	UPROPERTY()
+	TArray<FTargetRequest> RequestQueue;
+
+	UPROPERTY(Transient)
 	UCommandComponent* CurrentCommand;
-	
+
 public:
 	static FName CurrentCommandKeyName;
 };

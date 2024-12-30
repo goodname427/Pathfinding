@@ -12,6 +12,8 @@ UProgressCommandComponent::UProgressCommandComponent()
 
 	ProgressDuration = 0;
 	RemainedProgress = 0;
+
+	Data.bAbortCurrentCommand = false;
 }
 
 void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -28,6 +30,11 @@ void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick T
 			EndExecute(ECommandExecuteResult::Success);
 		}
 	}
+}
+
+UObject* UProgressCommandComponent::GetProgressIcon_Implementation() const
+{
+	return ProgressIcon;
 }
 
 bool UProgressCommandComponent::InternalIsReachable_Implementation()

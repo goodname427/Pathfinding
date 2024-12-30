@@ -588,22 +588,32 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 	}
 }
 
-void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
+void ACommanderPawn::SpawnPawnAndMoveToLocation_Implementation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location,
+                                                               FVector TargetLocation)
 {
-	APFPawn* Pawn = UPFBlueprintFunctionLibrary::SpawnPawnForCommander(this, PawnClass, this, Location,
-	                                                                   FRotator(0, 0, 0));
+	APFPawn* Pawn = UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
+		this,
+		PawnClass,
+		this,
+		Location,
+		FRotator::ZeroRotator
+	);
 
 	if (AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn))
 	{
-		if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-			this,
-			GetActorLocation(),
-			Location,
-			1000.0f))
-		{
-			ConsciousPawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(Location));
-		}
+		ConsciousPawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(TargetLocation));
 	}
+}
+
+void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
+{
+	UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
+		this,
+		PawnClass,
+		this,
+		Location,
+		FRotator::ZeroRotator
+	);
 }
 
 void ACommanderPawn::Test_Implementation()

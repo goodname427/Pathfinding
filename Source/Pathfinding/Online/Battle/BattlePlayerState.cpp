@@ -25,6 +25,25 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, BaseCamps);
 }
 
+void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookReason,
+	const FResourceInfo& ResourceInfo)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	// add resource
+	if (TookReason >= EResourceTookReason::Collect)
+	{
+		SetResource(ResourceInfo.Type, GetResource(ResourceInfo.Type) + ResourceInfo.Point);
+		return;
+	}
+
+	// remove resource
+	SetResource(ResourceInfo.Type, GetResource(ResourceInfo.Type) - ResourceInfo.Point);
+}
+
 void ABattlePlayerState::OnPlayerOwnedPawnAdd(APFPawn* Pawn)
 {
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Pawn))

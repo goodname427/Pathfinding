@@ -15,7 +15,6 @@ class UCommandComponent;
 class UConsciousPawnMovementComponent;
 
 
-
 USTRUCT(BlueprintType)
 struct FConsciousData
 {
@@ -41,48 +40,66 @@ protected:
 	virtual void BeginPlay() override;
 
 	virtual void PossessedBy(AController* NewController) override;
-	
+
 public:
-	void Receive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
+	UFUNCTION(BlueprintCallable)
+	void Receive(const FTargetRequest& Request);
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
-	void OnReceive(const FTargetRequest& Request, bool bStartNewCommandQueue = true);
-	
+	void OnReceive(const FTargetRequest& Request);
+
 	virtual void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
 	UCommandComponent* ResolveRequestCommand(const FTargetRequest& Request);
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
-	
+
 public:
 	UFUNCTION(BlueprintCallable)
-	AConsciousAIController* GetConsciousAIController() const { return ConsciousAIController; } 
+	AConsciousAIController* GetConsciousAIController() const { return ConsciousAIController; }
+
+	UFUNCTION(BlueprintCallable)
+	bool HasProgressCommand() const { return bHasProgressCommand; }
 
 	UFUNCTION(BlueprintCallable)
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
 
+	template <class TCommand>
+	TCommand* GetCommandByName() const;
+
 	UFUNCTION(BlueprintCallable)
-	UMoveCommandComponent* GetCommandComponent(FName CommandName) const;
+	UCommandComponent* GetCommandByName(FName CommandName) const;
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UCommandComponent*>& GetCommandsByName(FName CommandName) const;
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<UCommandComponent*>& GetAllCommands() const;
 
 	UFUNCTION(BlueprintCallable)
 	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
-	
+
 protected:
 	UPROPERTY(Transient)
 	AConsciousAIController* ConsciousAIController;
-	
+
 	TMultiMap<FName, UCommandComponent*> Commands;
+
+	bool bHasProgressCommand;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	const FConsciousData& GetConsciousData() const { return ConsciousData; }
-	
+
 protected:
 	UPROPERTY(Category = "State|Conscious", EditDefaultsOnly, BlueprintReadOnly)
 	FConsciousData ConsciousData;
 };
+
+template <class TCommand>
+TCommand* AConsciousPawn::GetCommandByName() const
+{
+	return Cast<TCommand>(GetCommandByName(TCommand::StaticCommandName));
+}

@@ -7,7 +7,7 @@
 #include "PFUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-FTargetRequest::FTargetRequest(UCommandComponent* InCommand): TargetPawn(nullptr)
+FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 {
 	Command = InCommand;
 	
@@ -145,6 +145,24 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 	{
 		OnCommandEnd.Broadcast(this, Result);
 	}
+}
+
+void UCommandComponent::OnPushedToQueue()
+{
+	InternalPushedToQueue();
+}
+
+void UCommandComponent::OnPoppedFromQueue()
+{
+	InternalPoppedFromQueue();
+}
+
+void UCommandComponent::InternalPoppedFromQueue_Implementation()
+{
+}
+
+void UCommandComponent::InternalPushedToQueue_Implementation()
+{
 }
 
 bool UCommandComponent::InternalIsReachable_Implementation()

@@ -30,11 +30,11 @@ void ABattleGameMode::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APFGameState* PFGameState = GetGameState<APFGameState>();
-	if (PFGameState)
-	{
-		PFGameState->InitPlayerLocations();
-	}
+	// APFGameState* PFGameState = GetGameState<APFGameState>();
+	// if (PFGameState)
+	// {
+	// 	PFGameState->InitPlayerLocations();
+	// }
 
 	// DEBUG_MESSAGE(TEXT("Num of Controller: %d"), GetWorld()->GetNumPlayerControllers());
 	// TArray<AActor*> FoundActors;
@@ -104,14 +104,14 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 
 void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn)
 {
-	APFPlayerState* PS = CommanderPawn->GetPlayerState<APFPlayerState>();
+	const APFPlayerState* PS = CommanderPawn->GetPlayerState<APFPlayerState>();
 	const UCamp* Camp = nullptr;
 	if (PS)
 	{
 		Camp = PS->GetCamp();
-		if (Camp == nullptr)
+		if (!Camp)
 		{
-			PS->SetCamp(GetDefault<UPFGameSettings>()->GetRandomlyCamp());
+			Camp = GetDefault<UPFGameSettings>()->GetRandomlyCamp();
 		}
 	}
 
@@ -119,22 +119,26 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 	{
 		return;
 	}
-	
-	CommanderPawn->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderPawn->GetActorLocation());
+
+	const FVector CommanderLocation = CommanderPawn->GetActorLocation();
+
+	CommanderPawn->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
 
 	FVector RandomLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
+		if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+			this,
+			CommanderPawn->GetActorLocation(),
+			RandomLocation,
+			1000.0f))
+		{
+			continue;
+		}
+
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
-			if (UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-				this,
-				CommanderPawn->GetActorLocation(),
-				RandomLocation,
-				1000.0f))
-			{
-				CommanderPawn->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
-			}
+			CommanderPawn->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
 		}
 	}
 }

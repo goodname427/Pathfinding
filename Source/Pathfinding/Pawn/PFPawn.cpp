@@ -31,13 +31,14 @@ APFPawn::APFPawn()
 	LocationToGroundOffset = 0;
 
 	// State
-	INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
-	StateWidgetComponent->SetRelativeLocation(FVector::UpVector * 2);
-	if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
-		StateWidgetClassName))
-	{
-		StateWidgetComponent->SetWidgetClass(*WidgetClassPtr);
-	}
+	// INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
+	// StateWidgetComponent->SetRelativeLocation(FVector::UpVector * 2);
+	// StateWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
+	// 	StateWidgetClassName))
+	// {
+	// 	StateWidgetComponent->SetWidgetClass(*WidgetClassPtr);
+	// }
 
 	MaxHealth = 100;
 	Attack = 1;

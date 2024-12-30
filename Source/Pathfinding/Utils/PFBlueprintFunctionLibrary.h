@@ -39,6 +39,9 @@ public:
 		FRotator Rotation
 	);
 
+	UFUNCTION(BlueprintCallable)
+	static FVector GetRandomReachablePointOfActor(AActor* Actor, float PointAcceptedRadius = 100.f, float AdditionalRadius = 100.0f, int32 Attempts = 10);
+
 public:
 	UFUNCTION(BlueprintCallable)
 	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,

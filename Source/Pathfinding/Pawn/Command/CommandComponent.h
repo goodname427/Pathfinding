@@ -23,15 +23,28 @@ struct FCommandData
 	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bNeedToTarget;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bAbortCurrentCommand;
 
 	FCommandData()
 	{
 		CommandName = "";
 		RequiredTargetRadius = 250.f;
 		bNeedToTarget = true;
+		bAbortCurrentCommand = true;
 	}
 
 	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
+};
+
+UENUM()
+enum class ETargetRequestType : uint8
+{
+	StartNew,
+	Append,
+	Clear,
+	AbortCurrent,
+	Pop
 };
 
 USTRUCT(BlueprintType)
@@ -41,38 +54,51 @@ struct FTargetRequest
 
 	FTargetRequest(): TargetPawn(nullptr), Command(nullptr)
 	{
+		Type = ETargetRequestType::StartNew;
+		Guid = FGuid::NewGuid().ToString();
 	}
 
-	explicit FTargetRequest(FName InCommandName) : CommandName(InCommandName), TargetPawn(nullptr), Command(nullptr)
+	explicit FTargetRequest(FName InCommandName) : FTargetRequest()
 	{
+		CommandName = InCommandName; 
 	}
 
-	explicit FTargetRequest(APFPawn* InTargetPawn): TargetPawn(InTargetPawn), Command(nullptr)
+	explicit FTargetRequest(APFPawn* InTargetPawn): FTargetRequest()
 	{
+		TargetPawn = InTargetPawn;
 	}
 
-	explicit FTargetRequest(const FVector& InTargetLocation): TargetPawn(nullptr), TargetLocation(InTargetLocation),
-	                                                          Command(nullptr)
+	explicit FTargetRequest(const FVector& InTargetLocation): FTargetRequest()
 	{
+		TargetLocation = InTargetLocation;
 	}
 
 	explicit FTargetRequest(UCommandComponent* InCommand);
 
-	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn): CommandName(InCommandName), TargetPawn(InTargetPawn),
-	                                                            Command(nullptr)
+	FTargetRequest(UCommandComponent* InCommand, APFPawn* InTargetPawn): FTargetRequest(InCommand)
 	{
+		TargetPawn = InTargetPawn;
 	}
 
-	FTargetRequest(FName InCommandName, const FVector& InTargetLocation): CommandName(InCommandName),
-	                                                                      TargetPawn(nullptr),
-	                                                                      TargetLocation(InTargetLocation),
-	                                                                      Command(nullptr)
+	FTargetRequest(UCommandComponent* InCommand, const FVector& InTargetLocation): FTargetRequest(InCommand)
 	{
+		TargetLocation = InTargetLocation;
 	}
 
-	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation):
-		CommandName(InCommandName), TargetPawn(InTargetPawn), TargetLocation(InTargetLocation), Command(nullptr)
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn): FTargetRequest(InCommandName)
 	{
+		TargetPawn = InTargetPawn;
+	}
+
+	FTargetRequest(FName InCommandName, const FVector& InTargetLocation): FTargetRequest(InCommandName)
+	{
+		TargetLocation = InTargetLocation;
+	}
+
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation): FTargetRequest(InCommandName)
+	{
+		TargetPawn = InTargetPawn;
+		TargetLocation = InTargetLocation;
 	}
 
 	template<class TCommand>
@@ -102,6 +128,12 @@ struct FTargetRequest
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	UCommandComponent* Command;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
+	ETargetRequestType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
+	FString Guid;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
 
@@ -142,10 +174,12 @@ public:
 	// Command Default Arguments
 	FName GetCommandName() const { return Data.CommandName; };
 
-	UFUNCTION(BlueprintNativeEvent)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	float GetRequiredTargetRadius() const;
 
 	bool IsNeedToTarget() const { return Data.bNeedToTarget; };
+
+	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
 
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
@@ -191,6 +225,15 @@ public:
 	void EndExecute(ECommandExecuteResult Result);
 
 protected:
+	friend class AConsciousAIController;
+	
+	// Called On Pushed To Command Queue
+	void OnPushedToQueue();
+
+	// Called On Popped From Command Queue, just called when command is aborted or popped directly
+	void OnPoppedFromQueue();
+	
+protected:
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalIsReachable();
@@ -204,6 +247,12 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalEndExecute(ECommandExecuteResult Result);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalPushedToQueue();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalPoppedFromQueue();
+	
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandBeginSignature OnCommandBegin;

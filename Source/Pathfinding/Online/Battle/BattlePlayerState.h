@@ -35,7 +35,21 @@ struct FResourceInfo
 		Point = 0;
 	}
 
+	FResourceInfo(TTuple<EResourceType, int32> InTuple)
+	{
+		Type = InTuple.Get<0>();
+		Point = InTuple.Get<1>();
+	}
+
 	bool IsValid() const  { return Type != EResourceType::None && Point > 0; }
+};
+
+UENUM()
+enum class EResourceTookReason : uint8
+{
+	Spawn = 0,
+	Collect = 128,
+	Return = 129,
 };
 
 /**
@@ -59,23 +73,14 @@ public:
 	int32 GetResource(EResourceType ResourceType) const { return Resources[static_cast<int32>(ResourceType) - 1]; }
 
 	UFUNCTION(BlueprintCallable)
+	void TakeResource(UObject* Source, EResourceTookReason TookReason, const FResourceInfo& ResourceInfo);
+
+protected:
 	void SetResource(EResourceType ResourceType, int32 InValue)
 	{
 		Resources[static_cast<int32>(ResourceType) - 1] = InValue;
 	}
-
-	UFUNCTION(BlueprintCallable)
-	void AddResource(EResourceType ResourceType, int32 InValue)
-	{
-		SetResource(ResourceType, InValue + GetResource(ResourceType));
-	}
 	
-	void AddResource(const FResourceInfo& ResourceInfo)
-	{
-		
-		AddResource(ResourceInfo.Type, ResourceInfo.Point);
-	}
-
 protected:
 	UPROPERTY(Transient, Replicated)
 	TArray<int32> Resources;

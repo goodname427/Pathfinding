@@ -20,7 +20,7 @@ void ABaseCampPawn::TransportBy(ACollectorPawn* CollectorPawn)
 
 	ABattlePlayerState* PS = GetOwnerPlayer();
 
-	PS->AddResource(CollectorPawn->CollectedResource);
+	PS->TakeResource(CollectorPawn, EResourceTookReason::Collect, CollectorPawn->CollectedResource);
 
 	CollectorPawn->CollectedResource.Point = 0;
 	CollectorPawn->CollectedResource.Type = EResourceType::None;

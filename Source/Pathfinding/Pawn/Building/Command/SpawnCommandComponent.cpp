@@ -5,6 +5,7 @@
 
 #include "CommanderPawn.h"
 #include "ConsciousPawn.h"
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 
 FName USpawnCommandComponent::StaticCommandName = FName("Spawn");
@@ -20,6 +21,13 @@ float USpawnCommandComponent::GetProgressDuration_Implementation() const
 	return ConsciousPawnClassToSpawn.Get()
 		       ? ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData().SpawnDuration
 		       : -1;
+}
+
+UObject* USpawnCommandComponent::GetProgressIcon_Implementation() const
+{
+	return ConsciousPawnClassToSpawn.Get()
+			   ? ConsciousPawnClassToSpawn.GetDefaultObject()->GetData().Icon
+			   : nullptr;
 }
 
 bool USpawnCommandComponent::InternalIsReachable_Implementation()
@@ -57,10 +65,8 @@ bool USpawnCommandComponent::InternalIsReachable_Implementation()
 	return true;
 }
 
-void USpawnCommandComponent::InternalBeginExecute_Implementation()
+void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 {
-	Super::InternalBeginExecute_Implementation();
-
 	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
@@ -72,7 +78,24 @@ void USpawnCommandComponent::InternalBeginExecute_Implementation()
 			continue;
 		}
 
-		PS->AddResource(Resource.Key, -Resource.Value);
+		PS->TakeResource(this, EResourceTookReason::Spawn, Resource);
+	}
+}
+
+void USpawnCommandComponent::InternalPoppedFromQueue_Implementation()
+{
+	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+
+	// Return resources
+	for (const auto Resource : ConsciousData.ResourcesToAmount)
+	{
+		if (Resource.Key == EResourceType::None)
+		{
+			continue;
+		}
+
+		PS->TakeResource(this, EResourceTookReason::Return, Resource);
 	}
 }
 
@@ -80,28 +103,25 @@ void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 {
 	if (Result == ECommandExecuteResult::Success)
 	{
-		ACommanderPawn* Commander = GetExecutePawn()->GetOwner<ACommanderPawn>();
+		AConsciousPawn* ExecutePawn = GetExecutePawn();
+		ACommanderPawn* Commander = ExecutePawn->GetOwner<ACommanderPawn>();
 
 		if (Commander)
 		{
-			Commander->SpawnPawn(ConsciousPawnClassToSpawn,
-			                     GetExecutePawn()->GetActorLocation());
-		}
-	}
-	else if (Result == ECommandExecuteResult::Aborted)
-	{
-		FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
-		ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+			// compute spawn location
+			DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *ConsciousPawnClassToSpawn->GetClass()->GetName(),
+			              *ExecutePawn->GetActorLocation().ToString());
+			
+			const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
+				ExecutePawn,
+				ConsciousPawnClassToSpawn.GetDefaultObject()->GetSimpleCollisionRadius()
+			);
 
-		// Return resources
-		for (const auto Resource : ConsciousData.ResourcesToAmount)
-		{
-			if (Resource.Key == EResourceType::None)
-			{
-				continue;
-			}
-
-			PS->AddResource(Resource.Key, Resource.Value);
+			Commander->SpawnPawnAndMoveToLocation(
+				ConsciousPawnClassToSpawn,
+				SpawnLocation,
+				GatherLocation
+			);
 		}
 	}
 }

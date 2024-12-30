@@ -24,9 +24,9 @@ ACollectorPawn::ACollectorPawn()
 	CollectedResource.Point = 0;
 }
 
-void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue)
+void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request)
 {
-	if (bStartNewCommandQueue)
+	if (Request.Type != ETargetRequestType::Append)
 	{
 		FindAndRecordNextResourceToCollect(nullptr);
 	}

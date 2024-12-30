@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingPawn.h"
+#include "SpawnBuildingPawn.h"
 #include "Movable/CollectorPawn.h"
 #include "BaseCampPawn.generated.h"
 
 UCLASS()
-class PATHFINDING_API ABaseCampPawn : public ABuildingPawn
+class PATHFINDING_API ABaseCampPawn : public ASpawnBuildingPawn
 {
 	GENERATED_BODY()
 

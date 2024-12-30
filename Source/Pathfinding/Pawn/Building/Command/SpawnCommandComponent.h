@@ -20,15 +20,30 @@ public:
 	DECLARE_COMMAND_NAME()
 
 	virtual float GetProgressDuration_Implementation() const override;
-	
+
+	virtual UObject* GetProgressIcon_Implementation() const override;
+
+	UFUNCTION(BlueprintCallable)
+	void SetGatherLocation(const FVector& InSpawnLocation)
+	{
+		GatherLocation = InSpawnLocation;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetGatherLocation() const { return GatherLocation; }
+
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Command)
 	TSubclassOf<AConsciousPawn> ConsciousPawnClassToSpawn;
+	
+	FVector GatherLocation;
 
 protected:
 	virtual bool InternalIsReachable_Implementation() override;
-	
-	virtual void InternalBeginExecute_Implementation() override;
+
+	virtual void InternalPushedToQueue_Implementation() override;
+
+	virtual void InternalPoppedFromQueue_Implementation() override;
 	
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 };

@@ -205,4 +205,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SpawnPawnAndMoveToLocation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location, FVector TargetLocation);
 };

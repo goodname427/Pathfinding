@@ -29,6 +29,11 @@ void AConsciousPawn::BeginPlay()
 		UCommandComponent* Command = Cast<UCommandComponent>(Component);
 		if (Command)
 		{
+			if (Command->IsA<UProgressCommandComponent>())
+			{
+				bHasProgressCommand = true;
+			}
+			
 			Commands.Add(Command->GetCommandName(), Command);
 		}
 	}
@@ -41,7 +46,7 @@ void AConsciousPawn::PossessedBy(AController* NewController)
 	ConsciousAIController = Cast<AConsciousAIController>(NewController);
 }
 
-void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewCommandQueue)
+void AConsciousPawn::Receive(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
@@ -51,15 +56,40 @@ void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewComman
 		return;
 	}
 
-	OnReceive(Request, bStartNewCommandQueue);
+	OnReceive(Request);
 
-	if (bStartNewCommandQueue)
+	if (Request.Type == ETargetRequestType::Clear)
 	{
-		ConsciousAIController->ClearAllCommands();
+		ConsciousAIController->ClearCommands();
+		return;
 	}
 
+	if (Request.Type == ETargetRequestType::AbortCurrent)
+	{
+		ConsciousAIController->AbortCurrentCommand();
+		return;
+	}
+
+	if (Request.Type == ETargetRequestType::Pop)
+	{
+		ConsciousAIController->PopCommand(Request);
+		return;
+	}
+
+	// Append and StartNew
 	static TArray<UCommandComponent*> CommandsToExecute;
 	ResolveRequest(CommandsToExecute, Request);
+
+	const UCommandComponent* FirstCommand = nullptr;
+	if (CommandsToExecute.Num() > 0)
+	{
+		FirstCommand = CommandsToExecute[0];
+		
+		if (Request.Type == ETargetRequestType::StartNew && FirstCommand->IsAbortCurrentCommand())
+		{
+			ConsciousAIController->ClearCommands();
+		}
+	}
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
@@ -67,13 +97,15 @@ void AConsciousPawn::Receive(const FTargetRequest& Request, bool bStartNewComman
 		ConsciousAIController->PushCommand(CommandToExecute);
 	}
 
-	if (bStartNewCommandQueue)
+	if (Request.Type == ETargetRequestType::StartNew
+		&& FirstCommand
+		&& (FirstCommand->IsAbortCurrentCommand() || !ConsciousAIController->GetCurrentCommand()))
 	{
-		ConsciousAIController->ExecuteCommandQueue();
+		ConsciousAIController->ExecuteNextCommand();
 	}
 }
 
-void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request, bool bStartNewCommandQueue)
+void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request)
 {
 }
 
@@ -146,16 +178,26 @@ UCommandComponent* AConsciousPawn::ResolveRequestCommand(const FTargetRequest& R
 
 UMoveCommandComponent* AConsciousPawn::GetMoveCommandComponent() const
 {
-	return GetCommandComponent(UMoveCommandComponent::StaticCommandName);
+	return GetCommandByName<UMoveCommandComponent>();
 }
 
-UMoveCommandComponent* AConsciousPawn::GetCommandComponent(FName CommandName) const
+UCommandComponent* AConsciousPawn::GetCommandByName(FName CommandName) const
 {
-	if (UCommandComponent* const* Command = Commands.Find(CommandName))
+	if (UCommandComponent* const* FoundCommand = Commands.Find(CommandName))
 	{
-		return Cast<UMoveCommandComponent>(*Command);
+		return *FoundCommand;
 	}
 	return nullptr;
+}
+
+const TArray<UCommandComponent*>& AConsciousPawn::GetCommandsByName(FName CommandName) const
+{
+	static TArray<UCommandComponent*> FoundCommands;
+	FoundCommands.Reset();
+
+	Commands.MultiFind(CommandName, FoundCommands);
+
+	return FoundCommands;
 }
 
 const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
@@ -172,6 +214,11 @@ const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponen
 	UCommandComponent* NewCommand = Cast<UCommandComponent>(AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
 	if (NewCommand)
 	{
+		if (NewCommand->IsA<UProgressCommandComponent>())
+		{
+			bHasProgressCommand = true;
+		}
+		
 		Commands.Add(NewCommand->GetCommandName(), NewCommand);
 	}
 
