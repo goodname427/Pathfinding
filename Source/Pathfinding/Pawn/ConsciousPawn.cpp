@@ -6,12 +6,13 @@
 #include "Controller/ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PFUtils.h"
+#include "Command/CommandChannel.h"
 #include "Command/MoveCommandComponent.h"
 #include "CookOnTheSide/CookOnTheFlyServer.h"
 
 
 // Sets default values
-AConsciousPawn::AConsciousPawn(): ConsciousAIController(nullptr), ConsciousData()
+AConsciousPawn::AConsciousPawn(): ConsciousData()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -29,79 +30,82 @@ void AConsciousPawn::BeginPlay()
 		UCommandComponent* Command = Cast<UCommandComponent>(Component);
 		if (Command)
 		{
-			if (Command->IsA<UProgressCommandComponent>())
-			{
-				bHasProgressCommand = true;
-			}
-			
 			Commands.Add(Command->GetCommandName(), Command);
 		}
 	}
-}
-
-void AConsciousPawn::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	ConsciousAIController = Cast<AConsciousAIController>(NewController);
 }
 
 void AConsciousPawn::Receive(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
-	if (!ConsciousAIController)
-	{
-		// DEBUG_MESSAGE(TEXT("ConsciousAIController Is Not Ready!"));
-		return;
-	}
-
 	OnReceive(Request);
 
-	if (Request.Type == ETargetRequestType::Clear)
+	if (Request.Type == ETargetRequestType::AbortCurrent
+		|| Request.Type == ETargetRequestType::Pop
+		|| Request.Type == ETargetRequestType::Clear)
 	{
-		ConsciousAIController->ClearCommands();
+		UCommandChannel* RequestCommandChannel = GetCommandChannel(Request.OverrideCommandChannel);
+
+		if (!RequestCommandChannel)
+		{
+			return;
+		}
+
+		switch (Request.Type)
+		{
+		case ETargetRequestType::AbortCurrent:
+			{
+				RequestCommandChannel->ExecuteNextCommand();
+				break;
+			}
+		case ETargetRequestType::Pop:
+			{
+				RequestCommandChannel->PopCommand(Request);
+				break;
+			}
+		case ETargetRequestType::Clear:
+			{
+				RequestCommandChannel->ClearCommands();
+				break;
+			}
+		default:
+			{
+				break;
+			}
+		}
+
 		return;
 	}
-
-	if (Request.Type == ETargetRequestType::AbortCurrent)
-	{
-		ConsciousAIController->AbortCurrentCommand();
-		return;
-	}
-
-	if (Request.Type == ETargetRequestType::Pop)
-	{
-		ConsciousAIController->PopCommand(Request);
-		return;
-	}
-
+	
 	// Append and StartNew
 	static TArray<UCommandComponent*> CommandsToExecute;
 	ResolveRequest(CommandsToExecute, Request);
 
-	const UCommandComponent* FirstCommand = nullptr;
-	if (CommandsToExecute.Num() > 0)
+	if (CommandsToExecute.Num() == 0)
 	{
-		FirstCommand = CommandsToExecute[0];
-		
-		if (Request.Type == ETargetRequestType::StartNew && FirstCommand->IsAbortCurrentCommand())
-		{
-			ConsciousAIController->ClearCommands();
-		}
+		return;
+	}
+
+	const UCommandComponent* FirstCommand = CommandsToExecute[0];
+	UCommandChannel* CommandChannel = GetOrCreateCommandChannel(GET_COMMAND_CHANNEL(Request, FirstCommand));
+
+	if (Request.Type == ETargetRequestType::StartNew && FirstCommand->IsAbortCurrentCommand())
+	{
+		CommandChannel->ClearCommands();
 	}
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
 		// DEBUG_MESSAGE(TEXT("ConsciousAIController Push Command [%s]"), *CommandToExecute->GetCommandName().ToString());
-		ConsciousAIController->PushCommand(CommandToExecute);
+		CommandChannel->PushCommand(CommandToExecute);
 	}
 
 	if (Request.Type == ETargetRequestType::StartNew
 		&& FirstCommand
-		&& (FirstCommand->IsAbortCurrentCommand() || !ConsciousAIController->GetCurrentCommand()))
+		&& (FirstCommand->IsAbortCurrentCommand() || !CommandChannel->GetCurrentCommand()))
 	{
-		ConsciousAIController->ExecuteNextCommand();
+		CommandChannel->ExecuteNextCommand();
 	}
 }
 
@@ -118,7 +122,7 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	{
 		return;
 	}
-		
+
 	UMoveCommandComponent* MoveCommandComponent = GetMoveCommandComponent();
 	// no move command
 	if (MoveCommandComponent == nullptr)
@@ -211,18 +215,88 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
 
 const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd)
 {
-	UCommandComponent* NewCommand = Cast<UCommandComponent>(AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
+	UCommandComponent* NewCommand = Cast<UCommandComponent>(
+		AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
 	if (NewCommand)
 	{
-		if (NewCommand->IsA<UProgressCommandComponent>())
-		{
-			bHasProgressCommand = true;
-		}
-		
 		Commands.Add(NewCommand->GetCommandName(), NewCommand);
 	}
 
 	return NewCommand;
+}
+
+UCommandComponent* AConsciousPawn::GetCurrentCommand(int32 ChannelId) const
+{
+	if (UCommandChannel* CommandChannel = GetCommandChannel(ChannelId))
+	{
+		return CommandChannel->GetCurrentCommand();
+	}
+
+	return nullptr;
+}
+
+const TArray<UCommandComponent*>& AConsciousPawn::GetCommandsInQueue(int32 ChannelId) const
+{
+	if (UCommandChannel* CommandChannel = GetCommandChannel(ChannelId))
+	{
+		return CommandChannel->GetCommandsInQueue();
+	}
+
+	static TArray<UCommandComponent*> EmptyCommands;
+	return EmptyCommands;
+}
+
+const TArray<UProgressCommandComponent*>& AConsciousPawn::GetProgressCommandsInQueue() const
+{
+	static TArray<UProgressCommandComponent*> ProgressCommands;
+	ProgressCommands.Reset();
+
+	for (UCommandComponent* Command : GetCommandsInQueue(UProgressCommandComponent::StaticCommandChannel))
+	{
+		if (UProgressCommandComponent* ProgressCommand = Cast<UProgressCommandComponent>(Command))
+		{
+			ProgressCommands.Add(ProgressCommand);
+		}
+	}
+
+	return ProgressCommands;
+}
+
+UCommandChannel* AConsciousPawn::GetCommandChannel(int32 ChannelId) const
+{
+	if (ChannelId < GCommandChannel_Default)
+	{
+		return nullptr;
+	}
+
+	if (UCommandChannel* const* CommandChannel = CommandChannels.Find(ChannelId))
+	{
+		return *CommandChannel;
+	}
+
+	return nullptr;
+}
+
+UCommandChannel* AConsciousPawn::GetOrCreateCommandChannel(int32 ChannelId)
+{
+	if (ChannelId < GCommandChannel_Default)
+	{
+		return nullptr;
+	}
+
+	if (UCommandChannel*& FoundCommandChannel = CommandChannels.FindOrAdd(ChannelId))
+	{
+		return FoundCommandChannel;
+	}
+	else
+	{
+		FoundCommandChannel = NewObject<UCommandChannel>();
+		if (OnNewCommandChannelCreated.IsBound())
+		{
+			OnNewCommandChannelCreated.Broadcast(this, FoundCommandChannel);
+		}
+		return FoundCommandChannel;
+	}
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

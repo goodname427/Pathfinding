@@ -33,7 +33,7 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 {
 	if (const AConsciousPawn* ExecutePawn = GetExecutePawn())
 	{
-		return ExecutePawn->GetConsciousAIController();
+		return Cast<AConsciousAIController>(ExecutePawn->GetController());
 	}
 
 	return nullptr;

@@ -5,15 +5,18 @@
 
 #include "PFUtils.h"
 
+int32 UProgressCommandComponent::StaticCommandChannel = 1;
 
 UProgressCommandComponent::UProgressCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
 	ProgressDuration = 0;
+	ProgressIcon = nullptr;
 	RemainedProgress = 0;
 
 	Data.bAbortCurrentCommand = false;
+	Data.CommandChannel = StaticCommandChannel;
 }
 
 void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,

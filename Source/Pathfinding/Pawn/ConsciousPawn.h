@@ -14,7 +14,6 @@ struct FTargetRequest;
 class UCommandComponent;
 class UConsciousPawnMovementComponent;
 
-
 USTRUCT(BlueprintType)
 struct FConsciousData
 {
@@ -26,6 +25,8 @@ struct FConsciousData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float SpawnDuration;
 };
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNewCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn, UCommandChannel*, NewCommandChannel);
 
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
@@ -39,9 +40,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void PossessedBy(AController* NewController) override;
-
 public:
+	// Request Command
 	UFUNCTION(BlueprintCallable)
 	void Receive(const FTargetRequest& Request);
 
@@ -57,11 +57,9 @@ protected:
 	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
 
 public:
+	// Command
 	UFUNCTION(BlueprintCallable)
-	AConsciousAIController* GetConsciousAIController() const { return ConsciousAIController; }
-
-	UFUNCTION(BlueprintCallable)
-	bool HasProgressCommand() const { return bHasProgressCommand; }
+	bool HasProgressCommand() const { return GetProgressChannel() != nullptr; }
 
 	UFUNCTION(BlueprintCallable)
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
@@ -82,14 +80,41 @@ public:
 	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 
 protected:
-	UPROPERTY(Transient)
-	AConsciousAIController* ConsciousAIController;
-
 	TMultiMap<FName, UCommandComponent*> Commands;
 
-	bool bHasProgressCommand;
+public:
+	// Command Channel
+	UPROPERTY(BlueprintAssignable)
+	FNewCommandChannelCreatedSignature OnNewCommandChannelCreated;
+	
+	UFUNCTION(BlueprintCallable)
+	UCommandComponent* GetCurrentCommand(int32 ChannelId) const;
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UCommandComponent*>& GetCommandsInQueue(int32 ChannelId) const;
+
+	UFUNCTION(BlueprintCallable)
+	const UCommandChannel* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
+	
+	UFUNCTION(BlueprintCallable)
+	UProgressCommandComponent* GetCurrentProgressCommand() const
+	{
+		return Cast<UProgressCommandComponent>(GetCurrentCommand(UProgressCommandComponent::StaticCommandChannel));
+	}
+
+	UFUNCTION(BlueprintCallable)
+	const TArray<UProgressCommandComponent*>& GetProgressCommandsInQueue() const;
+	
+protected:
+	UCommandChannel* GetCommandChannel(int32 ChannelId) const;
+	
+	UCommandChannel* GetOrCreateCommandChannel(int32 ChannelId);
+
+	UPROPERTY()
+	TMap<int32, UCommandChannel*> CommandChannels;
 
 public:
+	// Conscious Data
 	UFUNCTION(BlueprintCallable)
 	const FConsciousData& GetConsciousData() const { return ConsciousData; }
 

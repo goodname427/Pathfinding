@@ -12,30 +12,7 @@ class APFPawn;
 class AConsciousPawn;
 class AConsciousAIController;
 
-USTRUCT(BlueprintType)
-struct FCommandData
-{
-	GENERATED_USTRUCT_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName CommandName;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget"))
-	float RequiredTargetRadius;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bNeedToTarget;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bAbortCurrentCommand;
-
-	FCommandData()
-	{
-		CommandName = "";
-		RequiredTargetRadius = 250.f;
-		bNeedToTarget = true;
-		bAbortCurrentCommand = true;
-	}
-
-	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
-};
+constexpr int32 GCommandChannel_Default = 0;
 
 UENUM()
 enum class ETargetRequestType : uint8
@@ -56,6 +33,7 @@ struct FTargetRequest
 	{
 		Type = ETargetRequestType::StartNew;
 		Guid = FGuid::NewGuid().ToString();
+		OverrideCommandChannel = -1;
 	}
 
 	explicit FTargetRequest(FName InCommandName) : FTargetRequest()
@@ -121,8 +99,10 @@ struct FTargetRequest
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CommandName;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APFPawn* TargetPawn;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector TargetLocation;
 	
@@ -133,6 +113,9 @@ struct FTargetRequest
 	ETargetRequestType Type;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
+	int32 OverrideCommandChannel;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	FString Guid;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
@@ -141,6 +124,41 @@ struct FTargetRequest
 
 	template <class T>
 	T* GetTargetPawn() const { return Cast<T>(TargetPawn); }
+
+	bool IsOverrideCommandChannel() const { return OverrideCommandChannel > GCommandChannel_Default; }
+};
+
+#define GET_COMMAND_CHANNEL(Request, Command) (Request.IsOverrideCommandChannel()? Request.OverrideCommandChannel : Command->GetCommandChannel())
+
+USTRUCT(BlueprintType)
+struct FCommandData
+{
+	GENERATED_USTRUCT_BODY()
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FName CommandName;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget"))
+	float RequiredTargetRadius;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bNeedToTarget;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bAbortCurrentCommand;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 CommandChannel;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
+	UObject* CommandIcon;
+
+	FCommandData()
+	{
+		CommandName = NAME_None;
+		RequiredTargetRadius = 250.f;
+		bNeedToTarget = true;
+		bAbortCurrentCommand = true;
+		CommandChannel = GCommandChannel_Default;
+		CommandIcon = nullptr;
+	}
+
+	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
 };
 
 UENUM(BlueprintType)
@@ -158,6 +176,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandCompo
 
 #define DECLARE_COMMAND_NAME() \
 static FName StaticCommandName;
+
+#define DECLARE_COMMAND_CHANNEL() \
+static int32 StaticCommandChannel;
 
 /**
  * Command component that can only be attached to ConsciousPawn
@@ -180,6 +201,8 @@ public:
 	bool IsNeedToTarget() const { return Data.bNeedToTarget; };
 
 	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
+
+	int32 GetCommandChannel() const { return Data.CommandChannel; };
 
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
@@ -225,7 +248,7 @@ public:
 	void EndExecute(ECommandExecuteResult Result);
 
 protected:
-	friend class AConsciousAIController;
+	friend class UCommandChannel;
 	
 	// Called On Pushed To Command Queue
 	void OnPushedToQueue();

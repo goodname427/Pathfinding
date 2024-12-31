@@ -14,12 +14,18 @@ const UPFGameSettings* UPFBlueprintFunctionLibrary::GetPFGameSettings()
 
 ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawn(UObject* WorldContextObject)
 {
-	APlayerController* PC = WorldContextObject->GetWorld()->GetFirstPlayerController();
-	return GetCommanderPawnByController(PC);
+	if (const UWorld* World = WorldContextObject->GetWorld())
+	{
+		APlayerController* PC = World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
+		return GetCommanderPawnByController(PC);
+	}
+
+	return nullptr;
 }
 
 ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawnByController(AController* Controller)
 {
+	// DEBUG_MESSAGE(TEXT("Controller = %s, Pawn = %s"), *Controller->GetName(), *(Controller->GetPawn() ? Controller->GetPawn()->GetName(): "NULL"));
 	return Controller->GetPawn<ACommanderPawn>();
 }
 

@@ -18,6 +18,8 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+	DECLARE_COMMAND_CHANNEL()
+	
 	UFUNCTION(BlueprintCallable)
 	float GetNormalizedProgress() const { return 1.0f - RemainedProgress / GetProgressDuration(); }	
 
