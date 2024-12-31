@@ -21,7 +21,7 @@ public:
 
 	virtual float GetProgressDuration_Implementation() const override;
 
-	virtual UObject* GetProgressIcon_Implementation() const override;
+	virtual UObject* GetCommandIcon_Implementation() const override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetGatherLocation(const FVector& InSpawnLocation)

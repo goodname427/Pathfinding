@@ -95,11 +95,7 @@ protected:
 private:
 	UPROPERTY(Transient, Category = "Control|CameraRotate", VisibleAnywhere)
 	uint32 bControlPressed : 1;
-
-public:
-	UPROPERTY(BlueprintAssignable, Category = "Select")
-	FSelectedPawnChangedSignature OnSelectedPawnChanged;
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	void Select(APFPawn* Pawn);
@@ -168,14 +164,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const TArray<APFPawn*>& GetSortedSelectedPawns() const;
 
+public:
+	UPROPERTY(BlueprintAssignable, Category = "Select")
+	FSelectedPawnChangedSignature OnSelectedPawnChanged;
+	
 private:
-	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, Replicated)
+	UPROPERTY(Transient, Category = "Select", VisibleAnywhere, ReplicatedUsing=OnRep_SelectedPawn)
 	TArray<APFPawn*> SelectedPawns;
+	UFUNCTION()
+	void OnRep_SelectedPawn() {if (OnSelectedPawnChanged.IsBound()) OnSelectedPawnChanged.Broadcast(this); }
 
 public:
 	// target
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void Send(const FTargetRequest& Request);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SendTo(const FTargetRequest& Request, APFPawn* Target);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginTarget(UCommandComponent* InTargetingCommand);

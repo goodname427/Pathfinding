@@ -9,6 +9,7 @@
 #include "Command/CommandChannel.h"
 #include "Command/MoveCommandComponent.h"
 #include "CookOnTheSide/CookOnTheFlyServer.h"
+#include "Net/UnrealNetwork.h"
 
 
 // Sets default values
@@ -19,6 +20,11 @@ AConsciousPawn::AConsciousPawn(): ConsciousData()
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+}
+
+void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 void AConsciousPawn::BeginPlay()
@@ -35,7 +41,7 @@ void AConsciousPawn::BeginPlay()
 	}
 }
 
-void AConsciousPawn::Receive(const FTargetRequest& Request)
+void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 {
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
@@ -45,7 +51,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 		|| Request.Type == ETargetRequestType::Pop
 		|| Request.Type == ETargetRequestType::Clear)
 	{
-		UCommandChannel* RequestCommandChannel = GetCommandChannel(Request.OverrideCommandChannel);
+		ACommandChannel* RequestCommandChannel = GetCommandChannel(Request.OverrideCommandChannel);
 
 		if (!RequestCommandChannel)
 		{
@@ -77,7 +83,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 
 		return;
 	}
-	
+
 	// Append and StartNew
 	static TArray<UCommandComponent*> CommandsToExecute;
 	ResolveRequest(CommandsToExecute, Request);
@@ -88,7 +94,7 @@ void AConsciousPawn::Receive(const FTargetRequest& Request)
 	}
 
 	const UCommandComponent* FirstCommand = CommandsToExecute[0];
-	UCommandChannel* CommandChannel = GetOrCreateCommandChannel(GET_COMMAND_CHANNEL(Request, FirstCommand));
+	ACommandChannel* CommandChannel = GetOrCreateCommandChannel(GET_COMMAND_CHANNEL(Request, FirstCommand));
 
 	if (Request.Type == ETargetRequestType::StartNew && FirstCommand->IsAbortCurrentCommand())
 	{
@@ -227,7 +233,7 @@ const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponen
 
 UCommandComponent* AConsciousPawn::GetCurrentCommand(int32 ChannelId) const
 {
-	if (UCommandChannel* CommandChannel = GetCommandChannel(ChannelId))
+	if (ACommandChannel* CommandChannel = GetCommandChannel(ChannelId))
 	{
 		return CommandChannel->GetCurrentCommand();
 	}
@@ -237,7 +243,7 @@ UCommandComponent* AConsciousPawn::GetCurrentCommand(int32 ChannelId) const
 
 const TArray<UCommandComponent*>& AConsciousPawn::GetCommandsInQueue(int32 ChannelId) const
 {
-	if (UCommandChannel* CommandChannel = GetCommandChannel(ChannelId))
+	if (ACommandChannel* CommandChannel = GetCommandChannel(ChannelId))
 	{
 		return CommandChannel->GetCommandsInQueue();
 	}
@@ -262,14 +268,14 @@ const TArray<UProgressCommandComponent*>& AConsciousPawn::GetProgressCommandsInQ
 	return ProgressCommands;
 }
 
-UCommandChannel* AConsciousPawn::GetCommandChannel(int32 ChannelId) const
+ACommandChannel* AConsciousPawn::GetCommandChannel(int32 ChannelId) const
 {
 	if (ChannelId < GCommandChannel_Default)
 	{
 		return nullptr;
 	}
 
-	if (UCommandChannel* const* CommandChannel = CommandChannels.Find(ChannelId))
+	if (ACommandChannel* const* CommandChannel = CommandChannelMap.Find(ChannelId))
 	{
 		return *CommandChannel;
 	}
@@ -277,25 +283,47 @@ UCommandChannel* AConsciousPawn::GetCommandChannel(int32 ChannelId) const
 	return nullptr;
 }
 
-UCommandChannel* AConsciousPawn::GetOrCreateCommandChannel(int32 ChannelId)
+ACommandChannel* AConsciousPawn::GetOrCreateCommandChannel(int32 ChannelId)
 {
+	if (GetLocalRole() < ROLE_Authority)
+	{
+		return nullptr;
+	}
+
 	if (ChannelId < GCommandChannel_Default)
 	{
 		return nullptr;
 	}
 
-	if (UCommandChannel*& FoundCommandChannel = CommandChannels.FindOrAdd(ChannelId))
+	if (ACommandChannel*& FoundCommandChannel = CommandChannelMap.FindOrAdd(ChannelId))
 	{
 		return FoundCommandChannel;
 	}
 	else
 	{
-		FoundCommandChannel = NewObject<UCommandChannel>();
-		if (OnNewCommandChannelCreated.IsBound())
+		FoundCommandChannel = ACommandChannel::NewCommandChannel(this, ChannelId);
+
+		if (OnCommandChannelCreated.IsBound())
 		{
-			OnNewCommandChannelCreated.Broadcast(this, FoundCommandChannel);
+			OnCommandChannelCreated.Broadcast(this);
 		}
+
 		return FoundCommandChannel;
+	}
+}
+
+void AConsciousPawn::AddCommandChannel(ACommandChannel* CommandChannel)
+{
+	if (GetLocalRole() >= ROLE_Authority)
+	{
+		return;
+	}
+
+	DEBUG_MESSAGE(TEXT("Add command channel [%d]"), CommandChannel->GetChannelId());
+	CommandChannelMap.Add(CommandChannel->GetChannelId(), CommandChannel);
+	if (OnCommandChannelCreated.IsBound())
+	{
+		OnCommandChannelCreated.Broadcast(this);
 	}
 }
 

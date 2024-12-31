@@ -23,21 +23,16 @@ void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick T
                                               FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
+
 	if (IsExecuting())
 	{
 		RemainedProgress -= DeltaTime;
 		if (RemainedProgress <= 0)
 		{
 			RemainedProgress = 0;
-			EndExecute(ECommandExecuteResult::Success);
+			END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
 		}
 	}
-}
-
-UObject* UProgressCommandComponent::GetProgressIcon_Implementation() const
-{
-	return ProgressIcon;
 }
 
 bool UProgressCommandComponent::InternalIsReachable_Implementation()

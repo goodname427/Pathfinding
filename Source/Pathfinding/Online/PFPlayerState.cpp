@@ -3,9 +3,21 @@
 
 #include "PFPlayerState.h"
 
+#include "Editor.h"
 #include "PFGameState.h"
 #include "Controller/PFPlayerController.h"
 #include "Net/UnrealNetwork.h"
+
+APFPlayerState::APFPlayerState(): TeamId(0), Camp(nullptr)
+{
+	if (GIsEditor)
+	{
+		static int32 Location = 0;
+		PlayerLocation = Location++ % 3;
+		PlayerColor = FLinearColor::MakeRandomColor();
+		Camp = GetDefault<UPFGameSettings>()->GetRandomlyCamp();
+	}
+}
 
 void APFPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

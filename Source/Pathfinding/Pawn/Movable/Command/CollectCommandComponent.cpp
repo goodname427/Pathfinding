@@ -48,6 +48,8 @@ bool UCollectCommandComponent::InternalIsReachable_Implementation()
 
 void UCollectCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	AResourcePawn* Resource = Request.GetTargetPawn<AResourcePawn>();
 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
@@ -64,6 +66,8 @@ void UCollectCommandComponent::InternalBeginExecute_Implementation()
 
 void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
+	AUTHORITY_CHECK();
+	
 	if (Result == ECommandExecuteResult::Success)
 	{
 		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();

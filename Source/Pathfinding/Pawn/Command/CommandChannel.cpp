@@ -3,76 +3,121 @@
 
 #include "CommandChannel.h"
 
+#include "ConsciousPawn.h"
 #include "PFUtils.h"
+#include "Net/UnrealNetwork.h"
 
-UCommandComponent* UCommandChannel::GetCurrentCommand() const
+ACommandChannel::ACommandChannel(): ChannelId(GCommandChannel_Default), CurrentCommand(nullptr)
+{
+	bReplicates = true;
+	bNetLoadOnClient = true;
+}
+
+ACommandChannel* ACommandChannel::NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId)
+{
+	ACommandChannel* CommandChannel = Owner->GetWorld()->SpawnActor<ACommandChannel>();
+
+	CommandChannel->SetOwner(Owner);
+	CommandChannel->ChannelId = InChannelId;
+
+	return CommandChannel;
+}
+
+void ACommandChannel::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, CommandQueue);
+	DOREPLIFETIME(ThisClass, CurrentCommand);
+	DOREPLIFETIME(ThisClass, ChannelId);
+}
+
+void ACommandChannel::BeginPlay()
+{
+	Super::BeginPlay();
+
+	
+	if (AConsciousPawn* OwnerConsciousPawn = Cast<AConsciousPawn>(GetOwner()))
+	{
+		OwnerConsciousPawn->AddCommandChannel(this);
+	}
+}
+
+UCommandComponent* ACommandChannel::GetCurrentCommand() const
 {
 	return CurrentCommand;
 }
 
-void UCommandChannel::PushCommand(UCommandComponent* CommandToPush)
+const TArray<UCommandComponent*>& ACommandChannel::GetCommandsInQueue() const
+{
+	static TArray<UCommandComponent*> Commands;
+	Commands.Reset();
+	
+	for (const FCommandWrapper& CommandWrapper : CommandQueue)
+	{
+		Commands.Add(CommandWrapper.Command);
+	}
+	
+	return Commands;
+}
+
+void ACommandChannel::PushCommand(UCommandComponent* CommandToPush)
 {
 	if (CommandToPush)
 	{
 		CommandQueue.Push(CommandToPush);
-		RequestQueue.Push(CommandToPush->GetRequest());
-		CommandToPush->OnPushedToQueue();
 
-		if (OnCommandUpdated.IsBound())
-		{
-			OnCommandUpdated.Broadcast(this);
-		}
+		PushCommandToQueue(CommandToPush);
+		OnRep_CommandQueue();
 	}
 }
 
-void UCommandChannel::PopCommand(const FTargetRequest& PopRequest)
+void ACommandChannel::PopCommand(const FTargetRequest& PopRequest)
 {
 	if (PopRequest.Guid == CurrentCommand->GetRequest().Guid)
 	{
+		DEBUG_FUNC_FLAG();
 		ExecuteNextCommand();
 	}
 	else
 	{
 		// Remove the command from the queue
 		int32 Index = INDEX_NONE;
-		
-		for (int32 i = 0; i < RequestQueue.Num(); i++)
+
+		for (int32 i = 0; i < CommandQueue.Num(); i++)
 		{
-			if (RequestQueue[i].Guid == PopRequest.Guid)
+			if (CommandQueue[i].Request.Guid == PopRequest.Guid)
 			{
 				Index = i;
 				break;
 			}
 		}
-		
+
 		if (Index != INDEX_NONE)
 		{
-			UCommandComponent* CommandToPop = CommandQueue[Index];
+			UCommandComponent* CommandToPop = CommandQueue[Index].Command;
 			CommandQueue.RemoveAt(Index);
-			RequestQueue.RemoveAt(Index);
-			CommandToPop->OnPoppedFromQueue();
 
-			if (OnCommandUpdated.IsBound())
-			{
-				OnCommandUpdated.Broadcast(this);
-			}
+			PopCommandFromQueue(CommandToPop);
+			OnRep_CommandQueue();
 		}
 	}
 }
 
-void UCommandChannel::ClearCommands()
+void ACommandChannel::ClearCommands()
 {
 	AbortCurrentCommand();
 
-	CommandQueue.Empty();
-	RequestQueue.Empty();
-	if (OnCommandUpdated.IsBound())
+	for (const FCommandWrapper& CommandWrapper : CommandQueue)
 	{
-		OnCommandUpdated.Broadcast(this);
+		PopCommandFromQueue(CommandWrapper.Command);
 	}
+
+	CommandQueue.Empty();
+	OnRep_CommandQueue();
 }
 
-void UCommandChannel::ExecuteNextCommand()
+void ACommandChannel::ExecuteNextCommand()
 {
 	AbortCurrentCommand();
 
@@ -81,15 +126,12 @@ void UCommandChannel::ExecuteNextCommand()
 		return;
 	}
 
-	UCommandComponent* NextCommand = CommandQueue[0];
+	UCommandComponent* NextCommand = CommandQueue[0].Get();
 	CommandQueue.RemoveAt(0);
-
-	NextCommand->SetCommandArgs(RequestQueue[0]);
-	RequestQueue.RemoveAt(0);
-
+	
 	if (NextCommand->CanExecute())
 	{
-		ExecuteCommand(NextCommand);
+		BeginExecuteCommand(NextCommand, NextCommand->GetRequest());
 	}
 	else
 	{
@@ -97,36 +139,68 @@ void UCommandChannel::ExecuteNextCommand()
 	}
 }
 
-void UCommandChannel::ExecuteCommand(UCommandComponent* Command)
+void ACommandChannel::BeginExecuteCommand_Implementation(UCommandComponent* Command,
+                                                         const FTargetRequest& Request)
 {
-	Command->OnCommandEnd.AddDynamic(this, &ThisClass::OnCommandEnd);
+	if (!Command)
+		return;
 
-	CurrentCommand = Command;
-	if (OnCommandUpdated.IsBound())
+	if (GetLocalRole() == ROLE_Authority)
 	{
-		OnCommandUpdated.Broadcast(this);
+		Command->OnCommandEnd.AddDynamic(this, &ThisClass::OnCommandEnd);
+
+		CurrentCommand = Command;
+		OnRep_CurrentCommand();
 	}
+	else
+	{
+		Command->SetCommandArgs(Request);
+	}
+
 
 	Command->BeginExecute();
 }
 
-void UCommandChannel::AbortCurrentCommand()
+void ACommandChannel::AbortCurrentCommand()
 {
 	if (CurrentCommand)
 	{
-		CurrentCommand->OnPoppedFromQueue();
-		CurrentCommand->EndExecute(ECommandExecuteResult::Aborted);
+		PopCommandFromQueue(CurrentCommand);
+		EndExecuteCommand(CurrentCommand, ECommandExecuteResult::Aborted);
 
 		CurrentCommand = nullptr;
-		if (OnCommandUpdated.IsBound())
-		{
-			OnCommandUpdated.Broadcast(this);
-		}
+		OnRep_CurrentCommand();
 	}
 }
 
-void UCommandChannel::OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result)
+void ACommandChannel::EndExecuteCommand_Implementation(UCommandComponent* Command, ECommandExecuteResult Result)
 {
+	if (!Command)
+		return;
+
+	Command->EndExecute(Result);
+}
+
+void ACommandChannel::PushCommandToQueue_Implementation(UCommandComponent* Command)
+{
+	if (!Command)
+		return;
+
+	Command->OnPushedToQueue();
+}
+
+void ACommandChannel::PopCommandFromQueue_Implementation(UCommandComponent* Command)
+{
+	if (!Command)
+		return;
+
+	Command->OnPoppedFromQueue();
+}
+
+void ACommandChannel::OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result)
+{
+	EndExecuteCommand(Command, Result);
+
 	Command->OnCommandEnd.RemoveDynamic(this, &ThisClass::OnCommandEnd);
 	CurrentCommand = nullptr;
 

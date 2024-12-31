@@ -43,6 +43,8 @@ bool UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedT
 
 void UMoveCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
@@ -58,6 +60,8 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 
 void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
+	AUTHORITY_CHECK();
+	
 	AConsciousAIController* AIController = GetExecuteController();
 
 	if (Result == ECommandExecuteResult::Aborted)

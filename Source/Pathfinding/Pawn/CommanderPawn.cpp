@@ -112,7 +112,7 @@ void ACommanderPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ThisClass, SelectedPawns);
+	DOREPLIFETIME_CONDITION(ThisClass, SelectedPawns, COND_OwnerOnly);
 }
 
 // Called to bind functionality to input
@@ -358,11 +358,6 @@ void ACommanderPawn::Select(APFPawn* Pawn)
 	{
 		Pawn->OnSelected(this);
 		ServerSelect(Pawn);
-
-		if (OnSelectedPawnChanged.IsBound())
-		{
-			OnSelectedPawnChanged.Broadcast(this);
-		}
 	}
 }
 
@@ -372,11 +367,6 @@ void ACommanderPawn::Deselect(APFPawn* Pawn)
 	{
 		Pawn->OnDeselected();
 		ServerDeselect(Pawn);
-
-		if (OnSelectedPawnChanged.IsBound())
-		{
-			OnSelectedPawnChanged.Broadcast(this);
-		}
 	}
 }
 
@@ -387,26 +377,24 @@ void ACommanderPawn::DeselectAll()
 		Pawn->OnDeselected();
 	}
 	ServerDeselectAll();
-
-	if (OnSelectedPawnChanged.IsBound())
-	{
-		OnSelectedPawnChanged.Broadcast(this);
-	}
 }
 
 void ACommanderPawn::ServerSelect_Implementation(APFPawn* Pawn)
 {
 	SelectedPawns.Add(Pawn);
+	OnRep_SelectedPawn();
 }
 
 void ACommanderPawn::ServerDeselect_Implementation(APFPawn* Pawn)
 {
 	SelectedPawns.Remove(Pawn);
+	OnRep_SelectedPawn();
 }
 
 void ACommanderPawn::ServerDeselectAll_Implementation()
 {
 	SelectedPawns.Reset();
+	OnRep_SelectedPawn();
 }
 
 void ACommanderPawn::SelectBoxLineTracePawn(const APlayerController* PlayerController, const FBox2D& SelectBox,
@@ -501,6 +489,20 @@ void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 		{
 			ConsciousPawn->Receive(Request);
 		}
+	}
+}
+
+void ACommanderPawn::SendTo_Implementation(const FTargetRequest& Request, APFPawn* Target)
+{
+	if (!IsOwned(Target))
+	{
+		return;
+	}
+
+	AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Target);
+	if (ConsciousPawn != nullptr)
+	{
+		ConsciousPawn->Receive(Request);
 	}
 }
 

@@ -4,52 +4,116 @@
 
 #include "CoreMinimal.h"
 #include "CommandComponent.h"
-#include "ProgressCommandComponent.h"
 #include "UObject/Object.h"
 #include "CommandChannel.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, UCommandChannel*, CommandChannel);
+USTRUCT()
+struct FCommandWrapper
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY()
+	UCommandComponent* Command;
+
+	UPROPERTY()
+	FTargetRequest Request;
+
+	FCommandWrapper()
+		: Command(nullptr)
+		, Request()
+	{
+		
+	}
+
+	FCommandWrapper(UCommandComponent* InCommand)
+	{
+		Command = InCommand;
+		Request = InCommand->GetRequest();
+	}
+
+	UCommandComponent* Get() const
+	{
+		Command->SetCommandArgs(Request);
+		return Command;
+	}
+};
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, ACommandChannel*, CommandChannel);
 
 /**
  * 
  */
 UCLASS(BlueprintType)
-class PATHFINDING_API UCommandChannel : public UObject
+class PATHFINDING_API ACommandChannel : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FCommandChannelUpdatedSignature OnCommandUpdated;
+	ACommandChannel();
+
+	static ACommandChannel* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
+	
+public:
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+protected:
+	virtual void BeginPlay() override;
+	
+public:
+	UFUNCTION(BlueprintCallable)
+	int32 GetChannelId() const { return ChannelId; }
 	
 	UFUNCTION(BlueprintCallable)
 	UCommandComponent* GetCurrentCommand() const;
 
 	UFUNCTION(BlueprintCallable)
-	const TArray<UCommandComponent*>& GetCommandsInQueue() const { return CommandQueue; }
+	const TArray<UCommandComponent*>& GetCommandsInQueue() const;
 
 	UFUNCTION(BlueprintCallable)
-	const FTargetRequest& GetRequestAt(int32 Index) const { return RequestQueue[Index];}
+	const FTargetRequest& GetRequestAt(int32 Index) const { return CommandQueue[Index].Request; }
 
 	void PushCommand(UCommandComponent* CommandToPush);
+
 	void PopCommand(const FTargetRequest& PopRequest);
+
 	void ClearCommands();
 
 	void ExecuteNextCommand();
+
 	void AbortCurrentCommand();
 
 protected:
-	void ExecuteCommand(UCommandComponent* Command);
+	UFUNCTION(NetMulticast, Reliable)
+	void BeginExecuteCommand(UCommandComponent* Command, const FTargetRequest& Request);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void EndExecuteCommand(UCommandComponent* Command, ECommandExecuteResult Result);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void PushCommandToQueue(UCommandComponent* Command);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void PopCommandFromQueue(UCommandComponent* Command);
+
+	// Server only
 	UFUNCTION()
 	void OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result);
 
+public:
+	UPROPERTY(BlueprintAssignable)
+	FCommandChannelUpdatedSignature OnCommandUpdated;
+	
 private:
-	UPROPERTY(Transient)
-	TArray<UCommandComponent*> CommandQueue;
+	UPROPERTY(Replicated)
+	int32 ChannelId;
+	
+	UPROPERTY(Transient, ReplicatedUsing=OnRep_CommandQueue)
+	TArray<FCommandWrapper> CommandQueue;
+	UFUNCTION()
+	void OnRep_CommandQueue() { if (OnCommandUpdated.IsBound()) OnCommandUpdated.Broadcast(this); }
 
-	TArray<FTargetRequest> RequestQueue;
-
-	UPROPERTY(Transient)
+	UPROPERTY(Transient, ReplicatedUsing=OnRep_CurrentCommand)
 	UCommandComponent* CurrentCommand;
+	UFUNCTION()
+	void OnRep_CurrentCommand() { if (OnCommandUpdated.IsBound()) OnCommandUpdated.Broadcast(this); }
 };

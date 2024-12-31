@@ -37,6 +37,8 @@ bool UTransportCommandComponent::InternalIsReachable_Implementation()
 
 void UTransportCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	ABaseCampPawn* BaseCamp = Request.GetTargetPawn<ABaseCampPawn>();
 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
@@ -53,6 +55,8 @@ void UTransportCommandComponent::InternalBeginExecute_Implementation()
 
 void UTransportCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
+	AUTHORITY_CHECK();
+	
 	if (Result == ECommandExecuteResult::Success)
 	{
 		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();

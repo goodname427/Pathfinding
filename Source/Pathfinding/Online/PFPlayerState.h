@@ -21,6 +21,8 @@ class PATHFINDING_API APFPlayerState : public APlayerState
 	friend class APFGameState;
 	
 public:
+	APFPlayerState();
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void CopyProperties(APlayerState* PlayerState) override;

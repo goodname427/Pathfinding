@@ -24,6 +24,11 @@ float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 	return Data.GetRequiredTargetRadius();
 }
 
+UObject* UCommandComponent::GetCommandIcon_Implementation() const
+{
+	return Data.CommandIcon;
+}
+
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
 {
 	return Cast<AConsciousPawn>(GetOwner());

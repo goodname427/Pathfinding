@@ -180,6 +180,16 @@ static FName StaticCommandName;
 #define DECLARE_COMMAND_CHANNEL() \
 static int32 StaticCommandChannel;
 
+#define END_EXECUTE_AUTHORITY_FOR(Command, Result)\
+	if (Command->GetOwnerRole() == ROLE_Authority) \
+	{ \
+		Command->EndExecute(Result); \
+	}
+
+#define END_EXECUTE_AUTHORITY(Result) END_EXECUTE_AUTHORITY_FOR(this, Result)
+
+#define AUTHORITY_CHECK() if (GetOwnerRole() < ROLE_Authority) return
+
 /**
  * Command component that can only be attached to ConsciousPawn
  */
@@ -203,6 +213,9 @@ public:
 	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
 
 	int32 GetCommandChannel() const { return Data.CommandChannel; };
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UObject* GetCommandIcon() const;
 
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
@@ -248,7 +261,7 @@ public:
 	void EndExecute(ECommandExecuteResult Result);
 
 protected:
-	friend class UCommandChannel;
+	friend class ACommandChannel;
 	
 	// Called On Pushed To Command Queue
 	void OnPushedToQueue();

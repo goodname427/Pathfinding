@@ -20,7 +20,8 @@ UGatherCommandComponent::UGatherCommandComponent()
 
 void UGatherCommandComponent::InternalBeginExecute_Implementation()
 {
-	const TArray<UCommandComponent*>& SpawnCommands = GetExecutePawn()->GetCommandsByName(USpawnCommandComponent::StaticCommandName);
+	const TArray<UCommandComponent*>& SpawnCommands = GetExecutePawn()->GetCommandsByName(
+		USpawnCommandComponent::StaticCommandName);
 	for (UCommandComponent* Command : SpawnCommands)
 	{
 		if (USpawnCommandComponent* SpawnCommand = Cast<USpawnCommandComponent>(Command))
@@ -29,11 +30,10 @@ void UGatherCommandComponent::InternalBeginExecute_Implementation()
 			{
 				GatherFlagMeshComponent->SetWorldLocation(Request.TargetLocation);
 			}
-			
+
 			SpawnCommand->SetGatherLocation(Request.TargetLocation);
 		}
 	}
 
-	EndExecute(ECommandExecuteResult::Success);
+	END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
 }
-

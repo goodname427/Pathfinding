@@ -23,7 +23,7 @@ float USpawnCommandComponent::GetProgressDuration_Implementation() const
 		       : -1;
 }
 
-UObject* USpawnCommandComponent::GetProgressIcon_Implementation() const
+UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 {
 	return ConsciousPawnClassToSpawn.Get()
 			   ? ConsciousPawnClassToSpawn.GetDefaultObject()->GetData().Icon
@@ -67,6 +67,8 @@ bool USpawnCommandComponent::InternalIsReachable_Implementation()
 
 void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
@@ -84,6 +86,8 @@ void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 
 void USpawnCommandComponent::InternalPoppedFromQueue_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
@@ -101,6 +105,8 @@ void USpawnCommandComponent::InternalPoppedFromQueue_Implementation()
 
 void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
+	AUTHORITY_CHECK();
+	
 	if (Result == ECommandExecuteResult::Success)
 	{
 		AConsciousPawn* ExecutePawn = GetExecutePawn();
@@ -109,8 +115,8 @@ void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 		if (Commander)
 		{
 			// compute spawn location
-			DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *ConsciousPawnClassToSpawn->GetClass()->GetName(),
-			              *ExecutePawn->GetActorLocation().ToString());
+			// DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *ConsciousPawnClassToSpawn->GetClass()->GetName(),
+			//               *ExecutePawn->GetActorLocation().ToString());
 			
 			const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
 				ExecutePawn,

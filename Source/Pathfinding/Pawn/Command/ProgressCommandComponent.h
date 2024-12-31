@@ -26,9 +26,6 @@ public:
 	UFUNCTION(BlueprintNativeEvent)
 	float GetProgressDuration() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	UObject* GetProgressIcon() const;
-
 protected:
 	virtual bool InternalIsReachable_Implementation() override;
 	

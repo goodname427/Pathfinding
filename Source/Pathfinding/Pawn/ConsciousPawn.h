@@ -26,7 +26,7 @@ struct FConsciousData
 	float SpawnDuration;
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FNewCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn, UCommandChannel*, NewCommandChannel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
 
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
@@ -37,12 +37,15 @@ public:
 	// Sets default values for this pawn's properties
 	AConsciousPawn();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:
 	// Request Command
-	UFUNCTION(BlueprintCallable)
+	// Server only
+	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void Receive(const FTargetRequest& Request);
 
 protected:
@@ -84,9 +87,6 @@ protected:
 
 public:
 	// Command Channel
-	UPROPERTY(BlueprintAssignable)
-	FNewCommandChannelCreatedSignature OnNewCommandChannelCreated;
-	
 	UFUNCTION(BlueprintCallable)
 	UCommandComponent* GetCurrentCommand(int32 ChannelId) const;
 
@@ -94,7 +94,7 @@ public:
 	const TArray<UCommandComponent*>& GetCommandsInQueue(int32 ChannelId) const;
 
 	UFUNCTION(BlueprintCallable)
-	const UCommandChannel* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
+	const ACommandChannel* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
 	
 	UFUNCTION(BlueprintCallable)
 	UProgressCommandComponent* GetCurrentProgressCommand() const
@@ -104,15 +104,23 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<UProgressCommandComponent*>& GetProgressCommandsInQueue() const;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FCommandChannelCreatedSignature OnCommandChannelCreated;
 	
 protected:
-	UCommandChannel* GetCommandChannel(int32 ChannelId) const;
+	ACommandChannel* GetCommandChannel(int32 ChannelId) const;
+
+	// Server only
+	ACommandChannel* GetOrCreateCommandChannel(int32 ChannelId);
+
+	// Client only
+	void AddCommandChannel(ACommandChannel* CommandChannel);
 	
-	UCommandChannel* GetOrCreateCommandChannel(int32 ChannelId);
-
-	UPROPERTY()
-	TMap<int32, UCommandChannel*> CommandChannels;
-
+	friend class ACommandChannel;
+	TMap<int32, ACommandChannel*> CommandChannelMap;
+	
 public:
 	// Conscious Data
 	UFUNCTION(BlueprintCallable)

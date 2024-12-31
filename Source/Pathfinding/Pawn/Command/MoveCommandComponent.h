@@ -31,6 +31,7 @@ protected:
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 
+	// Server only
 	UFUNCTION()
 	void OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result);
 

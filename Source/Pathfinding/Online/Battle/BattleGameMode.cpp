@@ -8,7 +8,6 @@
 #include "BattlePlayerState.h"
 #include "Camp.h"
 #include "CommanderPawn.h"
-#include "EditorCategoryUtils.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "PFUtils.h"
@@ -99,6 +98,11 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 {
 	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
 
+	if (GIsEditor)
+	{
+		return;
+	}
+	
 	ErrorMessage = TEXT("Battle has Started");
 }
 
@@ -109,10 +113,6 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 	if (PS)
 	{
 		Camp = PS->GetCamp();
-		if (!Camp)
-		{
-			Camp = GetDefault<UPFGameSettings>()->GetRandomlyCamp();
-		}
 	}
 
 	if (!Camp)
