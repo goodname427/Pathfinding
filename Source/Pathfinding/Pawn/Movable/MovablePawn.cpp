@@ -14,8 +14,7 @@ AMovablePawn::AMovablePawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	RootComponent = INIT_DEFAULT_SUBOBJECT(CapsuleComponent);
-
-	CapsuleComponent->CanCharacterStepUpOn = ECB_No;
+	
 	CapsuleComponent->InitCapsuleSize(34.0f, 88.0f);
 	CapsuleComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 

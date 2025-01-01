@@ -10,7 +10,7 @@
 FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 {
 	Command = InCommand;
-	
+
 	CommandName = Command ? InCommand->GetCommandName() : NAME_None;
 }
 
@@ -20,7 +20,7 @@ UCommandComponent::UCommandComponent()
 }
 
 void UCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                      FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -130,7 +130,9 @@ bool UCommandComponent::InternalCanExecute_Implementation()
 
 bool UCommandComponent::CanExecute()
 {
-	return IsTargetInRequiredRadius() && InternalCanExecute();
+	return (!Data.bReachableCheckBeforeExecute || IsReachable())
+		&& IsTargetInRequiredRadius()
+		&& InternalCanExecute();
 }
 
 void UCommandComponent::BeginExecute()
@@ -178,17 +180,16 @@ void UCommandComponent::OnPushedToQueue()
 	InternalPushedToQueue();
 }
 
-void UCommandComponent::OnPoppedFromQueue()
+void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 {
-	InternalPoppedFromQueue();
+	InternalPoppedFromQueue(Reason);
 }
 
 void UCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
-	
 }
 
-void UCommandComponent::InternalPoppedFromQueue_Implementation()
+void UCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
 {
 }
 

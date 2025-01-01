@@ -147,8 +147,12 @@ struct FCommandData
 	bool bNeedToTarget;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
+	UPROPERTY(EditAnywhere)
+	bool bReachableCheckBeforeExecute; 
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Channel;
+	
 
 	FCommandData()
 	{
@@ -159,6 +163,8 @@ struct FCommandData
 		RequiredTargetRadius = 250.f;
 		bNeedToTarget = true;
 		bAbortCurrentCommand = true;
+		bReachableCheckBeforeExecute = true;
+		
 		Channel = GCommandChannel_Default;
 	}
 
@@ -171,6 +177,15 @@ enum class ECommandExecuteResult : uint8
 	Success,
 	Failed,
 	Aborted,
+};
+
+
+UENUM()
+enum class ECommandPoppedReason : uint8
+{
+	Cancel,
+	Unreachable,
+	PreTaskFailed,
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComponent*, Command);
@@ -251,6 +266,23 @@ public:
 	const FTargetRequest& GetRequest() const { return Request; };
 
 public:
+	///	Execute Progress
+	/// 1.SetCommandArgs
+	/// - IsReachable
+	/// 2.OnPushedToQueue
+	/// - InternalPushedToQueue
+	/// 3.CanExecute
+	/// - IsReachable Or !bReachableCheckBeforeExecute
+	/// - IsTargetInRequiredRadius
+	/// - InternalCanExecute
+	/// 4.BeginExecute
+	/// - InternalBeginExecute
+	/// 5.Execute
+	/// - InternalExecute
+	/// 6.Wait for end
+	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
+	///	- Ended by failed Or success -> EndExecute
+	
 	// Execute
 	UFUNCTION(BlueprintCallable)
 	bool SetCommandArgs(const FTargetRequest& InRequest);
@@ -279,7 +311,7 @@ protected:
 	void OnPushedToQueue();
 
 	// Called On Popped From Command Queue, just called when command is aborted or popped directly
-	void OnPoppedFromQueue();
+	void OnPoppedFromQueue(ECommandPoppedReason Reason);
 	
 protected:
 	// Internal Implementation
@@ -302,7 +334,7 @@ protected:
 	void InternalPushedToQueue();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void InternalPoppedFromQueue();
+	void InternalPoppedFromQueue(ECommandPoppedReason Reason);
 	
 public:
 	UPROPERTY(BlueprintAssignable)
