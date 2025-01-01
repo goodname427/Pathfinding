@@ -114,10 +114,11 @@ void UCommandChannelComponent::ClearCommands(ECommandPoppedReason Reason)
 {
 	AbortCurrentCommand();
 
-	// for (int32 i = 0; i < CommandQueue.Num(); i++)
+	// while (NumToClear > 0 && CommandQueue.Num() > 0)
 	// {
 	// 	const FCommandWrapper& CommandWrapper = CommandQueue[0];
 	// 	CommandQueue.RemoveAt(0);
+	// 	NumToClear--;
 	//
 	// 	GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
 	// }
