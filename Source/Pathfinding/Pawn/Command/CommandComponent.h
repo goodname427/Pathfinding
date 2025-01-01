@@ -20,8 +20,7 @@ enum class ETargetRequestType : uint8
 	StartNew,
 	Append,
 	Clear,
-	AbortCurrent,
-	Pop
+	AbortOrPop
 };
 
 USTRUCT(BlueprintType)
@@ -32,8 +31,8 @@ struct FTargetRequest
 	FTargetRequest(): TargetPawn(nullptr), Command(nullptr)
 	{
 		Type = ETargetRequestType::StartNew;
-		Guid = FGuid::NewGuid().ToString();
 		OverrideCommandChannel = -1;
+		CommandIndexToPop = -1;
 	}
 
 	explicit FTargetRequest(FName InCommandName) : FTargetRequest()
@@ -115,8 +114,8 @@ struct FTargetRequest
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	int32 OverrideCommandChannel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
-	FString Guid;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay, meta=(EditCondition = "Type == ETargetRequestType::AbortOrPop"))
+	int32 CommandIndexToPop;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
 

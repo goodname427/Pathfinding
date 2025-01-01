@@ -36,7 +36,7 @@ void ACommandChannel::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
+
 	if (AConsciousPawn* OwnerConsciousPawn = Cast<AConsciousPawn>(GetOwner()))
 	{
 		OwnerConsciousPawn->AddCommandChannel(this);
@@ -52,12 +52,12 @@ const TArray<UCommandComponent*>& ACommandChannel::GetCommandsInQueue() const
 {
 	static TArray<UCommandComponent*> Commands;
 	Commands.Reset();
-	
+
 	for (const FCommandWrapper& CommandWrapper : CommandQueue)
 	{
 		Commands.Add(CommandWrapper.Command);
 	}
-	
+
 	return Commands;
 }
 
@@ -72,35 +72,20 @@ void ACommandChannel::PushCommand(UCommandComponent* CommandToPush)
 	}
 }
 
-void ACommandChannel::PopCommand(const FTargetRequest& PopRequest)
+void ACommandChannel::PopCommand(int32 CommandIndexToPop)
 {
-	if (PopRequest.Guid == CurrentCommand->GetRequest().Guid)
+	if (CommandIndexToPop == -1)
 	{
-		DEBUG_FUNC_FLAG();
 		ExecuteNextCommand();
 	}
-	else
+	else if (CommandIndexToPop >= 0 && CommandIndexToPop < CommandQueue.Num())
 	{
 		// Remove the command from the queue
-		int32 Index = INDEX_NONE;
+		UCommandComponent* CommandToPop = CommandQueue[CommandIndexToPop].Command;
+		CommandQueue.RemoveAt(CommandIndexToPop);
 
-		for (int32 i = 0; i < CommandQueue.Num(); i++)
-		{
-			if (CommandQueue[i].Request.Guid == PopRequest.Guid)
-			{
-				Index = i;
-				break;
-			}
-		}
-
-		if (Index != INDEX_NONE)
-		{
-			UCommandComponent* CommandToPop = CommandQueue[Index].Command;
-			CommandQueue.RemoveAt(Index);
-
-			PopCommandFromQueue(CommandToPop);
-			OnRep_CommandQueue();
-		}
+		PopCommandFromQueue(CommandToPop);
+		OnRep_CommandQueue();
 	}
 }
 
@@ -128,7 +113,7 @@ void ACommandChannel::ExecuteNextCommand()
 
 	UCommandComponent* NextCommand = CommandQueue[0].Get();
 	CommandQueue.RemoveAt(0);
-	
+
 	if (NextCommand->CanExecute())
 	{
 		BeginExecuteCommand(NextCommand, NextCommand->GetRequest());

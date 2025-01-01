@@ -20,9 +20,7 @@ struct FCommandWrapper
 
 	FCommandWrapper()
 		: Command(nullptr)
-		, Request()
 	{
-		
 	}
 
 	FCommandWrapper(UCommandComponent* InCommand)
@@ -52,17 +50,17 @@ public:
 	ACommandChannel();
 
 	static ACommandChannel* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
-	
+
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
 	virtual void BeginPlay() override;
-	
+
 public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetChannelId() const { return ChannelId; }
-	
+
 	UFUNCTION(BlueprintCallable)
 	UCommandComponent* GetCurrentCommand() const;
 
@@ -74,7 +72,7 @@ public:
 
 	void PushCommand(UCommandComponent* CommandToPush);
 
-	void PopCommand(const FTargetRequest& PopRequest);
+	void PopCommand(int32 CommandIndexToPop);
 
 	void ClearCommands();
 
@@ -102,11 +100,11 @@ protected:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandChannelUpdatedSignature OnCommandUpdated;
-	
+
 private:
 	UPROPERTY(Replicated)
 	int32 ChannelId;
-	
+
 	UPROPERTY(Transient, ReplicatedUsing=OnRep_CommandQueue)
 	TArray<FCommandWrapper> CommandQueue;
 	UFUNCTION()

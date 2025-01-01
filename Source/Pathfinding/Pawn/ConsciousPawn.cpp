@@ -47,8 +47,7 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 
 	OnReceive(Request);
 
-	if (Request.Type == ETargetRequestType::AbortCurrent
-		|| Request.Type == ETargetRequestType::Pop
+	if (Request.Type == ETargetRequestType::AbortOrPop
 		|| Request.Type == ETargetRequestType::Clear)
 	{
 		ACommandChannel* RequestCommandChannel = GetCommandChannel(Request.OverrideCommandChannel);
@@ -60,14 +59,9 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 
 		switch (Request.Type)
 		{
-		case ETargetRequestType::AbortCurrent:
+		case ETargetRequestType::AbortOrPop:
 			{
-				RequestCommandChannel->ExecuteNextCommand();
-				break;
-			}
-		case ETargetRequestType::Pop:
-			{
-				RequestCommandChannel->PopCommand(Request);
+				RequestCommandChannel->PopCommand(Request.CommandIndexToPop);
 				break;
 			}
 		case ETargetRequestType::Clear:
