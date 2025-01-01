@@ -64,14 +64,14 @@ class PATHFINDING_API ABattlePlayerState : public APFPlayerState
 
 public:
 	ABattlePlayerState();
-
-public:
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetResource(EResourceType ResourceType) const { return Resources[static_cast<int32>(ResourceType) - 1]; }
 
+	// Server only
 	UFUNCTION(BlueprintCallable)
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const FResourceInfo& ResourceInfo);
 

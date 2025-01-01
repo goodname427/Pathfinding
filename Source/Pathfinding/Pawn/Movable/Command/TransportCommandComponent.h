@@ -24,6 +24,5 @@ protected:
 	
 	virtual void InternalBeginExecute_Implementation() override;
 
-
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 };

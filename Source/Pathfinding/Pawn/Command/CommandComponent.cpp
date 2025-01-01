@@ -19,6 +19,17 @@ UCommandComponent::UCommandComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+void UCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (IsExecuting())
+	{
+		InternalExecute(DeltaTime);
+	}
+}
+
 FString UCommandComponent::GetCommandDescription_Implementation() const
 {
 	return Data.Description;
@@ -170,6 +181,11 @@ void UCommandComponent::OnPushedToQueue()
 void UCommandComponent::OnPoppedFromQueue()
 {
 	InternalPoppedFromQueue();
+}
+
+void UCommandComponent::InternalExecute_Implementation(float DeltaTime)
+{
+	
 }
 
 void UCommandComponent::InternalPoppedFromQueue_Implementation()

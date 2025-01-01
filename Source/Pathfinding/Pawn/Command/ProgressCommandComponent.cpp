@@ -10,29 +10,13 @@ int32 UProgressCommandComponent::StaticCommandChannel = 1;
 UProgressCommandComponent::UProgressCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-
+	
 	ProgressDuration = 0;
 	ProgressIcon = nullptr;
 	RemainedProgress = 0;
 
 	Data.bAbortCurrentCommand = false;
 	Data.Channel = StaticCommandChannel;
-}
-
-void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                              FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (IsExecuting())
-	{
-		RemainedProgress -= DeltaTime;
-		if (RemainedProgress <= 0)
-		{
-			RemainedProgress = 0;
-			END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
-		}
-	}
 }
 
 bool UProgressCommandComponent::InternalIsReachable_Implementation()
@@ -48,4 +32,14 @@ float UProgressCommandComponent::GetProgressDuration_Implementation() const
 void UProgressCommandComponent::InternalBeginExecute_Implementation()
 {
 	RemainedProgress = GetProgressDuration();
+}
+
+void UProgressCommandComponent::InternalExecute_Implementation(float DeltaTime)
+{
+	RemainedProgress -= DeltaTime;
+	if (RemainedProgress <= 0)
+	{
+		RemainedProgress = 0;
+		END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
+	}
 }

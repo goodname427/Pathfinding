@@ -205,6 +205,8 @@ class PATHFINDING_API UCommandComponent : public UActorComponent
 public:
 	UCommandComponent();
 
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 public:
 	// Command Default Arguments
 	FName GetCommandName() const { return Data.Name; };
@@ -293,6 +295,9 @@ protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalEndExecute(ECommandExecuteResult Result);
 
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalExecute(float DeltaTime);
+	
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalPushedToQueue();
 

@@ -14,9 +14,7 @@ class PATHFINDING_API UProgressCommandComponent : public UCommandComponent
 
 public:
 	UProgressCommandComponent();
-
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+	
 public:
 	DECLARE_COMMAND_CHANNEL()
 	
@@ -28,6 +26,10 @@ public:
 
 protected:
 	virtual bool InternalIsReachable_Implementation() override;
+
+	virtual void InternalBeginExecute_Implementation() override;
+
+	virtual void InternalExecute_Implementation(float DeltaTime) override;
 	
 protected:
 	UPROPERTY(Category = "Command|Progress", EditAnywhere)
@@ -37,7 +39,4 @@ protected:
 	UObject* ProgressIcon;
 
 	float RemainedProgress;
-	
-protected:
-	virtual void InternalBeginExecute_Implementation() override;
 };

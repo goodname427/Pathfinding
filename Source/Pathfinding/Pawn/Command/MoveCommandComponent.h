@@ -16,8 +16,6 @@ class PATHFINDING_API UMoveCommandComponent final : public UCommandComponent
 public:
 	UMoveCommandComponent();
 
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
 public:
 	DECLARE_COMMAND_NAME()
 	
@@ -30,6 +28,8 @@ protected:
 	virtual void InternalBeginExecute_Implementation() override;
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
+
+	virtual void InternalExecute_Implementation(float DeltaTime) override;
 
 	// Server only
 	UFUNCTION()

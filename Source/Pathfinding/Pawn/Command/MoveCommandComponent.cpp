@@ -16,18 +16,6 @@ UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 	Data.Name = StaticCommandName;
 }
 
-void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                          FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	// if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetInRequiredRadius())
-	// {
-	// 	GetExecuteController()->StopMovement();
-	// 	EndExecute(ECommandExecuteResult::Success);
-	// }
-}
-
 bool UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest)
 {
 	CommandNeedToMove = InCommandNeedToMove;
@@ -68,6 +56,15 @@ void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRes
 	{
 		AIController->StopMovement();
 	}
+}
+
+void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
+{
+	// if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetInRequiredRadius())
+	// {
+	// 	GetExecuteController()->StopMovement();
+	// 	EndExecute(ECommandExecuteResult::Success);
+	// }	
 }
 
 void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result)
