@@ -10,6 +10,7 @@
 #include "Command/MoveCommandComponent.h"
 #include "ConsciousPawn.generated.h"
 
+class UCommandChannelComponent;
 struct FTargetRequest;
 class UCommandComponent;
 class UConsciousPawnMovementComponent;
@@ -97,6 +98,19 @@ public:
 	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 
 protected:
+	UFUNCTION(NetMulticast, Reliable)
+	void DispatchCommand_BeginExecute(UCommandComponent* Command, const FTargetRequest& Request);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void DispatchCommand_EndExecute(UCommandComponent* Command, ECommandExecuteResult Result);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void DispatchCommand_OnPushedToQueue(UCommandComponent* Command);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void DispatchCommand_OnPoppedFromQueue(UCommandComponent* Command);
+	
+protected:
 	TMultiMap<FName, UCommandComponent*> CommandList;
 
 public:
@@ -108,7 +122,7 @@ public:
 	const TArray<UCommandComponent*>& GetCommandsInQueue(int32 ChannelId) const;
 
 	UFUNCTION(BlueprintCallable)
-	const ACommandChannel* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
+	const UCommandChannelComponent* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
 	
 	UFUNCTION(BlueprintCallable)
 	UProgressCommandComponent* GetCurrentProgressCommand() const
@@ -124,16 +138,16 @@ public:
 	FCommandChannelCreatedSignature OnCommandChannelCreated;
 	
 protected:
-	ACommandChannel* GetCommandChannel(int32 ChannelId) const;
+	UCommandChannelComponent* GetCommandChannel(int32 ChannelId) const;
 
 	// Server only
-	ACommandChannel* GetOrCreateCommandChannel(int32 ChannelId);
+	UCommandChannelComponent* GetOrCreateCommandChannel(int32 ChannelId);
 
 	// Client only
-	void AddCommandChannel(ACommandChannel* CommandChannel);
+	void AddCommandChannel(UCommandChannelComponent* CommandChannel);
 	
-	friend class ACommandChannel;
-	TMap<int32, ACommandChannel*> CommandChannelMap;
+	friend class UCommandChannelComponent;
+	TMap<int32, UCommandChannelComponent*> CommandChannelMap;
 	
 public:
 	// Conscious Data

@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "CommandComponent.h"
 #include "UObject/Object.h"
-#include "CommandChannel.generated.h"
+#include "CommandChannelComponent.generated.h"
+
+class AConsciousPawn;
 
 USTRUCT()
 struct FCommandWrapper
@@ -36,22 +38,21 @@ struct FCommandWrapper
 	}
 };
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, ACommandChannel*, CommandChannel);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, UCommandChannelComponent*, CommandChannel);
 
 /**
  * 
  */
 UCLASS(BlueprintType)
-class PATHFINDING_API ACommandChannel : public AActor
+class PATHFINDING_API UCommandChannelComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:
-	ACommandChannel();
+	UCommandChannelComponent();
 
-	static ACommandChannel* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
-
-public:
+	static UCommandChannelComponent* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
+	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
@@ -81,18 +82,8 @@ public:
 	void AbortCurrentCommand();
 
 protected:
-	UFUNCTION(NetMulticast, Unreliable)
-	void BeginExecuteCommand(UCommandComponent* Command, const FTargetRequest& Request);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void EndExecuteCommand(UCommandComponent* Command, ECommandExecuteResult Result);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void PushCommandToQueue(UCommandComponent* Command);
-
-	UFUNCTION(NetMulticast, Unreliable)
-	void PopCommandFromQueue(UCommandComponent* Command);
-
+	AConsciousPawn* GetConsciousPawnOwner() const;
+	
 	// Server only
 	UFUNCTION()
 	void OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result);
@@ -102,8 +93,10 @@ public:
 	FCommandChannelUpdatedSignature OnCommandUpdated;
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_ChannelId)
 	int32 ChannelId;
+	UFUNCTION()
+	void OnRep_ChannelId();
 
 	UPROPERTY(Transient, ReplicatedUsing=OnRep_CommandQueue)
 	TArray<FCommandWrapper> CommandQueue;

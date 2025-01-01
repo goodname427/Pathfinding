@@ -147,11 +147,11 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	DEBUG_MESSAGE(
-		TEXT("Conscious Pawn [%s] Execute Command [%s]"),
-		*GetExecutePawn()->GetName(),
-		*GetCommandName().ToString()
-	);
+	// DEBUG_MESSAGE(
+	// 	TEXT("Conscious Pawn [%s] Execute Command [%s]"),
+	// 	*GetExecutePawn()->GetName(),
+	// 	*GetCommandName().ToString()
+	// );
 
 	InternalBeginExecute();
 }

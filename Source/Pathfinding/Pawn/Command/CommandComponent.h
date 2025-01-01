@@ -273,7 +273,7 @@ public:
 	void EndExecute(ECommandExecuteResult Result);
 
 protected:
-	friend class ACommandChannel;
+	friend class AConsciousPawn;
 	
 	// Called On Pushed To Command Queue
 	void OnPushedToQueue();
