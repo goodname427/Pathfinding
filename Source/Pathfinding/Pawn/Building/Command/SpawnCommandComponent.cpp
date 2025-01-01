@@ -12,7 +12,7 @@ FName USpawnCommandComponent::StaticCommandName = FName("Spawn");
 
 USpawnCommandComponent::USpawnCommandComponent()
 {
-	Data.CommandName = StaticCommandName;
+	Data.Name = StaticCommandName;
 	Data.bNeedToTarget = false;
 }
 
@@ -23,11 +23,27 @@ float USpawnCommandComponent::GetProgressDuration_Implementation() const
 		       : -1;
 }
 
+const AConsciousPawn* USpawnCommandComponent::GetDefaultObjectToSpawn() const
+{
+	return ConsciousPawnClassToSpawn.Get()? ConsciousPawnClassToSpawn.GetDefaultObject() : nullptr;
+}
+
+FString USpawnCommandComponent::GetCommandDisplayName_Implementation() const
+{
+	const AConsciousPawn* CDO = GetDefaultObjectToSpawn();
+	return FString::Printf(TEXT("Spawn %s"), CDO ? *CDO->GetData().Name.ToString() : TEXT(""));
+}
+
+FString USpawnCommandComponent::GetCommandDescription_Implementation() const
+{
+	const AConsciousPawn* CDO = GetDefaultObjectToSpawn();
+	return CDO? CDO->GetData().Description : TEXT("");
+}
+
 UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 {
-	return ConsciousPawnClassToSpawn.Get()
-			   ? ConsciousPawnClassToSpawn.GetDefaultObject()->GetData().Icon
-			   : nullptr;
+	const AConsciousPawn* CDO = GetDefaultObjectToSpawn();
+	return CDO? CDO->GetData().Icon : nullptr;
 }
 
 bool USpawnCommandComponent::InternalIsReachable_Implementation()

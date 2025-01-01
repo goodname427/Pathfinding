@@ -19,6 +19,16 @@ UCommandComponent::UCommandComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+FString UCommandComponent::GetCommandDescription_Implementation() const
+{
+	return Data.Description;
+}
+
+FString UCommandComponent::GetCommandDisplayName_Implementation() const
+{
+	return GetCommandName().ToString();
+}
+
 float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 {
 	return Data.GetRequiredTargetRadius();
@@ -26,7 +36,7 @@ float UCommandComponent::GetRequiredTargetRadius_Implementation() const
 
 UObject* UCommandComponent::GetCommandIcon_Implementation() const
 {
-	return Data.CommandIcon;
+	return Data.Icon;
 }
 
 AConsciousPawn* UCommandComponent::GetExecutePawn() const
@@ -126,11 +136,11 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	// DEBUG_MESSAGE(
-	// 	TEXT("Conscious Pawn [%s] Execute Command [%s]"),
-	// 	*GetExecutePawn()->GetName(),
-	// 	*GetCommandName().ToString()
-	// );
+	DEBUG_MESSAGE(
+		TEXT("Conscious Pawn [%s] Execute Command [%s]"),
+		*GetExecutePawn()->GetName(),
+		*GetCommandName().ToString()
+	);
 
 	InternalBeginExecute();
 }

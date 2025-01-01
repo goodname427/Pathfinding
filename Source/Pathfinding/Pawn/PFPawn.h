@@ -17,6 +17,9 @@ struct FPFPawnData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Name;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString Description;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
 	UObject* Icon;
 

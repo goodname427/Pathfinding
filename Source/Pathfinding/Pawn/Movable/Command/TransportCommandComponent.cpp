@@ -14,7 +14,7 @@ UTransportCommandComponent::UTransportCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	Data.CommandName = StaticCommandName;
+	Data.Name = StaticCommandName;
 }
 
 bool UTransportCommandComponent::InternalIsReachable_Implementation()

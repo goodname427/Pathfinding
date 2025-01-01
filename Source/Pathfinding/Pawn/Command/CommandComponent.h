@@ -135,7 +135,12 @@ struct FCommandData
 	GENERATED_USTRUCT_BODY()
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FName CommandName;
+	FName Name;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
+	UObject* Icon;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FString Description;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget"))
 	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -143,18 +148,18 @@ struct FCommandData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	int32 CommandChannel;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
-	UObject* CommandIcon;
+	int32 Channel;
 
 	FCommandData()
 	{
-		CommandName = NAME_None;
+		Name = NAME_None;
+		Icon = nullptr;
+		Description = TEXT("");
+		
 		RequiredTargetRadius = 250.f;
 		bNeedToTarget = true;
 		bAbortCurrentCommand = true;
-		CommandChannel = GCommandChannel_Default;
-		CommandIcon = nullptr;
+		Channel = GCommandChannel_Default;
 	}
 
 	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
@@ -202,8 +207,17 @@ public:
 
 public:
 	// Command Default Arguments
-	FName GetCommandName() const { return Data.CommandName; };
+	FName GetCommandName() const { return Data.Name; };
 
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FString GetCommandDisplayName() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UObject* GetCommandIcon() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FString GetCommandDescription() const;
+	
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	float GetRequiredTargetRadius() const;
 
@@ -211,10 +225,7 @@ public:
 
 	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
 
-	int32 GetCommandChannel() const { return Data.CommandChannel; };
-
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
-	UObject* GetCommandIcon() const;
+	int32 GetCommandChannel() const { return Data.Channel; };
 
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)

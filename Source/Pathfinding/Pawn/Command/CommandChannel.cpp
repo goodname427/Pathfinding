@@ -11,6 +11,7 @@ ACommandChannel::ACommandChannel(): ChannelId(GCommandChannel_Default), CurrentC
 {
 	bReplicates = true;
 	bNetLoadOnClient = true;
+	bAlwaysRelevant = true;
 }
 
 ACommandChannel* ACommandChannel::NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId)
@@ -36,9 +37,10 @@ void ACommandChannel::BeginPlay()
 {
 	Super::BeginPlay();
 
-
+	// DEBUG_MESSAGE(TEXT("Command channel [%d]"), GetChannelId());
 	if (AConsciousPawn* OwnerConsciousPawn = Cast<AConsciousPawn>(GetOwner()))
 	{
+		// DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *OwnerConsciousPawn->GetName(), GetChannelId());
 		OwnerConsciousPawn->AddCommandChannel(this);
 	}
 }
@@ -128,7 +130,10 @@ void ACommandChannel::BeginExecuteCommand_Implementation(UCommandComponent* Comm
                                                          const FTargetRequest& Request)
 {
 	if (!Command)
+	{
+		// DEBUG_MESSAGE(TEXT("Command is null"));	
 		return;
+	}
 
 	if (GetLocalRole() == ROLE_Authority)
 	{

@@ -180,7 +180,7 @@ public:
 	void Send(const FTargetRequest& Request);
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SendTo(const FTargetRequest& Request, APFPawn* Target);
+	void SendTo(const FTargetRequest& Request, AConsciousPawn* ReceivedPawn);
 
 	UFUNCTION(BlueprintCallable)
 	void BeginTarget(UCommandComponent* InTargetingCommand);

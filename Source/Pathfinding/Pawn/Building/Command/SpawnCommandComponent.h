@@ -7,7 +7,6 @@
 #include "Command/ProgressCommandComponent.h"
 #include "SpawnCommandComponent.generated.h"
 
-
 UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API USpawnCommandComponent : public UProgressCommandComponent
 {
@@ -19,9 +18,12 @@ public:
 public:
 	DECLARE_COMMAND_NAME()
 
-	virtual float GetProgressDuration_Implementation() const override;
-
+	virtual FString GetCommandDisplayName_Implementation() const override;
+	virtual FString GetCommandDescription_Implementation() const override;
 	virtual UObject* GetCommandIcon_Implementation() const override;
+	
+	
+	virtual float GetProgressDuration_Implementation() const override;
 
 	UFUNCTION(BlueprintCallable)
 	void SetGatherLocation(const FVector& InSpawnLocation)
@@ -32,6 +34,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetGatherLocation() const { return GatherLocation; }
 
+protected:
+	const AConsciousPawn* GetDefaultObjectToSpawn() const;
+	
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Command)
 	TSubclassOf<AConsciousPawn> ConsciousPawnClassToSpawn;

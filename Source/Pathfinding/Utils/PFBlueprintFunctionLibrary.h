@@ -31,6 +31,9 @@ public:
 	static ACommanderPawn* GetCommanderPawnByController(AController* Controller);
 
 	UFUNCTION(BlueprintCallable)
+	static void SendRequestTo(const FTargetRequest& TargetRequest, AConsciousPawn* ReceivedConsciousPawn);
+
+	UFUNCTION(BlueprintCallable)
 	static APFPawn* SpawnPawnForCommander(
 		UObject* WorldContextObject,
 		TSubclassOf<APFPawn> PFPawnClass,

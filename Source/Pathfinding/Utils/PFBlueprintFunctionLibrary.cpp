@@ -16,7 +16,7 @@ ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawn(UObject* WorldCont
 {
 	if (const UWorld* World = WorldContextObject->GetWorld())
 	{
-		APlayerController* PC = World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
+		APlayerController* PC = World->GetFirstPlayerController();
 		return GetCommanderPawnByController(PC);
 	}
 
@@ -27,6 +27,15 @@ ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawnByController(AContr
 {
 	// DEBUG_MESSAGE(TEXT("Controller = %s, Pawn = %s"), *Controller->GetName(), *(Controller->GetPawn() ? Controller->GetPawn()->GetName(): "NULL"));
 	return Controller->GetPawn<ACommanderPawn>();
+}
+
+void UPFBlueprintFunctionLibrary::SendRequestTo(const FTargetRequest& TargetRequest,
+	AConsciousPawn* ReceivedConsciousPawn)
+{
+	if (ACommanderPawn* CommanderPawn = GetCommanderPawn(ReceivedConsciousPawn))
+	{
+		CommanderPawn->SendTo(TargetRequest, ReceivedConsciousPawn);
+	}
 }
 
 APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(

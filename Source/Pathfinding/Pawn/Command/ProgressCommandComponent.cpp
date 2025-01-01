@@ -16,7 +16,7 @@ UProgressCommandComponent::UProgressCommandComponent()
 	RemainedProgress = 0;
 
 	Data.bAbortCurrentCommand = false;
-	Data.CommandChannel = StaticCommandChannel;
+	Data.Channel = StaticCommandChannel;
 }
 
 void UProgressCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,

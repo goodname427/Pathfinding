@@ -12,28 +12,55 @@ UGatherCommandComponent::UGatherCommandComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	Data.CommandName = StaticCommandName;
+	Data.Name = StaticCommandName;
 	Data.RequiredTargetRadius = -1;
 
 	GatherFlagMeshComponent = nullptr;
 }
 
+bool UGatherCommandComponent::InternalIsReachable_Implementation()
+{
+	return Request.TargetPawn == nullptr;
+}
+
 void UGatherCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+
+	FVector GatherLocation = Request.TargetLocation;
+
+	// Ensure gather location is on ground
+	FHitResult GatherHitResult;
+	GetWorld()->LineTraceSingleByChannel(
+		GatherHitResult,
+		GatherLocation + FVector::UpVector * 100.0f,
+		GatherLocation + FVector::DownVector * 100.0f,
+		ECC_Visibility
+	);
+	if (GatherHitResult.bBlockingHit)
+	{
+		GatherLocation = GatherHitResult.Location;
+	}
+	else
+	{
+		EndExecute(ECommandExecuteResult::Failed);
+	}
+		
+	if (GatherFlagMeshComponent != nullptr)
+	{
+		GatherFlagMeshComponent->SetWorldLocation(GatherLocation);
+	}
+
+	// Set spawn command gather location
 	const TArray<UCommandComponent*>& SpawnCommands = GetExecutePawn()->GetCommandsByName(
 		USpawnCommandComponent::StaticCommandName);
 	for (UCommandComponent* Command : SpawnCommands)
 	{
 		if (USpawnCommandComponent* SpawnCommand = Cast<USpawnCommandComponent>(Command))
 		{
-			if (GatherFlagMeshComponent != nullptr)
-			{
-				GatherFlagMeshComponent->SetWorldLocation(Request.TargetLocation);
-			}
-
-			SpawnCommand->SetGatherLocation(Request.TargetLocation);
+			SpawnCommand->SetGatherLocation(GatherLocation);
 		}
 	}
 
-	END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
+	EndExecute(ECommandExecuteResult::Success);
 }

@@ -30,13 +30,23 @@ void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 void AConsciousPawn::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AConsciousPawn::PostInitProperties()
+{
+	Super::PostInitProperties();
+}
+
+void AConsciousPawn::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
 
 	for (UActorComponent* Component : GetComponents())
 	{
 		UCommandComponent* Command = Cast<UCommandComponent>(Component);
 		if (Command)
 		{
-			Commands.Add(Command->GetCommandName(), Command);
+			CommandList.Add(Command->GetCommandName(), Command);
 		}
 	}
 }
@@ -167,7 +177,7 @@ UCommandComponent* AConsciousPawn::ResolveRequestCommand(const FTargetRequest& R
 	}
 	else if (Request.CommandName != NAME_None)
 	{
-		if (UCommandComponent** RequestCommandPtr = Commands.Find(Request.CommandName))
+		if (UCommandComponent** RequestCommandPtr = CommandList.Find(Request.CommandName))
 		{
 			RequestCommand = *RequestCommandPtr;
 		}
@@ -187,7 +197,7 @@ UMoveCommandComponent* AConsciousPawn::GetMoveCommandComponent() const
 
 UCommandComponent* AConsciousPawn::GetCommandByName(FName CommandName) const
 {
-	if (UCommandComponent* const* FoundCommand = Commands.Find(CommandName))
+	if (UCommandComponent* const* FoundCommand = CommandList.Find(CommandName))
 	{
 		return *FoundCommand;
 	}
@@ -199,7 +209,7 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetCommandsByName(FName Comman
 	static TArray<UCommandComponent*> FoundCommands;
 	FoundCommands.Reset();
 
-	Commands.MultiFind(CommandName, FoundCommands);
+	CommandList.MultiFind(CommandName, FoundCommands);
 
 	return FoundCommands;
 }
@@ -208,7 +218,7 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
 {
 	static TArray<UCommandComponent*> CommandArray;
 
-	Commands.GenerateValueArray(CommandArray);
+	CommandList.GenerateValueArray(CommandArray);
 
 	return CommandArray;
 }
@@ -219,7 +229,7 @@ const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponen
 		AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
 	if (NewCommand)
 	{
-		Commands.Add(NewCommand->GetCommandName(), NewCommand);
+		CommandList.Add(NewCommand->GetCommandName(), NewCommand);
 	}
 
 	return NewCommand;
@@ -313,7 +323,7 @@ void AConsciousPawn::AddCommandChannel(ACommandChannel* CommandChannel)
 		return;
 	}
 
-	DEBUG_MESSAGE(TEXT("Add command channel [%d]"), CommandChannel->GetChannelId());
+	// DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *GetName(), CommandChannel->GetChannelId());
 	CommandChannelMap.Add(CommandChannel->GetChannelId(), CommandChannel);
 	if (OnCommandChannelCreated.IsBound())
 	{

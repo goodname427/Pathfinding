@@ -492,18 +492,14 @@ void ACommanderPawn::Send_Implementation(const FTargetRequest& Request)
 	}
 }
 
-void ACommanderPawn::SendTo_Implementation(const FTargetRequest& Request, APFPawn* Target)
+void ACommanderPawn::SendTo_Implementation(const FTargetRequest& Request, AConsciousPawn* ReceivedPawn)
 {
-	if (!IsOwned(Target))
+	if (!IsOwned(ReceivedPawn))
 	{
 		return;
 	}
 
-	AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Target);
-	if (ConsciousPawn != nullptr)
-	{
-		ConsciousPawn->Receive(Request);
-	}
+	ReceivedPawn->Receive(Request);
 }
 
 void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)

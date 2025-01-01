@@ -13,7 +13,7 @@ UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
-	Data.CommandName = StaticCommandName;
+	Data.Name = StaticCommandName;
 }
 
 void UMoveCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,

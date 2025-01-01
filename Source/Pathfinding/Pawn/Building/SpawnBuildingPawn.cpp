@@ -18,6 +18,7 @@ ASpawnBuildingPawn::ASpawnBuildingPawn()
 	GatherFlagMeshComponent->SetupAttachment(RootComponent);
 	GatherFlagMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	GatherFlagMeshComponent->SetVisibility(false);
+	GatherFlagMeshComponent->SetIsReplicated(true);
 
 	INIT_DEFAULT_SUBOBJECT(GatherCommandComponent);
 	GatherCommandComponent->GatherFlagMeshComponent = GatherFlagMeshComponent;
@@ -26,8 +27,8 @@ ASpawnBuildingPawn::ASpawnBuildingPawn()
 void ASpawnBuildingPawn::BeginPlay()
 {
 	Super::BeginPlay();
-
-	Receive(FTargetRequest(
+	
+	SEND_TO_SELF_AUTHORITY(FTargetRequest(
 		GatherCommandComponent,
 		UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(this)
 	));
@@ -35,7 +36,7 @@ void ASpawnBuildingPawn::BeginPlay()
 
 bool ASpawnBuildingPawn::HasSpawnCommand() const
 {
-	return Commands.Contains(USpawnCommandComponent::StaticCommandName);
+	return CommandList.Contains(USpawnCommandComponent::StaticCommandName);
 }
 
 void ASpawnBuildingPawn::OnSelected(class ACommanderPawn* SelectCommander)

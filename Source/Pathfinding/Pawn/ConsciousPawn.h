@@ -28,6 +28,12 @@ struct FConsciousData
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
 
+#define SEND_TO_SELF_AUTHORITY(Request)\
+	if (HasAuthority())\
+	{\
+		Receive((Request));\
+	}
+
 UCLASS()
 class PATHFINDING_API AConsciousPawn : public APFPawn
 {
@@ -42,6 +48,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void PostInitProperties() override;
+
+	virtual void PostInitializeComponents() override;
+
 public:
 	// Request Command
 	// Server only
@@ -49,13 +59,17 @@ public:
 	void Receive(const FTargetRequest& Request);
 
 protected:
+	// Server only
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReceive(const FTargetRequest& Request);
 
+	// Server only
 	virtual void ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request);
 
+	// Server only
 	UCommandComponent* ResolveRequestCommand(const FTargetRequest& Request);
 
+	// Server only
 	UFUNCTION(BlueprintNativeEvent)
 	UCommandComponent* ResolveRequestWithoutName(const FTargetRequest& Request);
 
@@ -83,7 +97,7 @@ public:
 	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 
 protected:
-	TMultiMap<FName, UCommandComponent*> Commands;
+	TMultiMap<FName, UCommandComponent*> CommandList;
 
 public:
 	// Command Channel

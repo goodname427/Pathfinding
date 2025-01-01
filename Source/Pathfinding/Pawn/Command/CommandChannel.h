@@ -81,16 +81,16 @@ public:
 	void AbortCurrentCommand();
 
 protected:
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Unreliable)
 	void BeginExecuteCommand(UCommandComponent* Command, const FTargetRequest& Request);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Unreliable)
 	void EndExecuteCommand(UCommandComponent* Command, ECommandExecuteResult Result);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Unreliable)
 	void PushCommandToQueue(UCommandComponent* Command);
 
-	UFUNCTION(NetMulticast, Reliable)
+	UFUNCTION(NetMulticast, Unreliable)
 	void PopCommandFromQueue(UCommandComponent* Command);
 
 	// Server only
