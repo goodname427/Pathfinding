@@ -24,11 +24,11 @@ void AResourcePawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& 
 	DOREPLIFETIME(ThisClass, ResourcePoint);
 }
 
-void AResourcePawn::CollectBy(ACollectorPawn* CollectorPawn)
+bool AResourcePawn::CollectBy(ACollectorPawn* CollectorPawn)
 {
 	if (ResourceData.ResourceType == EResourceType::None || ResourcePoint <= 0)
 	{
-		return;
+		return false;
 	}
 	
 	if (CollectorPawn->CollectedResource.Type != ResourceData.ResourceType)
@@ -44,4 +44,6 @@ void AResourcePawn::CollectBy(ACollectorPawn* CollectorPawn)
 	{
 		Destroy();
 	}
+
+	return true;
 }

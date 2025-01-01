@@ -108,7 +108,7 @@ protected:
 	void DispatchCommand_OnPushedToQueue(UCommandComponent* Command);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void DispatchCommand_OnPoppedFromQueue(UCommandComponent* Command);
+	void DispatchCommand_OnPoppedFromQueue(UCommandComponent* Command, ECommandPoppedReason Reason);
 	
 protected:
 	TMultiMap<FName, UCommandComponent*> CommandList;

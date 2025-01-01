@@ -25,9 +25,9 @@ struct FCommandWrapper
 	{
 	}
 
-	FCommandWrapper(UCommandComponent* InCommand)
+	FCommandWrapper(UCommandComponent* InCommand, bool InNeedToClean = true)
+		: Command(InCommand)
 	{
-		Command = InCommand;
 		Request = InCommand->GetRequest();
 	}
 
@@ -39,6 +39,15 @@ struct FCommandWrapper
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, UCommandChannelComponent*, CommandChannel);
+
+#define CLEAR_COMMAND_CHANNEL(CommandChannel, Reason)\
+{ \
+	if (CommandChannel->BeginClear()) \
+	{ \
+		CommandChannel->ClearCommands(Reason); \
+		CommandChannel->EndClear(); \
+	} \
+}
 
 /**
  * 
@@ -75,7 +84,11 @@ public:
 
 	void PopCommand(int32 CommandIndexToPop);
 
-	void ClearCommands();
+	bool BeginClear();
+	
+	void EndClear();
+	
+	void ClearCommands(ECommandPoppedReason Reason);
 
 	void ExecuteNextCommand();
 
@@ -93,6 +106,8 @@ public:
 	FCommandChannelUpdatedSignature OnCommandUpdated;
 
 private:
+	int32 NumToClear;
+	
 	UPROPERTY(ReplicatedUsing=OnRep_ChannelId)
 	int32 ChannelId;
 	UFUNCTION()

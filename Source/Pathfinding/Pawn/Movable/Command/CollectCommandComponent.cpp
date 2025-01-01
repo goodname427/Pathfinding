@@ -5,6 +5,7 @@
 
 #include "CommanderPawn.h"
 #include "PFPawn.h"
+#include "PFUtils.h"
 #include "TransportCommandComponent.h"
 #include "Building/BaseCampPawn.h"
 #include "Resource/ResourcePawn.h"
@@ -15,12 +16,12 @@ UCollectCommandComponent::UCollectCommandComponent(): ResourceTypesToAllowCollec
 {
 	PrimaryComponentTick.bCanEverTick = false;
 
-	Data.Name = StaticCommandName;	
+	Data.Name = StaticCommandName;
 }
 
 bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) const
 {
-	if (ResourcePawn == nullptr)
+	if (ResourcePawn == nullptr || ResourcePawn->IsPendingKill() || ResourcePawn->GetResourcePoint() <= 0)
 	{
 		return false;
 	}
@@ -34,11 +35,17 @@ bool UCollectCommandComponent::InternalIsReachable_Implementation()
 	{
 		return false;
 	}
-	
+
 	if (const AResourcePawn* ResourcePawn = Cast<AResourcePawn>(Request.TargetPawn))
 	{
 		if (CanCollect(ResourcePawn))
 		{
+			// DEBUG_MESSAGE(
+			// 	TEXT("Collector [%s] Can Collect Resource [%s] [%d]"),
+			// 	*GetExecutePawn()->GetName(),
+			// 	*ResourcePawn->GetName(),
+			// 	ResourcePawn->GetResourcePoint()
+			// );
 			return true;
 		}
 	}
@@ -49,13 +56,12 @@ bool UCollectCommandComponent::InternalIsReachable_Implementation()
 void UCollectCommandComponent::InternalBeginExecute_Implementation()
 {
 	AUTHORITY_CHECK();
-	
+
 	AResourcePawn* Resource = Request.GetTargetPawn<AResourcePawn>();
 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 
-	if (Resource && Collector)
+	if (Resource && Collector && Resource->CollectBy(Collector))
 	{
-		Resource->CollectBy(Collector);
 		EndExecute(ECommandExecuteResult::Success);
 	}
 	else
@@ -67,11 +73,10 @@ void UCollectCommandComponent::InternalBeginExecute_Implementation()
 void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
 	AUTHORITY_CHECK();
-	
+
+	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
 	if (Result == ECommandExecuteResult::Success)
 	{
-		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
-
 		Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
 
 		FTargetRequest TransportRequest = FTargetRequest::Make<UTransportCommandComponent>();
@@ -82,4 +87,33 @@ void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecute
 
 		Collector->Receive(TransportRequest);
 	}
+	else if (Result == ECommandExecuteResult::Failed)
+	{
+		Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
+
+		FTargetRequest CollectRequest(this, Collector->GetNextResourceToCollect());
+		{
+			CollectRequest.Type = ETargetRequestType::Append;
+		}
+
+		Collector->Receive(CollectRequest);
+	}
+}
+
+void UCollectCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
+{
+	AUTHORITY_CHECK();
+
+	// if (Reason == ECommandPoppedReason::Unreachable)
+	// {
+	// 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
+	// 	Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
+	//
+	// 	FTargetRequest CollectRequest(this, Collector->GetNextResourceToCollect());
+	// 	{
+	// 		CollectRequest.Type = ETargetRequestType::Append;
+	// 	}
+	//
+	// 	Collector->Receive(CollectRequest);
+	// }
 }

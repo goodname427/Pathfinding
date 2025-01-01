@@ -37,7 +37,7 @@ protected:
 
 	virtual void InternalPushedToQueue_Implementation() override;
 
-	virtual void InternalPoppedFromQueue_Implementation() override;
+	virtual void InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason) override;
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 

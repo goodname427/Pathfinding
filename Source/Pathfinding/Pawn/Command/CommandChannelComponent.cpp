@@ -87,21 +87,48 @@ void UCommandChannelComponent::PopCommand(int32 CommandIndexToPop)
 		UCommandComponent* CommandToPop = CommandQueue[CommandIndexToPop].Command;
 		CommandQueue.RemoveAt(CommandIndexToPop);
 
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandToPop);
+		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandToPop, ECommandPoppedReason::Cancel);
 		OnRep_CommandQueue();
 	}
 }
 
-void UCommandChannelComponent::ClearCommands()
+bool UCommandChannelComponent::BeginClear()
+{
+	return true;
+	
+	if (NumToClear == -1)
+	{
+		NumToClear = CommandQueue.Num();
+		return true;
+	}
+
+	return false;
+}
+
+void UCommandChannelComponent::EndClear()
+{
+	NumToClear = -1;
+}
+
+void UCommandChannelComponent::ClearCommands(ECommandPoppedReason Reason)
 {
 	AbortCurrentCommand();
 
+	// for (int32 i = 0; i < CommandQueue.Num(); i++)
+	// {
+	// 	const FCommandWrapper& CommandWrapper = CommandQueue[0];
+	// 	CommandQueue.RemoveAt(0);
+	//
+	// 	GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
+	// }
+
 	for (const FCommandWrapper& CommandWrapper : CommandQueue)
 	{
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command);
+		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
 	}
 
-	CommandQueue.Empty();
+	CommandQueue.Reset();
+
 	OnRep_CommandQueue();
 }
 
@@ -127,7 +154,12 @@ void UCommandChannelComponent::ExecuteNextCommand()
 	}
 	else
 	{
-		ClearCommands();
+		if (BeginClear())
+		{
+			GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(NextCommand, ECommandPoppedReason::Unreachable);
+			ClearCommands(ECommandPoppedReason::PreTaskFailed);
+			EndClear();
+		}
 	}
 }
 
@@ -135,10 +167,12 @@ void UCommandChannelComponent::AbortCurrentCommand()
 {
 	if (CurrentCommand)
 	{
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CurrentCommand);
-		GetConsciousPawnOwner()->DispatchCommand_EndExecute(CurrentCommand, ECommandExecuteResult::Aborted);
-
+		UCommandComponent* CommandToAbort = CurrentCommand;
 		CurrentCommand = nullptr;
+		
+		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandToAbort, ECommandPoppedReason::Cancel);
+		GetConsciousPawnOwner()->DispatchCommand_EndExecute(CommandToAbort, ECommandExecuteResult::Aborted);
+
 		OnRep_CurrentCommand();
 	}
 }
@@ -161,7 +195,21 @@ void UCommandChannelComponent::OnCommandEnd(UCommandComponent* Command, ECommand
 	}
 	else if (Command->IsAbortCurrentCommand())
 	{
-		ClearCommands();
+		ECommandPoppedReason ClearReason;
+		switch (Result)
+		{
+			case ECommandExecuteResult::Aborted:
+				ClearReason = ECommandPoppedReason::Cancel;
+				break;
+			case ECommandExecuteResult::Failed:
+				ClearReason = ECommandPoppedReason::PreTaskFailed;
+				break;
+			default:
+				ClearReason = ECommandPoppedReason::Cancel;
+				break;
+		}
+		
+		CLEAR_COMMAND_CHANNEL(this, ClearReason);
 	}
 }
 

@@ -14,6 +14,7 @@ USpawnCommandComponent::USpawnCommandComponent()
 {
 	Data.Name = StaticCommandName;
 	Data.bNeedToTarget = false;
+	Data.bReachableCheckBeforeExecute = false;
 }
 
 float USpawnCommandComponent::GetProgressDuration_Implementation() const
@@ -100,7 +101,7 @@ void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 	}
 }
 
-void USpawnCommandComponent::InternalPoppedFromQueue_Implementation()
+void USpawnCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
 {
 	AUTHORITY_CHECK();
 	

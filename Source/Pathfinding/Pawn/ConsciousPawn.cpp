@@ -76,7 +76,7 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 			}
 		case ETargetRequestType::Clear:
 			{
-				RequestCommandChannel->ClearCommands();
+				CLEAR_COMMAND_CHANNEL(RequestCommandChannel, ECommandPoppedReason::Cancel);
 				break;
 			}
 		default:
@@ -100,9 +100,12 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 	const UCommandComponent* FirstCommand = CommandsToExecute[0];
 	UCommandChannelComponent* CommandChannel = GetOrCreateCommandChannel(GET_COMMAND_CHANNEL(Request, FirstCommand));
 
-	if (Request.Type == ETargetRequestType::StartNew && FirstCommand->IsAbortCurrentCommand())
+	const bool bAbortCurrentCommand = Request.Type == ETargetRequestType::StartNew && FirstCommand->
+		IsAbortCurrentCommand();
+
+	if (bAbortCurrentCommand)
 	{
-		CommandChannel->ClearCommands();
+		CLEAR_COMMAND_CHANNEL(CommandChannel, ECommandPoppedReason::Cancel);
 	}
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
@@ -111,9 +114,7 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 		CommandChannel->PushCommand(CommandToExecute);
 	}
 
-	if (Request.Type == ETargetRequestType::StartNew
-		&& FirstCommand
-		&& (FirstCommand->IsAbortCurrentCommand() || !CommandChannel->GetCurrentCommand()))
+	if (bAbortCurrentCommand || CommandChannel->GetCurrentCommand() == nullptr)
 	{
 		CommandChannel->ExecuteNextCommand();
 	}
@@ -128,16 +129,16 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	OutCommandsToExecute.Reset();
 	UCommandComponent* RequestCommand = ResolveRequestCommand(Request);
 
+	// no command
 	if (RequestCommand == nullptr)
 	{
 		return;
 	}
 
-	UMoveCommandComponent* MoveCommandComponent = GetMoveCommandComponent();
-	// no move command
-	if (MoveCommandComponent == nullptr)
+	// needn't to move
+	if (RequestCommand->GetRequiredTargetRadius() < 0)
 	{
-		if (RequestCommand && RequestCommand->GetRequiredTargetRadius() < 0 && RequestCommand->SetCommandArgs(Request))
+		if (RequestCommand->SetCommandArgs(Request))
 		{
 			OutCommandsToExecute.Add(RequestCommand);
 		}
@@ -145,6 +146,13 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	// add move command if the request command need to move
 	else
 	{
+		UMoveCommandComponent* MoveCommandComponent = GetMoveCommandComponent();
+		// no move command
+		if (MoveCommandComponent == nullptr)
+		{
+			return;
+		}
+
 		// ignore move command
 		if (RequestCommand == MoveCommandComponent)
 		{
@@ -264,12 +272,13 @@ void AConsciousPawn::DispatchCommand_BeginExecute_Implementation(UCommandCompone
 	Command->BeginExecute();
 }
 
-void AConsciousPawn::DispatchCommand_OnPoppedFromQueue_Implementation(UCommandComponent* Command)
+void AConsciousPawn::DispatchCommand_OnPoppedFromQueue_Implementation(UCommandComponent* Command,
+                                                                      ECommandPoppedReason Reason)
 {
 	if (!Command)
 		return;
 
-	Command->OnPoppedFromQueue();
+	Command->OnPoppedFromQueue(Reason);
 }
 
 UCommandComponent* AConsciousPawn::GetCurrentCommand(int32 ChannelId) const
@@ -343,7 +352,7 @@ UCommandChannelComponent* AConsciousPawn::GetOrCreateCommandChannel(int32 Channe
 	else
 	{
 		FoundCommandChannel = UCommandChannelComponent::NewCommandChannel(this, ChannelId);
-		DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *GetName(), FoundCommandChannel->GetChannelId());
+		// DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *GetName(), FoundCommandChannel->GetChannelId());
 
 		if (OnCommandChannelCreated.IsBound())
 		{
@@ -363,7 +372,7 @@ void AConsciousPawn::AddCommandChannel(UCommandChannelComponent* CommandChannel)
 
 	if (!CommandChannelMap.Contains(CommandChannel->GetChannelId()))
 	{
-		DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *GetName(), CommandChannel->GetChannelId());
+		// DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *GetName(), CommandChannel->GetChannelId());
 		CommandChannelMap.Add(CommandChannel->GetChannelId(), CommandChannel);
 		if (OnCommandChannelCreated.IsBound())
 		{

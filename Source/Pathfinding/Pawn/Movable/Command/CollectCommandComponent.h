@@ -30,6 +30,8 @@ protected:
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 
+	virtual void InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason) override;
+
 protected:
 	UPROPERTY(Category = "Collect", EditAnywhere)
 	TSet<EResourceType> ResourceTypesToAllowCollecting;
