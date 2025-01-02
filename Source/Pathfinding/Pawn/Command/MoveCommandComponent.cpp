@@ -69,6 +69,7 @@ void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 	{
 		if (!CommandNeedToMove->IsArgumentsValid())
 		{
+			// DEBUG_FUNC_FLAG();
 			EndExecute(ECommandExecuteResult::Failed);
 		}
 	}
@@ -92,5 +93,6 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 		ExecuteResult = ECommandExecuteResult::Failed;
 	}
 
+	// DEBUG_FUNC_FLAG();
 	EndExecute(ExecuteResult);
 }

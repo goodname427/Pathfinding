@@ -172,6 +172,12 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 
 	bExecuting = false;
 
+	// DEBUG_MESSAGE(
+	// 	TEXT("Conscious Pawn [%s] End Execute Command [%s]"),
+	// 	*GetExecutePawn()->GetName(),
+	// 	*GetCommandName().ToString()
+	// );
+
 	InternalEndExecute(Result);
 
 	if (OnCommandEnd.IsBound())
@@ -183,7 +189,7 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 void UCommandComponent::EndExecuteDelay(ECommandExecuteResult Result, float Duration)
 {
 	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
-	
+
 	GetWorld()->GetTimerManager().SetTimer(
 		*TimerHandle,
 		FTimerDelegate::CreateLambda([this, Result, TimerHandle]()
@@ -202,12 +208,24 @@ void UCommandComponent::OnPushedToQueue()
 	{
 		OnCommandPushedToQueue.Broadcast(this);
 	}
-	
+
+	// DEBUG_MESSAGE(
+	// 	TEXT("Conscious Pawn [%s] Push Command [%s]"),
+	// 	*GetExecutePawn()->GetName(),
+	// 	*GetCommandName().ToString()
+	// );
+
 	InternalPushedToQueue();
 }
 
 void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 {
+	// DEBUG_MESSAGE(
+	// 	TEXT("Conscious Pawn [%s] Pop Command [%s]"),
+	// 	*GetExecutePawn()->GetName(),
+	// 	*GetCommandName().ToString()
+	// );
+
 	InternalPoppedFromQueue(Reason);
 
 	if (OnCommandPoppedFromQueue.IsBound())

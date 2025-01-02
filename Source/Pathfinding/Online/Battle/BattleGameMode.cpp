@@ -102,7 +102,7 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 	{
 		return;
 	}
-	
+
 	ErrorMessage = TEXT("Battle has Started");
 }
 
@@ -127,17 +127,17 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 	FVector RandomLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
-		if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-			this,
-			CommanderPawn->GetActorLocation(),
-			RandomLocation,
-			1000.0f))
-		{
-			continue;
-		}
-
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
+			if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+				this,
+				CommanderPawn->GetActorLocation(),
+				RandomLocation,
+				1000.0f))
+			{
+				continue;
+			}
+
 			CommanderPawn->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
 		}
 	}
