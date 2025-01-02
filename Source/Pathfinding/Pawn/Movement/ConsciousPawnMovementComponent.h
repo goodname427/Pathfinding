@@ -20,8 +20,13 @@ public:
 	virtual float GetMaxSpeed() const override { return MaxSpeed; }
 
 protected:
-	virtual bool
-	ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit, const FQuat& NewRotation) override;
+	virtual bool ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit, const FQuat& NewRotation) override;
+
+	/** Update Velocity based on input. Also applies gravity. */
+	virtual void ApplyControlInputToVelocity(float DeltaTime);
+
+	/** Prevent Pawn from leaving the world bounds (if that restriction is enabled in WorldSettings) */
+	virtual bool LimitWorldBounds();
 
 public:
 	/** Maximum velocity magnitude allowed for the controlled Pawn. */
@@ -45,18 +50,11 @@ public:
 	float TurningBoost;
 
 protected:
-	/** Update Velocity based on input. Also applies gravity. */
-	virtual void ApplyControlInputToVelocity(float DeltaTime);
-
-	/** Prevent Pawn from leaving the world bounds (if that restriction is enabled in WorldSettings) */
-	virtual bool LimitWorldBounds();
-
 	/** Set to true when a position correction is applied. Used to avoid recalculating velocity when this occurs. */
 	UPROPERTY(Transient)
 	uint32 bPositionCorrected : 1;
 
-protected:
-	// Ground
+public:
 	// Ground detection parameters
 	UPROPERTY(EditAnywhere, Category = "Movement|Ground", meta = (AllowPrivateAccess = "true"))
 	float GroundTraceDistance = 100.0f;
