@@ -25,6 +25,9 @@ public:
 
 protected:
 	void FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCollectedResource);
+
+	// Server only
+	void CollectOrTransportResource(AResourcePawn* CurrentCollectedResource);
 	
 	// Server only
 	void CollectResource();
@@ -57,6 +60,8 @@ public:
 
 	int32 GetResourcePointPerCollecting() const { return ResourcePointPerCollecting; }
 
+	bool IsCollectedResourceEmpty() const { return CollectedResource.Point == 0; }
+	
 	bool IsCollectedResourceFull() const { return CollectedResource.Point >= MaxCollectedResourcePoint; }
 
 	int32 GetMaxAvailableCollectedResourcePoint() const { return FMath::Min(ResourcePointPerCollecting, FMath::Max(0, MaxCollectedResourcePoint - CollectedResource.Point)); }

@@ -118,6 +118,27 @@ void ACollectorPawn::FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCo
 	}
 }
 
+void ACollectorPawn::CollectOrTransportResource(AResourcePawn* CurrentCollectedResource)
+{
+	FindAndRecordNextResourceToCollect(CurrentCollectedResource);
+	if (IsCollectedResourceFull())
+	{
+		TransportResource();
+	}
+	else
+	{
+		if (NextResourceToCollect)
+		{
+			CollectResource();
+		}
+		// transport the collected resource when can not find any resource to collect
+		else if (!IsCollectedResourceEmpty())
+		{
+			TransportResource();
+		}
+	}
+}
+
 void ACollectorPawn::CollectResource()
 {
 	if (!HasAuthority())
@@ -155,15 +176,7 @@ void ACollectorPawn::OnCollectCommandEnd(UCommandComponent* CommandComponent, EC
 		return;
 	}
 
-	FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
-	if (IsCollectedResourceFull())
-	{
-		TransportResource();
-	}
-	else
-	{
-		CollectResource();
-	}
+	CollectOrTransportResource(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
 }
 
 void ACollectorPawn::OnCollectCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason)
@@ -173,28 +186,15 @@ void ACollectorPawn::OnCollectCommandPoppedFromQueue(UCommandComponent* CommandC
 		return;
 	}
 
-	FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
-	if (IsCollectedResourceFull())
-	{
-		TransportResource();
-	}
-	else
-	{
-		if (NextResourceToCollect)
-		{
-			CollectResource();
-		}
-		else
-		{
-			TransportResource();
-		}
-	}
+	CollectOrTransportResource(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
 }
 
 void ACollectorPawn::OnTransportCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)
 {
 	if (Result == ECommandExecuteResult::Success)
 	{
+		// if the marked resource has been empty, find the nearest resource to collect
+		// else, continue to collect the same resource
 		if (NextResourceToCollect != nullptr)
 		{
 			FindAndRecordNextResourceToCollect(NextResourceToCollect);
