@@ -65,16 +65,21 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 	return nullptr;
 }
 
-bool UCommandComponent::SetCommandArgs(const FTargetRequest& InRequest)
+void UCommandComponent::SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest)
 {
 	Request = InRequest;
-
-	return IsReachable();
 }
 
-bool UCommandComponent::IsReachable()
+bool UCommandComponent::SetCommandArguments(const FTargetRequest& InRequest)
 {
-	return GetExecutePawn() != nullptr && InternalIsReachable();
+	SetCommandArgumentsSkipCheck(InRequest);
+
+	return IsArgumentsValid();
+}
+
+bool UCommandComponent::IsArgumentsValid()
+{
+	return GetExecutePawn() != nullptr && InternalIsArgumentsValid();
 }
 
 bool UCommandComponent::IsTargetInRequiredRadius() const
@@ -130,7 +135,7 @@ bool UCommandComponent::InternalCanExecute_Implementation()
 
 bool UCommandComponent::CanExecute()
 {
-	return (!Data.bReachableCheckBeforeExecute || IsReachable())
+	return (!Data.bArgumentsValidCheckBeforeExecute || IsArgumentsValid())
 		&& IsTargetInRequiredRadius()
 		&& InternalCanExecute();
 }
@@ -175,14 +180,40 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 	}
 }
 
+void UCommandComponent::EndExecuteDelay(ECommandExecuteResult Result, float Duration)
+{
+	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
+	
+	GetWorld()->GetTimerManager().SetTimer(
+		*TimerHandle,
+		FTimerDelegate::CreateLambda([this, Result, TimerHandle]()
+		{
+			GetWorld()->GetTimerManager().ClearTimer(*TimerHandle);
+			EndExecute(Result);
+		}),
+		Duration,
+		false
+	);
+}
+
 void UCommandComponent::OnPushedToQueue()
 {
+	if (OnCommandPushedToQueue.IsBound())
+	{
+		OnCommandPushedToQueue.Broadcast(this);
+	}
+	
 	InternalPushedToQueue();
 }
 
 void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 {
 	InternalPoppedFromQueue(Reason);
+
+	if (OnCommandPoppedFromQueue.IsBound())
+	{
+		OnCommandPoppedFromQueue.Broadcast(this, Reason);
+	}
 }
 
 void UCommandComponent::InternalExecute_Implementation(float DeltaTime)
@@ -197,7 +228,7 @@ void UCommandComponent::InternalPushedToQueue_Implementation()
 {
 }
 
-bool UCommandComponent::InternalIsReachable_Implementation()
+bool UCommandComponent::InternalIsArgumentsValid_Implementation()
 {
 	return true;
 }

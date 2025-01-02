@@ -3,6 +3,7 @@
 
 #include "ResourcePawn.h"
 
+#include "PFUtils.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -26,20 +27,26 @@ void AResourcePawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& 
 
 bool AResourcePawn::CollectBy(ACollectorPawn* CollectorPawn)
 {
-	if (ResourceData.ResourceType == EResourceType::None || ResourcePoint <= 0)
+	if (ResourceData.Type == EResourceType::None || ResourcePoint <= 0)
 	{
 		return false;
 	}
 	
-	if (CollectorPawn->CollectedResource.Type != ResourceData.ResourceType)
+	if (CollectorPawn->IsCollectedResourceFull())
 	{
-		CollectorPawn->CollectedResource.Point = 0;
+		return false;
 	}
 
-	CollectorPawn->CollectedResource.Type = ResourceData.ResourceType;
-	CollectorPawn->CollectedResource.Point += 1;
+	CollectorPawn->SetCollectedResourceType(ResourceData.Type);
 
-	ResourcePoint -= 1;
+	const int32 ActualPoint = FMath::Min(
+		CollectorPawn->GetMaxAvailableCollectedResourcePoint(),
+		ResourcePoint
+	);
+
+	CollectorPawn->SetCollectedResourcePoint(CollectorPawn->GetCollectedResource().Point + ActualPoint);
+	ResourcePoint -= ActualPoint;
+
 	if (ResourcePoint <= 0)
 	{
 		Destroy();

@@ -20,15 +20,29 @@ ACollectorPawn::ACollectorPawn()
 	INIT_DEFAULT_SUBOBJECT(CollectCommandComponent);
 	INIT_DEFAULT_SUBOBJECT(TransportCommandComponent);
 
+	// bind command events
+	if (HasAuthority())
+	{
+		CollectCommandComponent->OnCommandEnd.AddDynamic(this, &ACollectorPawn::OnCollectCommandEnd);
+		CollectCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
+			this, &ACollectorPawn::OnCollectCommandPoppedFromQueue);
+		TransportCommandComponent->OnCommandEnd.AddDynamic(this, &ACollectorPawn::OnTransportCommandEnd);
+		TransportCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
+			this, &ACollectorPawn::OnTransportCommandPoppedFromQueue);
+	}
+
 	CollectedResource.Type = EResourceType::None;
 	CollectedResource.Point = 0;
+
+	ResourcePointPerCollecting = 2;
+	MaxCollectedResourcePoint = 10;
 }
 
 void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request)
 {
-	if (Request.Type != ETargetRequestType::Append)
+	if (Request.Type == ETargetRequestType::StartNew)
 	{
-		FindAndRecordNextResourceToCollect(nullptr);
+		NextResourceToCollect = nullptr;
 	}
 }
 
@@ -58,37 +72,155 @@ UCommandComponent* ACollectorPawn::ResolveRequestWithoutName_Implementation(cons
 void ACollectorPawn::FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCollectedResource)
 {
 	NextResourceToCollect = nullptr;
-	if (CurrentCollectedResource)
+	// continue to collect the same resource
+	if (CollectCommandComponent->CanCollect(CurrentCollectedResource))
 	{
-		if (CurrentCollectedResource->GetResourcePoint() > 0)
+		NextResourceToCollect = CurrentCollectedResource;
+	}
+	// if the current resource can not collect, find the nearest resource of the same type
+	else
+	{
+		FVector Location;
+		// find the nearest resource for current collected resource
+		if (CurrentCollectedResource && !CurrentCollectedResource->IsPendingKill())
 		{
-			NextResourceToCollect = CurrentCollectedResource;
+			Location = CurrentCollectedResource->GetActorLocation();
 		}
+		// if not, find the nearest resource for self
 		else
 		{
-			TArray<AActor*> Resources;
-			UGameplayStatics::GetAllActorsOfClass(this, AResourcePawn::StaticClass(), Resources);
+			Location = GetActorLocation();
+		}
 
-			const FVector Location = CurrentCollectedResource->GetActorLocation();
-			float Distance = 0;
-			for (AActor* Actor : Resources)
+		TArray<AActor*> Resources;
+		UGameplayStatics::GetAllActorsOfClass(this, AResourcePawn::StaticClass(), Resources);
+
+		float NearestDistance = 0;
+		for (AActor* Actor : Resources)
+		{
+			if (AResourcePawn* Resource = Cast<AResourcePawn>(Actor))
 			{
-				if (AResourcePawn* Resource = Cast<AResourcePawn>(Actor))
+				if (Resource == CurrentCollectedResource
+					|| (CurrentCollectedResource && Resource->GetResourceType() != CurrentCollectedResource->
+						GetResourceType()))
 				{
-					if (Resource == CurrentCollectedResource || Resource->GetResourceType() != CurrentCollectedResource
-						->GetResourceType())
-					{
-						continue;
-					}
+					continue;
+				}
 
-					float CurrentDistance = FVector::Dist(Location, Resource->GetActorLocation());
-					if (NextResourceToCollect == nullptr || CurrentDistance < Distance)
-					{
-						NextResourceToCollect = Resource;
-						Distance = CurrentDistance;
-					}
+				const float CurrentDistance = FVector::Dist(Location, Resource->GetActorLocation());
+				if (NextResourceToCollect == nullptr || CurrentDistance < NearestDistance)
+				{
+					NextResourceToCollect = Resource;
+					NearestDistance = CurrentDistance;
 				}
 			}
 		}
 	}
+}
+
+void ACollectorPawn::CollectResource()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	FTargetRequest CollectRequest(CollectCommandComponent, NextResourceToCollect);
+	{
+		CollectRequest.Type = ETargetRequestType::Append;
+	}
+
+	Receive(CollectRequest);
+}
+
+void ACollectorPawn::TransportResource()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	FTargetRequest TransportRequest(TransportCommandComponent, GetOwnerPlayer()->GetNearestBaseCamp(this));
+	{
+		TransportRequest.Type = ETargetRequestType::Append;
+	}
+
+	Receive(TransportRequest);
+}
+
+void ACollectorPawn::OnCollectCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)
+{
+	if (Result == ECommandExecuteResult::Aborted)
+	{
+		return;
+	}
+
+	FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
+	if (IsCollectedResourceFull())
+	{
+		TransportResource();
+	}
+	else
+	{
+		CollectResource();
+	}
+}
+
+void ACollectorPawn::OnCollectCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason)
+{
+	if (Reason == ECommandPoppedReason::Cancel)
+	{
+		return;
+	}
+
+	FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
+	if (IsCollectedResourceFull())
+	{
+		TransportResource();
+	}
+	else
+	{
+		if (NextResourceToCollect)
+		{
+			CollectResource();
+		}
+		else
+		{
+			TransportResource();
+		}
+	}
+}
+
+void ACollectorPawn::OnTransportCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)
+{
+	if (Result == ECommandExecuteResult::Success)
+	{
+		if (NextResourceToCollect != nullptr)
+		{
+			FindAndRecordNextResourceToCollect(NextResourceToCollect);
+		}
+		CollectResource();
+	}
+	else if (Result == ECommandExecuteResult::Failed)
+	{
+		TransportResource();
+	}
+}
+
+void ACollectorPawn::OnTransportCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason)
+{
+	if (Reason == ECommandPoppedReason::CanNotExecute || Reason == ECommandPoppedReason::PreTaskFailed)
+	{
+		TransportResource();
+	}
+}
+
+void ACollectorPawn::SetCollectedResourceType(EResourceType NewResourceType)
+{
+	if (NewResourceType != CollectedResource.Type)
+	{
+		CollectedResource.Point = 0;
+	}
+
+	CollectedResource.Type = NewResourceType;
 }

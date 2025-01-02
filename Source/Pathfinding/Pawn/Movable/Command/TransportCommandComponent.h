@@ -20,9 +20,7 @@ public:
 	DECLARE_COMMAND_NAME()
 	
 protected:
-	virtual bool InternalIsReachable_Implementation() override;
+	virtual bool InternalIsArgumentsValid_Implementation() override;
 	
 	virtual void InternalBeginExecute_Implementation() override;
-
-	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 };

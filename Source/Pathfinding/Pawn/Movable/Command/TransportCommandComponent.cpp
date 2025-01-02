@@ -17,7 +17,7 @@ UTransportCommandComponent::UTransportCommandComponent()
 	Data.Name = StaticCommandName;
 }
 
-bool UTransportCommandComponent::InternalIsReachable_Implementation()
+bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation()
 {
 	if (GetExecutePawn<ACollectorPawn>() == nullptr)
 	{
@@ -26,7 +26,7 @@ bool UTransportCommandComponent::InternalIsReachable_Implementation()
 	
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Request.TargetPawn))
 	{
-		if (BaseCampPawn->GetPawnRole(GetExecutePawn()) == EPawnRole::Self)
+		if (!BaseCampPawn->IsPendingKill() && BaseCampPawn->GetPawnRole(GetExecutePawn()) == EPawnRole::Self)
 		{
 			return true;
 		}
@@ -50,24 +50,5 @@ void UTransportCommandComponent::InternalBeginExecute_Implementation()
 	else
 	{
 		EndExecute(ECommandExecuteResult::Failed);
-	}
-}
-
-void UTransportCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
-{
-	AUTHORITY_CHECK();
-	
-	if (Result == ECommandExecuteResult::Success)
-	{
-		ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
-
-		FTargetRequest CollectRequest = FTargetRequest::Make<UCollectCommandComponent>();
-		{
-			CollectRequest.TargetPawn = Collector->GetNextResourceToCollect();
-			// DEBUG_MESSAGE(TEXT("Collect Resource [%s]"), *CollectRequest.TargetPawn->GetName());
-			CollectRequest.Type = ETargetRequestType::Append;
-		}
-
-		Collector->Receive(CollectRequest);
 	}
 }

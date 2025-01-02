@@ -22,7 +22,7 @@ public:
 	virtual float GetRequiredTargetRadius_Implementation() const override { return -1; }
 
 	// Set args for move command, return true whether it's reachable
-	bool SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest);
+	bool SetMoveCommandArguments(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest);
 	
 protected:
 	virtual void InternalBeginExecute_Implementation() override;

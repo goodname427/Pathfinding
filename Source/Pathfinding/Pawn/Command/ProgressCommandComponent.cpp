@@ -19,7 +19,7 @@ UProgressCommandComponent::UProgressCommandComponent()
 	Data.Channel = StaticCommandChannel;
 }
 
-bool UProgressCommandComponent::InternalIsReachable_Implementation()
+bool UProgressCommandComponent::InternalIsArgumentsValid_Implementation()
 {
 	return GetProgressDuration() >= 0;
 }

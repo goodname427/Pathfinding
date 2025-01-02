@@ -14,7 +14,7 @@ USpawnCommandComponent::USpawnCommandComponent()
 {
 	Data.Name = StaticCommandName;
 	Data.bNeedToTarget = false;
-	Data.bReachableCheckBeforeExecute = false;
+	Data.bArgumentsValidCheckBeforeExecute = false;
 }
 
 float USpawnCommandComponent::GetProgressDuration_Implementation() const
@@ -47,9 +47,9 @@ UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 	return CDO? CDO->GetData().Icon : nullptr;
 }
 
-bool USpawnCommandComponent::InternalIsReachable_Implementation()
+bool USpawnCommandComponent::InternalIsArgumentsValid_Implementation()
 {
-	if (!Super::InternalIsReachable_Implementation())
+	if (!Super::InternalIsArgumentsValid_Implementation())
 	{
 		return false;
 	}

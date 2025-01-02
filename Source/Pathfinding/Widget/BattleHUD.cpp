@@ -40,6 +40,11 @@ void ABattleHUD::DrawHUD()
 	{
 		DrawTargetingHint();
 	}
+
+	if (OwningCommanderPawn)
+	{
+		DrawCommand();
+	}
 }
 
 void ABattleHUD::DrawSelectBox() const
@@ -63,8 +68,44 @@ void ABattleHUD::DrawTargetingHint() const
 		FVector2D MousePos;
 		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
 
-		FCanvasTextItem BoxItem(MousePos + FVector2D(10, 10), FText::FromString(OwningCommanderPawn->GetTargetingCommandName().ToString()),
-		                        GEngine->GetLargeFont(), FColor::Red);
-		Canvas->DrawItem(BoxItem);
+		FCanvasTextItem TextItem(MousePos + FVector2D(10, 10),
+		                         FText::FromString(OwningCommanderPawn->GetTargetingCommandName().ToString()),
+		                         GEngine->GetLargeFont(), FColor::Red);
+		Canvas->DrawItem(TextItem);
+	}
+}
+
+void ABattleHUD::DrawCommand() const
+{
+	const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(OwningCommanderPawn->GetFirstSelectedPawn());
+	APlayerController* PlayerController = GetOwningPlayerController();
+	if (ConsciousPawn && PlayerController)
+	{
+		FVector2D MousePos;
+
+		PlayerController->GetMousePosition(MousePos.X, MousePos.Y);
+
+		const UCommandComponent* CurrentCommand = ConsciousPawn->GetCurrentCommand(GCommandChannel_Default);
+		const TArray<UCommandComponent*>& Commands = ConsciousPawn->GetCommandsInQueue(GCommandChannel_Default);
+
+		int32 i = 0;
+		auto Draw = [&](const UCommandComponent* Command, const FLinearColor& Color)
+		{
+			if (Command)
+			{
+				FCanvasTextItem TextItem(MousePos + FVector2D(10 , 20 * i),
+				                         FText::FromString(FString::Printf(TEXT("%d.%s"), i, *Command->GetCommandName().ToString())),
+				                         GEngine->GetLargeFont(), Color);
+				Canvas->DrawItem(TextItem);
+			}
+
+			i++;
+		};
+
+		Draw(CurrentCommand, FColor::Red);
+		for (const UCommandComponent* Command : Commands)
+		{
+			Draw(Command,FColor::Yellow);
+		}
 	}
 }

@@ -13,11 +13,11 @@ struct FResourceData
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	EResourceType ResourceType;
+	EResourceType Type;
 
 	FResourceData()
 	{
-		ResourceType = EResourceType::Coin;
+		Type = EResourceType::Coin;
 	}
 };
 
@@ -34,7 +34,7 @@ public:
 public:
 	bool CollectBy(ACollectorPawn* CollectorPawn);
 
-	EResourceType GetResourceType() const { return ResourceData.ResourceType; };
+	EResourceType GetResourceType() const { return ResourceData.Type; };
 
 	int32 GetResourcePoint() const { return ResourcePoint; };
 

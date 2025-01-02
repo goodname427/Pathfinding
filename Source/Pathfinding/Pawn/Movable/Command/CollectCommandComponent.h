@@ -24,13 +24,13 @@ public:
 	bool CanCollect(const AResourcePawn* ResourcePawn) const;
 	
 protected:
-	virtual bool InternalIsReachable_Implementation() override;
+	virtual bool InternalIsArgumentsValid_Implementation() override;
 	
 	virtual void InternalBeginExecute_Implementation() override;
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
 
-	virtual void InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason) override;
+	virtual void InternalExecute_Implementation(float DeltaTime) override;
 
 protected:
 	UPROPERTY(Category = "Collect", EditAnywhere)

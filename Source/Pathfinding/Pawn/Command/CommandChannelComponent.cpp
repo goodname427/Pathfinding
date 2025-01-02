@@ -33,19 +33,6 @@ void UCommandChannelComponent::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(ThisClass, CurrentCommand);
 }
 
-void UCommandChannelComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// // DEBUG_MESSAGE(TEXT("Command channel [%d]"), GetChannelId());
-	// if (AConsciousPawn* OwnerConsciousPawn = Cast<AConsciousPawn>(GetOwner()))
-	// {
-	// 	// DEBUG_MESSAGE(TEXT("ConsciousPawn [%s] add command channel [%d]"), *OwnerConsciousPawn->GetName(),
-	// 	//               GetChannelId());
-	// 	OwnerConsciousPawn->AddCommandChannel(this);
-	// }
-}
-
 UCommandComponent* UCommandChannelComponent::GetCurrentCommand() const
 {
 	return CurrentCommand;
@@ -68,9 +55,16 @@ void UCommandChannelComponent::PushCommand(UCommandComponent* CommandToPush)
 {
 	if (CommandToPush)
 	{
-		CommandQueue.Push(CommandToPush);
+		if (bIsClearing)
+		{
+			PendingCommandQueue.Push(CommandToPush);
+		}
+		else
+		{
+			CommandQueue.Push(CommandToPush);
+		}
 
-		GetConsciousPawnOwner()->DispatchCommand_OnPushedToQueue(CommandToPush);
+		DispatchCommand(OnPushedToQueue, CommandToPush);
 		OnRep_CommandQueue();
 	}
 }
@@ -79,7 +73,7 @@ void UCommandChannelComponent::PopCommand(int32 CommandIndexToPop)
 {
 	if (CommandIndexToPop == -1)
 	{
-		ExecuteNextCommand();
+		AbortCurrentCommand();
 	}
 	else if (CommandIndexToPop >= 0 && CommandIndexToPop < CommandQueue.Num())
 	{
@@ -87,95 +81,114 @@ void UCommandChannelComponent::PopCommand(int32 CommandIndexToPop)
 		UCommandComponent* CommandToPop = CommandQueue[CommandIndexToPop].Command;
 		CommandQueue.RemoveAt(CommandIndexToPop);
 
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandToPop, ECommandPoppedReason::Cancel);
+		DispatchCommand(OnPoppedFromQueue, CommandToPop, ECommandPoppedReason::Cancel);
 		OnRep_CommandQueue();
 	}
 }
 
 bool UCommandChannelComponent::BeginClear()
 {
-	return true;
-	
-	if (NumToClear == -1)
+	// return true;
+	if (bIsClearing)
 	{
-		NumToClear = CommandQueue.Num();
-		return true;
+		return false;
 	}
 
-	return false;
+	bIsClearing = true;
+	//NumToClear = CommandQueue.Num();
+	PendingCommandQueue.Empty();
+
+	return true;
 }
 
 void UCommandChannelComponent::EndClear()
 {
-	NumToClear = -1;
+	bIsClearing = false;
+
+	//NumToClear = -1;
+	CommandQueue = MoveTemp(PendingCommandQueue);
+	ExecuteNextCommand();
 }
 
 void UCommandChannelComponent::ClearCommands(ECommandPoppedReason Reason)
 {
 	AbortCurrentCommand();
 
-	// while (NumToClear > 0 && CommandQueue.Num() > 0)
-	// {
-	// 	const FCommandWrapper& CommandWrapper = CommandQueue[0];
-	// 	CommandQueue.RemoveAt(0);
-	// 	NumToClear--;
-	//
-	// 	GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
-	// }
-
-	for (const FCommandWrapper& CommandWrapper : CommandQueue)
+	while (CommandQueue.Num() > 0)
 	{
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
+		UCommandComponent* PoppedCommand = CommandQueue[0].Command;
+		CommandQueue.RemoveAt(0);
+		//NumToClear--;
+
+		DispatchCommand(OnPoppedFromQueue, PoppedCommand, Reason);
 	}
 
-	CommandQueue.Reset();
+	// for (const FCommandWrapper& CommandWrapper : CommandQueue)
+	// {
+	// 	GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
+	// }
+	// CommandQueue.Reset();
 
 	OnRep_CommandQueue();
 }
 
 void UCommandChannelComponent::ExecuteNextCommand()
 {
-	AbortCurrentCommand();
+	// wait for the clean step to finish
+	if (bIsClearing)
+	{
+		return;
+	}
+
+	// abort current command will execute the next command, so don't need to execute subsequent process
+	if (AbortCurrentCommand())
+	{
+		return;
+	}
 
 	if (CommandQueue.Num() == 0)
 	{
 		return;
 	}
 
+	// get the next command
 	UCommandComponent* NextCommand = CommandQueue[0].Get();
 	CommandQueue.RemoveAt(0);
 
+	// check if the command can be executed
 	if (NextCommand->CanExecute())
 	{
 		NextCommand->OnCommandEnd.AddDynamic(this, &UCommandChannelComponent::OnCommandEnd);
 		CurrentCommand = NextCommand;
-		OnRep_CurrentCommand();
 
-		GetConsciousPawnOwner()->DispatchCommand_BeginExecute(NextCommand, NextCommand->GetRequest());
+		DispatchCommand(BeginExecute, NextCommand, NextCommand->GetRequest());
+
+		OnRep_CurrentCommand();
 	}
+	// cannot execute the command
 	else
 	{
 		if (BeginClear())
 		{
-			GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(NextCommand, ECommandPoppedReason::Unreachable);
+			DispatchCommand(OnPoppedFromQueue, NextCommand, ECommandPoppedReason::CanNotExecute);
 			ClearCommands(ECommandPoppedReason::PreTaskFailed);
 			EndClear();
 		}
 	}
 }
 
-void UCommandChannelComponent::AbortCurrentCommand()
+bool UCommandChannelComponent::AbortCurrentCommand()
 {
 	if (CurrentCommand)
 	{
-		UCommandComponent* CommandToAbort = CurrentCommand;
-		CurrentCommand = nullptr;
-		
-		GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandToAbort, ECommandPoppedReason::Cancel);
-		GetConsciousPawnOwner()->DispatchCommand_EndExecute(CommandToAbort, ECommandExecuteResult::Aborted);
+		DispatchCommand(OnPoppedFromQueue, CurrentCommand, ECommandPoppedReason::Cancel);
+		DispatchCommand(EndExecute, CurrentCommand, ECommandExecuteResult::Aborted);
 
 		OnRep_CurrentCommand();
+		return true;
 	}
+
+	return false;
 }
 
 AConsciousPawn* UCommandChannelComponent::GetConsciousPawnOwner() const
@@ -185,32 +198,32 @@ AConsciousPawn* UCommandChannelComponent::GetConsciousPawnOwner() const
 
 void UCommandChannelComponent::OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result)
 {
-	GetConsciousPawnOwner()->DispatchCommand_EndExecute(Command, Result);
-
 	Command->OnCommandEnd.RemoveDynamic(this, &ThisClass::OnCommandEnd);
 	CurrentCommand = nullptr;
 
-	if (Result == ECommandExecuteResult::Success)
+	DispatchCommand(EndExecute, Command, Result);
+
+	switch (Result)
 	{
-		ExecuteNextCommand();
-	}
-	else if (Command->IsAbortCurrentCommand())
-	{
-		ECommandPoppedReason ClearReason;
-		switch (Result)
+	case ECommandExecuteResult::Success:
 		{
-			case ECommandExecuteResult::Aborted:
-				ClearReason = ECommandPoppedReason::Cancel;
-				break;
-			case ECommandExecuteResult::Failed:
-				ClearReason = ECommandPoppedReason::PreTaskFailed;
-				break;
-			default:
-				ClearReason = ECommandPoppedReason::Cancel;
-				break;
+			ExecuteNextCommand();
+			break;
 		}
-		
-		CLEAR_COMMAND_CHANNEL(this, ClearReason);
+	case ECommandExecuteResult::Failed:
+		{
+			CLEAR_COMMAND_CHANNEL(this, ECommandPoppedReason::PreTaskFailed);
+			break;
+		}
+	case ECommandExecuteResult::Aborted:
+		{
+			ExecuteNextCommand();
+			break;
+		}
+	default:
+		{
+			break;
+		}
 	}
 }
 

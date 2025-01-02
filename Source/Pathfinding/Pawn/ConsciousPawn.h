@@ -77,9 +77,6 @@ protected:
 public:
 	// Command
 	UFUNCTION(BlueprintCallable)
-	bool HasProgressCommand() const { return GetProgressChannel() != nullptr; }
-
-	UFUNCTION(BlueprintCallable)
 	virtual UMoveCommandComponent* GetMoveCommandComponent() const;
 
 	template <class TCommand>

@@ -14,7 +14,7 @@ FName UCollectCommandComponent::StaticCommandName = FName("Collect");
 
 UCollectCommandComponent::UCollectCommandComponent(): ResourceTypesToAllowCollecting({EResourceType::Coin})
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
 }
@@ -29,7 +29,7 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
-bool UCollectCommandComponent::InternalIsReachable_Implementation()
+bool UCollectCommandComponent::InternalIsArgumentsValid_Implementation()
 {
 	if (GetExecutePawn<ACollectorPawn>() == nullptr)
 	{
@@ -62,58 +62,21 @@ void UCollectCommandComponent::InternalBeginExecute_Implementation()
 
 	if (Resource && Collector && Resource->CollectBy(Collector))
 	{
-		EndExecute(ECommandExecuteResult::Success);
+		EndExecuteDelay(ECommandExecuteResult::Success, 1 / Collector->GetAttackDuration());
 	}
 	else
 	{
-		EndExecute(ECommandExecuteResult::Failed);
+		EndExecuteDelay(ECommandExecuteResult::Failed, 1 / Collector->GetAttackDuration());
 	}
 }
 
 void UCollectCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
-	AUTHORITY_CHECK();
-
-	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
-	if (Result == ECommandExecuteResult::Success)
-	{
-		Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
-
-		FTargetRequest TransportRequest = FTargetRequest::Make<UTransportCommandComponent>();
-		{
-			TransportRequest.TargetPawn = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
-			TransportRequest.Type = ETargetRequestType::Append;
-		}
-
-		Collector->Receive(TransportRequest);
-	}
-	else if (Result == ECommandExecuteResult::Failed)
-	{
-		Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
-
-		FTargetRequest CollectRequest(this, Collector->GetNextResourceToCollect());
-		{
-			CollectRequest.Type = ETargetRequestType::Append;
-		}
-
-		Collector->Receive(CollectRequest);
-	}
+	GetExecutePawn()->SetActorScale3D(FVector(1));
 }
 
-void UCollectCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
+void UCollectCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
-	AUTHORITY_CHECK();
-
-	// if (Reason == ECommandPoppedReason::Unreachable)
-	// {
-	// 	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
-	// 	Collector->FindAndRecordNextResourceToCollect(Cast<AResourcePawn>(Request.TargetPawn));
-	//
-	// 	FTargetRequest CollectRequest(this, Collector->GetNextResourceToCollect());
-	// 	{
-	// 		CollectRequest.Type = ETargetRequestType::Append;
-	// 	}
-	//
-	// 	Collector->Receive(CollectRequest);
-	// }
+	AConsciousPawn* Pawn = GetExecutePawn();
+	Pawn->SetActorScale3D(FVector(Pawn->GetActorScale3D().X + DeltaTime));
 }

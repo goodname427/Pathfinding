@@ -33,7 +33,7 @@ struct FCommandWrapper
 
 	UCommandComponent* Get() const
 	{
-		Command->SetCommandArgs(Request);
+		Command->SetCommandArgumentsSkipCheck(Request);
 		return Command;
 	}
 };
@@ -49,6 +49,13 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, UCo
 	} \
 }
 
+#define DispatchCommand(FunctionName, ...) \
+{ \
+	if (AConsciousPawn* ConsciousPawn = GetConsciousPawnOwner()) \
+	{ \
+		ConsciousPawn->DispatchCommand_##FunctionName(##__VA_ARGS__); \
+	} \
+}
 /**
  * 
  */
@@ -63,9 +70,6 @@ public:
 	static UCommandChannelComponent* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
 	
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
-protected:
-	virtual void BeginPlay() override;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -90,12 +94,13 @@ public:
 	
 	void ClearCommands(ECommandPoppedReason Reason);
 
+	bool AbortCurrentCommand();
+	
 	void ExecuteNextCommand();
-
-	void AbortCurrentCommand();
 
 protected:
 	AConsciousPawn* GetConsciousPawnOwner() const;
+	
 	
 	// Server only
 	UFUNCTION()
@@ -106,7 +111,10 @@ public:
 	FCommandChannelUpdatedSignature OnCommandUpdated;
 
 private:
-	int32 NumToClear;
+	int32 NumToClear = -1;
+	bool bIsClearing = false;
+	UPROPERTY(Transient)
+	TArray<FCommandWrapper> PendingCommandQueue;
 	
 	UPROPERTY(ReplicatedUsing=OnRep_ChannelId)
 	int32 ChannelId;

@@ -138,7 +138,7 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	// needn't to move
 	if (RequestCommand->GetRequiredTargetRadius() < 0)
 	{
-		if (RequestCommand->SetCommandArgs(Request))
+		if (RequestCommand->SetCommandArguments(Request))
 		{
 			OutCommandsToExecute.Add(RequestCommand);
 		}
@@ -156,16 +156,16 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 		// ignore move command
 		if (RequestCommand == MoveCommandComponent)
 		{
-			if (MoveCommandComponent->SetMoveCommandArgs(nullptr, Request))
+			if (MoveCommandComponent->SetMoveCommandArguments(nullptr, Request))
 			{
 				OutCommandsToExecute.Add(MoveCommandComponent);;
 			}
 		}
 		else
 		{
-			if (RequestCommand->SetCommandArgs(Request))
+			if (RequestCommand->SetCommandArguments(Request))
 			{
-				if (MoveCommandComponent->SetMoveCommandArgs(RequestCommand, Request))
+				if (MoveCommandComponent->SetMoveCommandArguments(RequestCommand, Request))
 				{
 					OutCommandsToExecute.Add(MoveCommandComponent);
 				}
@@ -268,7 +268,7 @@ void AConsciousPawn::DispatchCommand_BeginExecute_Implementation(UCommandCompone
 		return;
 	}
 
-	Command->SetCommandArgs(Request);
+	Command->SetCommandArguments(Request);
 	Command->BeginExecute();
 }
 

@@ -119,6 +119,10 @@ protected:
 
 public:
 	const FPFPawnData& GetData() const { return Data; }
+
+	float GetAttackSpeed() const { return AttackSpeed; }
+
+	float GetAttackDuration() const { return 1.f / AttackSpeed; }
 	
 protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)

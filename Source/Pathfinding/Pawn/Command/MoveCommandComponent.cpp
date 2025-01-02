@@ -16,23 +16,24 @@ UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 	Data.Name = StaticCommandName;
 }
 
-bool UMoveCommandComponent::SetMoveCommandArgs(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest)
+bool UMoveCommandComponent::SetMoveCommandArguments(UCommandComponent* InCommandNeedToMove,
+                                                    const FTargetRequest& InRequest)
 {
 	CommandNeedToMove = InCommandNeedToMove;
 
 	if (CommandNeedToMove == nullptr)
 	{
-		return SetCommandArgs(InRequest);
+		return SetCommandArguments(InRequest);
 	}
 
 	// Move command reachable check
-	return CommandNeedToMove->GetRequiredTargetRadius() >= 0 && SetCommandArgs(InRequest);
+	return CommandNeedToMove->GetRequiredTargetRadius() >= 0 && SetCommandArguments(InRequest);
 }
 
 void UMoveCommandComponent::InternalBeginExecute_Implementation()
 {
 	AUTHORITY_CHECK();
-	
+
 	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
@@ -49,13 +50,9 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
 	AUTHORITY_CHECK();
-	
-	AConsciousAIController* AIController = GetExecuteController();
 
-	if (Result == ECommandExecuteResult::Aborted)
-	{
-		AIController->StopMovement();
-	}
+	AConsciousAIController* AIController = GetExecuteController();
+	AIController->StopMovement();
 }
 
 void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
@@ -64,7 +61,17 @@ void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 	// {
 	// 	GetExecuteController()->StopMovement();
 	// 	EndExecute(ECommandExecuteResult::Success);
-	// }	
+	// }
+
+	AUTHORITY_CHECK();
+	
+	if (CommandNeedToMove)
+	{
+		if (!CommandNeedToMove->IsArgumentsValid())
+		{
+			EndExecute(ECommandExecuteResult::Failed);
+		}
+	}
 }
 
 void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowingResult::Type Result)

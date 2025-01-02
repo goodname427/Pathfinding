@@ -13,15 +13,14 @@ ABaseCampPawn::ABaseCampPawn()
 
 void ABaseCampPawn::TransportBy(ACollectorPawn* CollectorPawn)
 {
-	if (!CollectorPawn->CollectedResource.IsValid())
+	if (!CollectorPawn->GetCollectedResource().IsValid())
 	{
 		return;
 	}
 
 	ABattlePlayerState* PS = GetOwnerPlayer();
 
-	PS->TakeResource(CollectorPawn, EResourceTookReason::Collect, CollectorPawn->CollectedResource);
+	PS->TakeResource(CollectorPawn, EResourceTookReason::Collect, CollectorPawn->GetCollectedResource());
 
-	CollectorPawn->CollectedResource.Point = 0;
-	CollectorPawn->CollectedResource.Type = EResourceType::None;
+	CollectorPawn->EmptyCollectedResource();
 }

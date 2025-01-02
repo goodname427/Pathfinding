@@ -22,7 +22,7 @@ public:
 	UStaticMeshComponent* GatherFlagMeshComponent;
 
 protected:
-	virtual bool InternalIsReachable_Implementation() override;
+	virtual bool InternalIsArgumentsValid_Implementation() override;
 	
 	virtual void InternalBeginExecute_Implementation() override;
 };

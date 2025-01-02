@@ -148,7 +148,7 @@ struct FCommandData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
 	UPROPERTY(EditAnywhere)
-	bool bReachableCheckBeforeExecute; 
+	bool bArgumentsValidCheckBeforeExecute; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Channel;
@@ -163,7 +163,7 @@ struct FCommandData
 		RequiredTargetRadius = 250.f;
 		bNeedToTarget = true;
 		bAbortCurrentCommand = true;
-		bReachableCheckBeforeExecute = true;
+		bArgumentsValidCheckBeforeExecute = true;
 		
 		Channel = GCommandChannel_Default;
 	}
@@ -184,7 +184,7 @@ UENUM()
 enum class ECommandPoppedReason : uint8
 {
 	Cancel,
-	Unreachable,
+	CanNotExecute,
 	PreTaskFailed,
 };
 
@@ -192,6 +192,11 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandBeginSignature, UCommandComp
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandComponent*, Command, ECommandExecuteResult,
                                              Result);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandPushedToQueueSignature, UCommandComponent*, Command);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandPoppedFromQueueSignature, UCommandComponent*, Command, ECommandPoppedReason,
+											 Reason);
 
 #define DECLARE_COMMAND_NAME() \
 static FName StaticCommandName;
@@ -267,12 +272,12 @@ public:
 
 public:
 	///	Execute Progress
-	/// 1.SetCommandArgs
-	/// - IsReachable
+	/// 1.SetCommandArguments
+	/// - IsArgumentsValid
 	/// 2.OnPushedToQueue
 	/// - InternalPushedToQueue
 	/// 3.CanExecute
-	/// - IsReachable Or !bReachableCheckBeforeExecute
+	/// - IsArgumentsValid Or !bArgumentsValidCheckBeforeExecute
 	/// - IsTargetInRequiredRadius
 	/// - InternalCanExecute
 	/// 4.BeginExecute
@@ -282,14 +287,17 @@ public:
 	/// 6.Wait for end
 	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
 	///	- Ended by failed Or success -> EndExecute
-	
-	// Execute
+
+	// Skip the arguments check
 	UFUNCTION(BlueprintCallable)
-	bool SetCommandArgs(const FTargetRequest& InRequest);
+	void SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest);
+	
+	UFUNCTION(BlueprintCallable)
+	bool SetCommandArguments(const FTargetRequest& InRequest);
 
 	// Check whether the command args is reachable, it will be check in advance
 	UFUNCTION(BlueprintCallable)
-	bool IsReachable();
+	bool IsArgumentsValid();
 
 	UFUNCTION(BlueprintCallable)
 	bool IsTargetInRequiredRadius() const;
@@ -304,6 +312,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndExecute(ECommandExecuteResult Result);
 
+	UFUNCTION(BlueprintCallable)
+	void EndExecuteDelay(ECommandExecuteResult Result, float Duration);
+
 protected:
 	friend class AConsciousPawn;
 	
@@ -316,7 +327,7 @@ protected:
 protected:
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
-	bool InternalIsReachable();
+	bool InternalIsArgumentsValid();
 
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalCanExecute();
@@ -342,6 +353,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FCommandEndSignature OnCommandEnd;
+
+	UPROPERTY(BlueprintAssignable)
+	FCommandPushedToQueueSignature OnCommandPushedToQueue;
+
+	UPROPERTY(BlueprintAssignable)
+	FCommandPoppedFromQueueSignature OnCommandPoppedFromQueue;
 
 protected:
 	FTargetRequest Request;

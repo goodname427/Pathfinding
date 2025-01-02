@@ -34,4 +34,7 @@ private:
 
 protected:
 	void DrawTargetingHint() const;
+
+protected:
+	void DrawCommand() const;
 };

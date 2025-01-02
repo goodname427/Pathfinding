@@ -41,7 +41,13 @@ struct FResourceInfo
 		Point = InTuple.Get<1>();
 	}
 
-	bool IsValid() const  { return Type != EResourceType::None && Point > 0; }
+	bool IsValid() const { return Type != EResourceType::None && Point > 0; }
+
+	void Empty()
+	{
+		Type = EResourceType::None;
+		Point = 0;
+	}
 };
 
 UENUM()
@@ -64,7 +70,7 @@ class PATHFINDING_API ABattlePlayerState : public APFPlayerState
 
 public:
 	ABattlePlayerState();
-	
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
@@ -80,7 +86,7 @@ protected:
 	{
 		Resources[static_cast<int32>(ResourceType) - 1] = InValue;
 	}
-	
+
 protected:
 	UPROPERTY(Transient, Replicated)
 	TArray<int32> Resources;
@@ -88,7 +94,7 @@ protected:
 public:
 	void OnPlayerOwnedPawnAdd(APFPawn* Pawn);
 	void OnPlayerOwnedPawnRemoved(APFPawn* Pawn);
-	
+
 	UFUNCTION(BlueprintCallable)
 	ABaseCampPawn* GetFirstBaseCamp() const;
 
