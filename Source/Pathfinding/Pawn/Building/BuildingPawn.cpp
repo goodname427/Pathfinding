@@ -10,5 +10,7 @@
 // Sets default values
 ABuildingPawn::ABuildingPawn()
 {
+	ConsciousData.AllowedCreateMethod = static_cast<uint32>(EAllowedCreateMethod::Build);
+	ConsciousData.ResourcesToAmount = { {EResourceType::Coin, 1} };
 }
 

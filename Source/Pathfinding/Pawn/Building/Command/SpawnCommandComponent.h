@@ -15,6 +15,10 @@ class PATHFINDING_API USpawnCommandComponent : public UProgressCommandComponent
 public:
 	USpawnCommandComponent();
 
+	virtual void PostInitProperties() override;
+
+	virtual void BeginPlay() override;
+
 public:
 	DECLARE_COMMAND_NAME()
 
@@ -45,7 +49,7 @@ protected:
 	const AConsciousPawn* GetDefaultObjectToSpawn() const;
 
 protected:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Command)
+	UPROPERTY(Category = "Command|Spawn", EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<AConsciousPawn> ConsciousPawnClassToSpawn;
 
 	FVector GatherLocation;

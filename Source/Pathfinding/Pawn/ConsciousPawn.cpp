@@ -12,6 +12,35 @@
 #include "Net/UnrealNetwork.h"
 
 
+bool FConsciousData::IsResourcesEnough(const ABattlePlayerState* PlayerState) const
+{
+	for (const auto Resource : ResourcesToAmount)
+	{
+		if (!PlayerState->IsResourceEnough(Resource))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void FConsciousData::ConsumeResources(UObject* Source, ABattlePlayerState* PlayerState) const
+{
+	for (const auto Resource : ResourcesToAmount)
+	{
+		PlayerState->TakeResource(Source, EResourceTookReason::Spawn, Resource);
+	}
+}
+
+void FConsciousData::ReturnResources(UObject* Source, ABattlePlayerState* PlayerState) const
+{
+	for (const auto Resource : ResourcesToAmount)
+	{
+		PlayerState->TakeResource(Source, EResourceTookReason::Return, Resource);
+	}
+}
+
 // Sets default values
 AConsciousPawn::AConsciousPawn(): ConsciousData()
 {

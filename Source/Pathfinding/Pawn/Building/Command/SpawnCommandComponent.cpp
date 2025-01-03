@@ -17,6 +17,32 @@ USpawnCommandComponent::USpawnCommandComponent()
 	Data.bArgumentsValidCheckBeforeExecute = false;
 }
 
+void USpawnCommandComponent::PostInitProperties()
+{
+	Super::PostInitProperties();
+
+	// if (const AConsciousPawn* CDO = GetDefaultObjectToSpawn())
+	// {
+	// 	if (!CDO->GetConsciousData().IsAllowedToSpawn())
+	// 	{
+	// 		ConsciousPawnClassToSpawn = nullptr;
+	// 	}
+	// }
+}
+
+void USpawnCommandComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (const AConsciousPawn* CDO = GetDefaultObjectToSpawn())
+	{
+		if (!CDO->GetConsciousData().IsAllowedToSpawn())
+		{
+			ConsciousPawnClassToSpawn = nullptr;
+		}
+	}
+}
+
 float USpawnCommandComponent::GetProgressDuration_Implementation() const
 {
 	return ConsciousPawnClassToSpawn.Get()
@@ -26,7 +52,7 @@ float USpawnCommandComponent::GetProgressDuration_Implementation() const
 
 const AConsciousPawn* USpawnCommandComponent::GetDefaultObjectToSpawn() const
 {
-	return ConsciousPawnClassToSpawn.Get()? ConsciousPawnClassToSpawn.GetDefaultObject() : nullptr;
+	return ConsciousPawnClassToSpawn.Get() ? ConsciousPawnClassToSpawn.GetDefaultObject() : nullptr;
 }
 
 FString USpawnCommandComponent::GetCommandDisplayName_Implementation() const
@@ -65,59 +91,31 @@ bool USpawnCommandComponent::InternalIsArgumentsValid_Implementation()
 		return false;
 	}
 
-	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
-	for (const auto Resource : ConsciousData.ResourcesToAmount)
-	{
-		if (Resource.Key == EResourceType::None)
-		{
-			continue;
-		}
-
-		if (PS->GetResource(Resource.Key) < Resource.Value)
-		{
-			return false;
-		}
-	}
-
-	return true;
+	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	
+	return ConsciousData.IsResourcesEnough(PS);
 }
 
 void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 {
 	AUTHORITY_CHECK();
 	
-	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
 	// Consume resources
-	for (const auto Resource : ConsciousData.ResourcesToAmount)
-	{
-		if (Resource.Key == EResourceType::None)
-		{
-			continue;
-		}
-
-		PS->TakeResource(this, EResourceTookReason::Spawn, Resource);
-	}
+	ConsciousData.ConsumeResources(this, PS);
 }
 
 void USpawnCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
 {
 	AUTHORITY_CHECK();
 	
-	FConsciousData ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
 	// Return resources
-	for (const auto Resource : ConsciousData.ResourcesToAmount)
-	{
-		if (Resource.Key == EResourceType::None)
-		{
-			continue;
-		}
-
-		PS->TakeResource(this, EResourceTookReason::Return, Resource);
-	}
+	ConsciousData.ReturnResources(this, PS);
 }
 
 void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)

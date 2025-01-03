@@ -33,6 +33,6 @@ protected:
 	virtual void InternalExecute_Implementation(float DeltaTime) override;
 
 protected:
-	UPROPERTY(Category = "Collect", EditAnywhere)
+	UPROPERTY(Category = "Command|Collect", EditAnywhere)
 	TSet<EResourceType> ResourceTypesToAllowCollecting;
 };

@@ -77,6 +77,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetResource(EResourceType ResourceType) const { return Resources[static_cast<int32>(ResourceType) - 1]; }
 
+	UFUNCTION(BlueprintCallable)
+	bool IsResourceEnough(const FResourceInfo& ResourceInfo) const;
+	
 	// Server only
 	UFUNCTION(BlueprintCallable)
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const FResourceInfo& ResourceInfo);

@@ -114,7 +114,7 @@ struct FTargetRequest
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	int32 OverrideCommandChannel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay, meta=(EditCondition = "Type == ETargetRequestType::AbortOrPop"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay, meta=(EditCondition = "Type == ETargetRequestType::AbortOrPop", EditConditionHides))
 	int32 CommandIndexToPop;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
@@ -143,13 +143,13 @@ struct FCommandData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString Description;
 	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget"))
-	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bNeedToTarget;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget", EditConditionHides))
+	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bArgumentsValidCheckBeforeExecute; 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

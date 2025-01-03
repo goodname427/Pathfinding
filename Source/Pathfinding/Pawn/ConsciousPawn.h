@@ -15,16 +15,45 @@ struct FTargetRequest;
 class UCommandComponent;
 class UConsciousPawnMovementComponent;
 
+UENUM(meta=(Bitflags, UseEnumValuesAsMaskValuesInEditor = "true"))
+enum class EAllowedCreateMethod : uint32
+{
+	Spawn = 1,
+	Build = 2,
+};
+ENUM_CLASS_FLAGS(EAllowedCreateMethod)
+#define TO_FLAG(CreateMethod) 1 << (static_cast<int32>(CreateMethod) - 1)
+
 USTRUCT(BlueprintType)
 struct FConsciousData
 {
 	GENERATED_USTRUCT_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(Bitmask, BitmaskEnum = "EAllowedCreateMethod"))
+	int32 AllowedCreateMethod;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="AllowedCreateMethod != 0", EditConditionHides))
 	TMap<EResourceType, int32> ResourcesToAmount;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly,
+		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod % 2 == 1", EditConditionHides))
 	float SpawnDuration;
+
+	bool IsAllowedToCreate() const { return AllowedCreateMethod != 0; }
+
+	bool IsAllowedToCreate(EAllowedCreateMethod Method) const
+	{
+		return AllowedCreateMethod & TO_FLAG(Method);
+	}
+
+	bool IsAllowedToSpawn() const { return IsAllowedToCreate(EAllowedCreateMethod::Spawn); }
+	bool IsAllowedToBuild() const { return IsAllowedToCreate(EAllowedCreateMethod::Build); }
+
+	bool IsResourcesEnough(const ABattlePlayerState* PlayerState) const;
+	// Server only
+	void ConsumeResources(UObject* Source, ABattlePlayerState* PlayerState) const;
+	// Server only
+	void ReturnResources(UObject* Source, ABattlePlayerState* PlayerState) const;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
@@ -106,7 +135,7 @@ protected:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void DispatchCommand_OnPoppedFromQueue(UCommandComponent* Command, ECommandPoppedReason Reason);
-	
+
 protected:
 	TMultiMap<FName, UCommandComponent*> CommandList;
 
@@ -119,8 +148,11 @@ public:
 	const TArray<UCommandComponent*>& GetCommandsInQueue(int32 ChannelId) const;
 
 	UFUNCTION(BlueprintCallable)
-	const UCommandChannelComponent* GetProgressChannel() const { return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel); }
-	
+	const UCommandChannelComponent* GetProgressChannel() const
+	{
+		return GetCommandChannel(UProgressCommandComponent::StaticCommandChannel);
+	}
+
 	UFUNCTION(BlueprintCallable)
 	UProgressCommandComponent* GetCurrentProgressCommand() const
 	{
@@ -133,7 +165,7 @@ public:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandChannelCreatedSignature OnCommandChannelCreated;
-	
+
 protected:
 	UCommandChannelComponent* GetCommandChannel(int32 ChannelId) const;
 
@@ -142,10 +174,10 @@ protected:
 
 	// Client only
 	void AddCommandChannel(UCommandChannelComponent* CommandChannel);
-	
+
 	friend class UCommandChannelComponent;
 	TMap<int32, UCommandChannelComponent*> CommandChannelMap;
-	
+
 public:
 	// Conscious Data
 	UFUNCTION(BlueprintCallable)

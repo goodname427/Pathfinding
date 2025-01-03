@@ -38,6 +38,10 @@ AMovablePawn::AMovablePawn()
 	StaticMeshComponent->SetCanEverAffectNavigation(false);
 
 	INIT_DEFAULT_SUBOBJECT(MoveCommandComponent);
+
+	ConsciousData.AllowedCreateMethod = static_cast<uint32>(EAllowedCreateMethod::Spawn);
+	ConsciousData.ResourcesToAmount = { {EResourceType::Coin, 1} };
+	ConsciousData.SpawnDuration = 1.0f;
 }
 
 UCommandComponent* AMovablePawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

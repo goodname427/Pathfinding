@@ -25,14 +25,29 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, BaseCamps);
 }
 
+bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) const
+{
+	if (ResourceInfo.Type == EResourceType::None)
+	{
+		return true;
+	}
+
+	return GetResource(ResourceInfo.Type) >= ResourceInfo.Point;
+}
+
 void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookReason,
-	const FResourceInfo& ResourceInfo)
+                                      const FResourceInfo& ResourceInfo)
 {
 	if (!HasAuthority())
 	{
 		return;
 	}
 
+	if (ResourceInfo.Type == EResourceType::None)
+	{
+		return;
+	}
+	
 	// add resource
 	if (TookReason >= EResourceTookReason::Collect)
 	{
