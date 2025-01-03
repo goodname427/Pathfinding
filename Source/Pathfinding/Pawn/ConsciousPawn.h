@@ -36,7 +36,7 @@ struct FConsciousData
 	TMap<EResourceType, int32> ResourcesToAmount;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,
-		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod % 2 == 1", EditConditionHides))
+		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod != 0", EditConditionHides))
 	float SpawnDuration;
 
 	bool IsAllowedToCreate() const { return AllowedCreateMethod != 0; }
