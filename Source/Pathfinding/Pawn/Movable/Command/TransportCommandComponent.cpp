@@ -24,7 +24,7 @@ bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation()
 		return false;
 	}
 	
-	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Request.TargetPawn))
+	if (ABaseCampPawn* BaseCampPawn = Request.GetTargetPawn<ABaseCampPawn>())
 	{
 		if (!BaseCampPawn->IsPendingKill() && BaseCampPawn->GetPawnRole(GetExecutePawn()) == EPawnRole::Self)
 		{

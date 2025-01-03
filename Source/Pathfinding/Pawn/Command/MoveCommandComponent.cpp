@@ -37,7 +37,7 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
-	if (Request.TargetPawn)
+	if (Request.IsTargetPawnValid())
 	{
 		AIController->MoveToActor(Request.TargetPawn, -1, false);
 	}

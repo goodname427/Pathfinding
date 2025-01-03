@@ -124,6 +124,8 @@ struct FTargetRequest
 	template <class T>
 	T* GetTargetPawn() const { return Cast<T>(TargetPawn); }
 
+	bool IsTargetPawnValid() const { return TargetPawn != nullptr && !TargetPawn->IsPendingKill(); }
+
 	bool IsOverrideCommandChannel() const { return OverrideCommandChannel > GCommandChannel_Default; }
 };
 

@@ -48,16 +48,16 @@ void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request)
 
 UCommandComponent* ACollectorPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)
 {
-	if (Request.TargetPawn != nullptr)
+	if (Request.IsTargetPawnValid())
 	{
-		if (AResourcePawn* ResourcePawn = Cast<AResourcePawn>(Request.TargetPawn))
+		if (AResourcePawn* ResourcePawn = Request.GetTargetPawn<AResourcePawn>())
 		{
 			if (CollectCommandComponent->CanCollect(ResourcePawn))
 			{
 				return CollectCommandComponent;
 			}
 		}
-		else if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Request.TargetPawn))
+		else if (ABaseCampPawn* BaseCampPawn = Request.GetTargetPawn<ABaseCampPawn>())
 		{
 			if (GetPawnRole(BaseCampPawn) == EPawnRole::Self)
 			{
@@ -176,7 +176,7 @@ void ACollectorPawn::OnCollectCommandEnd(UCommandComponent* CommandComponent, EC
 		return;
 	}
 
-	CollectOrTransportResource(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
+	CollectOrTransportResource(CommandComponent->GetRequest().GetTargetPawn<AResourcePawn>());
 }
 
 void ACollectorPawn::OnCollectCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason)
@@ -186,7 +186,7 @@ void ACollectorPawn::OnCollectCommandPoppedFromQueue(UCommandComponent* CommandC
 		return;
 	}
 
-	CollectOrTransportResource(Cast<AResourcePawn>(CommandComponent->GetRequest().TargetPawn));
+	CollectOrTransportResource(CommandComponent->GetRequest().GetTargetPawn<AResourcePawn>());
 }
 
 void ACollectorPawn::OnTransportCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)

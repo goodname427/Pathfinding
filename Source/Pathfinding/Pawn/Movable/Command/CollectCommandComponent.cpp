@@ -36,7 +36,7 @@ bool UCollectCommandComponent::InternalIsArgumentsValid_Implementation()
 		return false;
 	}
 
-	if (const AResourcePawn* ResourcePawn = Cast<AResourcePawn>(Request.TargetPawn))
+	if (const AResourcePawn* ResourcePawn = Request.GetTargetPawn<AResourcePawn>())
 	{
 		if (CanCollect(ResourcePawn))
 		{

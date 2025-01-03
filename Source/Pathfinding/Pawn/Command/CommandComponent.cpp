@@ -92,7 +92,7 @@ bool UCommandComponent::IsTargetInRequiredRadius() const
 
 	const AConsciousPawn* ExecutePawn = GetExecutePawn();
 
-	if (!Request.TargetPawn)
+	if (!Request.IsTargetPawnValid())
 	{
 		return FVector::Dist(Request.TargetLocation, ExecutePawn->GetActorLocation()) <= TargetRadius;
 	}

@@ -571,7 +571,7 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 			Request.TargetPawn = Cast<APFPawn>(HitResult.Actor.Get());
 			Request.Command = Command;
 
-			if (Request.TargetPawn)
+			if (Request.IsTargetPawnValid())
 			{
 				Request.TargetPawn->OnTarget(this);
 			}
