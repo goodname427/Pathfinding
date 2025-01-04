@@ -19,14 +19,14 @@ UProgressCommandComponent::UProgressCommandComponent()
 	Data.Channel = StaticCommandChannel;
 }
 
-bool UProgressCommandComponent::InternalIsArgumentsValid_Implementation()
-{
-	return GetProgressDuration() >= 0;
-}
-
 float UProgressCommandComponent::GetProgressDuration_Implementation() const
 {
 	return ProgressDuration;
+}
+
+bool UProgressCommandComponent::InternalIsCommandEnable_Implementation()
+{
+	return GetProgressDuration() >= 0;
 }
 
 void UProgressCommandComponent::InternalBeginExecute_Implementation()

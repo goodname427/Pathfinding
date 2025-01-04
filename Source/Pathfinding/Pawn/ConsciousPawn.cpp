@@ -159,7 +159,7 @@ void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExe
 	UCommandComponent* RequestCommand = ResolveRequestCommand(Request);
 
 	// no command
-	if (RequestCommand == nullptr)
+	if (RequestCommand == nullptr || !RequestCommand->IsCommandEnable())
 	{
 		return;
 	}

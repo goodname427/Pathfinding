@@ -13,7 +13,7 @@ ABattlePlayerState::ABattlePlayerState()
 
 	if (Resources.Num() > 0)
 	{
-		Resources[0] = 100;
+		Resources[0] = 0;
 	}
 }
 

@@ -25,7 +25,7 @@ public:
 	float GetProgressDuration() const;
 
 protected:
-	virtual bool InternalIsArgumentsValid_Implementation() override;
+	virtual bool InternalIsCommandEnable_Implementation() override;
 
 	virtual void InternalBeginExecute_Implementation() override;
 

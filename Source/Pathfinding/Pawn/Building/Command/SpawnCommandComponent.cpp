@@ -14,7 +14,7 @@ USpawnCommandComponent::USpawnCommandComponent()
 {
 	Data.Name = StaticCommandName;
 	Data.bNeedToTarget = false;
-	Data.bArgumentsValidCheckBeforeExecute = false;
+	Data.bCommandEnableCheckBeforeExecute = false;
 }
 
 void USpawnCommandComponent::PostInitProperties()
@@ -73,9 +73,9 @@ UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 	return CDO? CDO->GetData().Icon : nullptr;
 }
 
-bool USpawnCommandComponent::InternalIsArgumentsValid_Implementation()
+bool USpawnCommandComponent::InternalIsCommandEnable_Implementation()
 {
-	if (!Super::InternalIsArgumentsValid_Implementation())
+	if (!Super::InternalIsCommandEnable_Implementation())
 	{
 		return false;
 	}

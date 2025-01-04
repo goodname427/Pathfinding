@@ -37,7 +37,7 @@ public:
 	FVector GetGatherLocation() const { return GatherLocation; }
 
 protected:
-	virtual bool InternalIsArgumentsValid_Implementation() override;
+	virtual bool InternalIsCommandEnable_Implementation() override;
 
 	virtual void InternalPushedToQueue_Implementation() override;
 

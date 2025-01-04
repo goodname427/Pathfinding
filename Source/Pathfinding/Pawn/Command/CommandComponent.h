@@ -149,6 +149,9 @@ struct FCommandData
 	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bCommandEnableCheckBeforeExecute;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bArgumentsValidCheckBeforeExecute; 
 
@@ -165,6 +168,8 @@ struct FCommandData
 		RequiredTargetRadius = 250.f;
 		bNeedToTarget = true;
 		bAbortCurrentCommand = true;
+
+		bCommandEnableCheckBeforeExecute = true;
 		bArgumentsValidCheckBeforeExecute = true;
 		
 		Channel = GCommandChannel_Default;
@@ -274,12 +279,14 @@ public:
 
 public:
 	///	Execute Progress
+	///	0.IsCommandEnable
 	/// 1.SetCommandArguments
 	/// - IsArgumentsValid
 	/// 2.OnPushedToQueue
 	/// - InternalPushedToQueue
 	/// 3.CanExecute
-	/// - IsArgumentsValid Or !bArgumentsValidCheckBeforeExecute
+	/// - IsCommandEnable Or Not bCommandEnableCheckBeforeExecute
+	/// - IsArgumentsValid Or Not bArgumentsValidCheckBeforeExecute
 	/// - IsTargetInRequiredRadius
 	/// - InternalCanExecute
 	/// 4.BeginExecute
@@ -290,6 +297,9 @@ public:
 	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
 	///	- Ended by failed Or success -> EndExecute
 
+	UFUNCTION(BlueprintCallable)
+	bool IsCommandEnable();
+		
 	// Skip the arguments check
 	UFUNCTION(BlueprintCallable)
 	void SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest);
@@ -327,6 +337,9 @@ protected:
 	void OnPoppedFromQueue(ECommandPoppedReason Reason);
 	
 protected:
+	UFUNCTION(BlueprintNativeEvent)
+	bool InternalIsCommandEnable();
+	
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
 	bool InternalIsArgumentsValid();

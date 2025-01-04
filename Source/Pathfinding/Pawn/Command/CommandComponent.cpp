@@ -65,6 +65,11 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 	return nullptr;
 }
 
+bool UCommandComponent::IsCommandEnable()
+{
+	return GetExecutePawn() != nullptr && InternalIsCommandEnable();
+}
+
 void UCommandComponent::SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest)
 {
 	Request = InRequest;
@@ -79,7 +84,7 @@ bool UCommandComponent::SetCommandArguments(const FTargetRequest& InRequest)
 
 bool UCommandComponent::IsArgumentsValid()
 {
-	return GetExecutePawn() != nullptr && InternalIsArgumentsValid();
+	return !IsNeedToTarget() || InternalIsArgumentsValid();
 }
 
 bool UCommandComponent::IsTargetInRequiredRadius() const
@@ -135,7 +140,8 @@ bool UCommandComponent::InternalCanExecute_Implementation()
 
 bool UCommandComponent::CanExecute()
 {
-	return (!Data.bArgumentsValidCheckBeforeExecute || IsArgumentsValid())
+	return (!Data.bCommandEnableCheckBeforeExecute || IsCommandEnable())
+		&& (!Data.bArgumentsValidCheckBeforeExecute || IsArgumentsValid())
 		&& IsTargetInRequiredRadius()
 		&& InternalCanExecute();
 }
@@ -232,6 +238,11 @@ void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 	{
 		OnCommandPoppedFromQueue.Broadcast(this, Reason);
 	}
+}
+
+bool UCommandComponent::InternalIsCommandEnable_Implementation()
+{
+	return true;
 }
 
 void UCommandComponent::InternalExecute_Implementation(float DeltaTime)
