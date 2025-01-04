@@ -297,24 +297,27 @@ public:
 	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
 	///	- Ended by failed Or success -> EndExecute
 
+	// Check before set arguments
 	UFUNCTION(BlueprintCallable)
 	bool IsCommandEnable();
 		
 	// Skip the arguments check
 	UFUNCTION(BlueprintCallable)
 	void SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest);
-	
+
+	// Set the command arguments
 	UFUNCTION(BlueprintCallable)
 	bool SetCommandArguments(const FTargetRequest& InRequest);
 
-	// Check whether the command args is reachable, it will be check in advance
+	// Check whether the command args is valid after set arguments
 	UFUNCTION(BlueprintCallable)
 	bool IsArgumentsValid();
 
+	// Check whether the target is in required radius before execute
 	UFUNCTION(BlueprintCallable)
 	bool IsTargetInRequiredRadius() const;
 
-	// Check whether the current status can be executed
+	// Check whether the current status can be executed before execute
 	UFUNCTION(BlueprintCallable)
 	bool CanExecute();
 
