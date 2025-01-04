@@ -3,13 +3,14 @@
 
 #include "MoveCommandComponent.h"
 
+#include "CommanderPawn.h"
 #include "ConsciousPawn.h"
 #include "PFUtils.h"
 #include "Controller/ConsciousAIController.h"
 
 FName UMoveCommandComponent::StaticCommandName = FName("Move");
 
-UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
+UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr), FlagActor(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -37,6 +38,7 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
+	
 	if (Request.IsTargetPawnValid())
 	{
 		AIController->MoveToActor(Request.TargetPawn, -1, false);
@@ -57,17 +59,20 @@ void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRes
 
 void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
-	// if (IsExecuting() && CommandNeedToMove && CommandNeedToMove->IsTargetInRequiredRadius())
-	// {
-	// 	GetExecuteController()->StopMovement();
-	// 	EndExecute(ECommandExecuteResult::Success);
-	// }
+	
 
 	AUTHORITY_CHECK();
 	
 	if (CommandNeedToMove)
 	{
-		if (!CommandNeedToMove->IsArgumentsValid())
+		if (CommandNeedToMove->IsTargetInRequiredRadius())
+		{
+			EndExecute(ECommandExecuteResult::Success);
+			return;
+		}
+		
+		if (!CommandNeedToMove->IsCommandEnable(true)
+			|| !CommandNeedToMove->IsArgumentsValid(true))
 		{
 			// DEBUG_FUNC_FLAG();
 			EndExecute(ECommandExecuteResult::Failed);
@@ -95,4 +100,33 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 
 	// DEBUG_FUNC_FLAG();
 	EndExecute(ExecuteResult);
+}
+
+void UMoveCommandComponent::InternalBeginTarget_Implementation()
+{
+	FlagActor = GetWorld()->SpawnActor(FlagActorClass);
+}
+
+void UMoveCommandComponent::InternalEndTarget_Implementation()
+{
+	if (FlagActor)
+	{
+		FlagActor->Destroy();
+	}
+}
+
+void UMoveCommandComponent::InternalTarget_Implementation(float DeltaTime)
+{
+	if (FlagActor)
+	{
+		const FRay Ray = TargetCommander->GetRayFromMousePosition();
+
+		FHitResult Hit;
+		GetWorld()->LineTraceSingleByChannel(Hit, Ray.Origin, Ray.PointAt(100 * 100), ECC_Visibility);
+
+		if(Hit.bBlockingHit)
+		{
+			FlagActor->SetActorLocation(Hit.Location);
+		}
+	}
 }

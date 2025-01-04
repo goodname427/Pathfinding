@@ -3,6 +3,7 @@
 
 #include "CommandComponent.h"
 
+#include "CommanderPawn.h"
 #include "ConsciousPawn.h"
 #include "PFUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -14,7 +15,7 @@ FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 	CommandName = Command ? InCommand->GetCommandName() : NAME_None;
 }
 
-UCommandComponent::UCommandComponent()
+UCommandComponent::UCommandComponent(): TargetCommander(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
@@ -27,6 +28,11 @@ void UCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
 	if (IsExecuting())
 	{
 		InternalExecute(DeltaTime);
+	}
+
+	if (IsTargeting())
+	{
+		InternalTarget(DeltaTime);
 	}
 }
 
@@ -65,8 +71,13 @@ AConsciousAIController* UCommandComponent::GetExecuteController() const
 	return nullptr;
 }
 
-bool UCommandComponent::IsCommandEnable()
+bool UCommandComponent::IsCommandEnable(bool bCheckBeforeExecute) const
 {
+	if (bCheckBeforeExecute && !Data.bCommandEnableCheckBeforeExecute)
+	{
+		return true;
+	}
+	
 	return GetExecutePawn() != nullptr && InternalIsCommandEnable();
 }
 
@@ -82,8 +93,13 @@ bool UCommandComponent::SetCommandArguments(const FTargetRequest& InRequest)
 	return IsArgumentsValid();
 }
 
-bool UCommandComponent::IsArgumentsValid()
+bool UCommandComponent::IsArgumentsValid(bool bCheckBeforeExecute) const
 {
+	if (bCheckBeforeExecute && !Data.bArgumentsValidCheckBeforeExecute)
+	{
+		return true;
+	}
+	
 	return !IsNeedToTarget() || InternalIsArgumentsValid();
 }
 
@@ -133,15 +149,15 @@ void UCommandComponent::InternalBeginExecute_Implementation()
 {
 }
 
-bool UCommandComponent::InternalCanExecute_Implementation()
+bool UCommandComponent::InternalCanExecute_Implementation() const
 {
 	return true;
 }
 
-bool UCommandComponent::CanExecute()
+bool UCommandComponent::CanExecute() const
 {
-	return (!Data.bCommandEnableCheckBeforeExecute || IsCommandEnable())
-		&& (!Data.bArgumentsValidCheckBeforeExecute || IsArgumentsValid())
+	return IsCommandEnable(true)
+		&& IsArgumentsValid(true)
 		&& IsTargetInRequiredRadius()
 		&& InternalCanExecute();
 }
@@ -153,6 +169,11 @@ void UCommandComponent::BeginExecute()
 		return;
 	}
 
+	if (IsTargeting())
+	{
+		EndTarget();
+	}
+	
 	bExecuting = true;
 
 	if (OnCommandBegin.IsBound())
@@ -208,6 +229,33 @@ void UCommandComponent::EndExecuteDelay(ECommandExecuteResult Result, float Dura
 	);
 }
 
+void UCommandComponent::BeginTarget(ACommanderPawn* InTargetCommander)
+{
+	if (bTargeting || InTargetCommander == nullptr)
+	{
+		return;
+	}
+
+	bTargeting = true;
+	TargetCommander = InTargetCommander;
+
+	InternalBeginTarget();
+}
+
+void UCommandComponent::EndTarget()
+{
+	if (!bTargeting)
+	{
+		return;
+	}
+
+	bTargeting = false;
+	
+	InternalEndTarget();
+	
+	TargetCommander = nullptr;
+}
+
 void UCommandComponent::OnPushedToQueue()
 {
 	if (OnCommandPushedToQueue.IsBound())
@@ -240,7 +288,28 @@ void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 	}
 }
 
-bool UCommandComponent::InternalIsCommandEnable_Implementation()
+void UCommandComponent::InternalTarget_Implementation(float DeltaTime)
+{
+	if (APlayerController* PC = TargetCommander->GetController<APlayerController>())
+	{
+		if (PC->GetHUD())
+		{
+			
+		}
+	}
+}
+
+void UCommandComponent::InternalEndTarget_Implementation()
+{
+	
+}
+
+void UCommandComponent::InternalBeginTarget_Implementation()
+{
+	
+}
+
+bool UCommandComponent::InternalIsCommandEnable_Implementation() const
 {
 	return true;
 }
@@ -257,7 +326,7 @@ void UCommandComponent::InternalPushedToQueue_Implementation()
 {
 }
 
-bool UCommandComponent::InternalIsArgumentsValid_Implementation()
+bool UCommandComponent::InternalIsArgumentsValid_Implementation() const
 {
 	return true;
 }

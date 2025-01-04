@@ -17,8 +17,8 @@ UGatherCommandComponent::UGatherCommandComponent()
 
 	GatherFlagMeshComponent = nullptr;
 }
-
-bool UGatherCommandComponent::InternalIsArgumentsValid_Implementation()
+ 
+bool UGatherCommandComponent::InternalIsArgumentsValid_Implementation() const
 {
 	return Request.TargetPawn == nullptr;
 }

@@ -14,9 +14,7 @@ class PATHFINDING_API USpawnCommandComponent : public UProgressCommandComponent
 
 public:
 	USpawnCommandComponent();
-
-	virtual void PostInitProperties() override;
-
+	
 	virtual void BeginPlay() override;
 
 public:
@@ -37,7 +35,7 @@ public:
 	FVector GetGatherLocation() const { return GatherLocation; }
 
 protected:
-	virtual bool InternalIsCommandEnable_Implementation() override;
+	virtual bool InternalIsCommandEnable_Implementation() const override;
 
 	virtual void InternalPushedToQueue_Implementation() override;
 
@@ -50,7 +48,7 @@ protected:
 
 protected:
 	UPROPERTY(Category = "Command|Spawn", EditAnywhere, BlueprintReadOnly)
-	TSubclassOf<AConsciousPawn> ConsciousPawnClassToSpawn;
+	TSubclassOf<AConsciousPawn> PawnClassToSpawn;
 
 	FVector GatherLocation;
 };

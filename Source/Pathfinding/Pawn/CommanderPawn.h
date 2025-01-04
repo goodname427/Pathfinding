@@ -97,6 +97,7 @@ private:
 	uint32 bControlPressed : 1;
 	
 public:
+	// Select
 	UFUNCTION(BlueprintCallable)
 	void Select(APFPawn* Pawn);
 
@@ -105,9 +106,10 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void DeselectAll();
+	
+	FRay GetRayFromMousePosition() const;
 
 protected:
-	// Select
 	void SelectPressed();
 	void SelectReleased();
 	void SelectDoubleClick();
@@ -213,4 +215,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SpawnPawnAndMoveToLocation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location, FVector TargetLocation);
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SpawnPawnFrom(AActor* Source, TSubclassOf<AConsciousPawn> PawnClassToSpawn, FVector TargetLocation);
 };

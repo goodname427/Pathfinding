@@ -17,19 +17,6 @@ USpawnCommandComponent::USpawnCommandComponent()
 	Data.bCommandEnableCheckBeforeExecute = false;
 }
 
-void USpawnCommandComponent::PostInitProperties()
-{
-	Super::PostInitProperties();
-
-	// if (const AConsciousPawn* CDO = GetDefaultObjectToSpawn())
-	// {
-	// 	if (!CDO->GetConsciousData().IsAllowedToSpawn())
-	// 	{
-	// 		ConsciousPawnClassToSpawn = nullptr;
-	// 	}
-	// }
-}
-
 void USpawnCommandComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -38,21 +25,21 @@ void USpawnCommandComponent::BeginPlay()
 	{
 		if (!CDO->GetConsciousData().IsAllowedToSpawn())
 		{
-			ConsciousPawnClassToSpawn = nullptr;
+			PawnClassToSpawn = nullptr;
 		}
 	}
 }
 
 float USpawnCommandComponent::GetProgressDuration_Implementation() const
 {
-	return ConsciousPawnClassToSpawn.Get()
-		       ? ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData().SpawnDuration
+	return PawnClassToSpawn.Get()
+		       ? PawnClassToSpawn.GetDefaultObject()->GetConsciousData().SpawnDuration
 		       : -1;
 }
 
 const AConsciousPawn* USpawnCommandComponent::GetDefaultObjectToSpawn() const
 {
-	return ConsciousPawnClassToSpawn.Get() ? ConsciousPawnClassToSpawn.GetDefaultObject() : nullptr;
+	return PawnClassToSpawn.Get() ? PawnClassToSpawn.GetDefaultObject() : nullptr;
 }
 
 FString USpawnCommandComponent::GetCommandDisplayName_Implementation() const
@@ -73,14 +60,14 @@ UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 	return CDO? CDO->GetData().Icon : nullptr;
 }
 
-bool USpawnCommandComponent::InternalIsCommandEnable_Implementation()
+bool USpawnCommandComponent::InternalIsCommandEnable_Implementation() const
 {
 	if (!Super::InternalIsCommandEnable_Implementation())
 	{
 		return false;
 	}
 
-	if (!ConsciousPawnClassToSpawn.Get())
+	if (!PawnClassToSpawn.Get())
 	{
 		return false;
 	}
@@ -91,7 +78,7 @@ bool USpawnCommandComponent::InternalIsCommandEnable_Implementation()
 		return false;
 	}
 
-	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	
 	return ConsciousData.IsResourcesEnough(PS);
 }
@@ -100,7 +87,7 @@ void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 {
 	AUTHORITY_CHECK();
 	
-	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
 	// Consume resources
@@ -111,7 +98,7 @@ void USpawnCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPopp
 {
 	AUTHORITY_CHECK();
 	
-	const FConsciousData& ConsciousData = ConsciousPawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
 
 	// Return resources
@@ -130,19 +117,9 @@ void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 		if (Commander)
 		{
 			// compute spawn location
-			// DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *ConsciousPawnClassToSpawn->GetClass()->GetName(),
+			// DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *PawnClassToSpawn->GetClass()->GetName(),
 			//               *ExecutePawn->GetActorLocation().ToString());
-			
-			const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
-				ExecutePawn,
-				ConsciousPawnClassToSpawn.GetDefaultObject()->GetSimpleCollisionRadius()
-			);
-
-			Commander->SpawnPawnAndMoveToLocation(
-				ConsciousPawnClassToSpawn,
-				SpawnLocation,
-				GatherLocation
-			);
+			Commander->SpawnPawnFrom(ExecutePawn, PawnClassToSpawn, GatherLocation);
 		}
 	}
 }

@@ -25,7 +25,7 @@ APFPawn::APFPawn()
 	StaticMeshComponent->AlwaysLoadOnServer = true;
 	StaticMeshComponent->bCastDynamicShadow = true;
 	StaticMeshComponent->bAffectDynamicIndirectLighting = true;
-	
+
 	// Adjust Location
 	bAdjustLocationToGround = true;
 	LocationToGroundOffset = 0;
@@ -71,8 +71,13 @@ void APFPawn::BeginPlay()
 	if (bAdjustLocationToGround)
 	{
 		FHitResult Hit;
-		GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation, ActorLocation + FVector::DownVector * 100,
-		                                     ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(
+			Hit,
+			ActorLocation + FVector::UpVector * 100.0f,
+			ActorLocation + FVector::DownVector * 100.0f,
+			ECC_Visibility
+		);
+		
 		if (Hit.bBlockingHit)
 		{
 			SetActorLocation(Hit.Location + FVector::UpVector + LocationToGroundOffset);

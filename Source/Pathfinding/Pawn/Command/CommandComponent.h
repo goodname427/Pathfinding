@@ -37,7 +37,7 @@ struct FTargetRequest
 
 	explicit FTargetRequest(FName InCommandName) : FTargetRequest()
 	{
-		CommandName = InCommandName; 
+		CommandName = InCommandName;
 	}
 
 	explicit FTargetRequest(APFPawn* InTargetPawn): FTargetRequest()
@@ -72,25 +72,26 @@ struct FTargetRequest
 		TargetLocation = InTargetLocation;
 	}
 
-	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation): FTargetRequest(InCommandName)
+	FTargetRequest(FName InCommandName, APFPawn* InTargetPawn, const FVector& InTargetLocation): FTargetRequest(
+		InCommandName)
 	{
 		TargetPawn = InTargetPawn;
 		TargetLocation = InTargetLocation;
 	}
 
-	template<class TCommand>
+	template <class TCommand>
 	static FTargetRequest Make()
 	{
 		return FTargetRequest(TCommand::StaticCommandName);
 	}
 
-	template<class TCommand>
+	template <class TCommand>
 	static FTargetRequest Make(APFPawn* InTargetPawn)
 	{
 		return FTargetRequest(TCommand::StaticCommandName, InTargetPawn);
 	}
 
-	template<class TCommand>
+	template <class TCommand>
 	static FTargetRequest Make(const FVector InTargetLocation)
 	{
 		return FTargetRequest(TCommand::StaticCommandName, InTargetLocation);
@@ -98,13 +99,13 @@ struct FTargetRequest
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FName CommandName;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	APFPawn* TargetPawn;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FVector TargetLocation;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	UCommandComponent* Command;
 
@@ -114,7 +115,8 @@ struct FTargetRequest
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay)
 	int32 OverrideCommandChannel;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay, meta=(EditCondition = "Type == ETargetRequestType::AbortOrPop", EditConditionHides))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, AdvancedDisplay,
+		meta=(EditCondition = "Type == ETargetRequestType::AbortOrPop", EditConditionHides))
 	int32 CommandIndexToPop;
 
 	FVector GetTargetLocation() const { return TargetPawn ? TargetPawn->GetActorLocation() : TargetLocation; }
@@ -135,14 +137,14 @@ USTRUCT(BlueprintType)
 struct FCommandData
 {
 	GENERATED_USTRUCT_BODY()
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Name;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
 	UObject* Icon;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FString Description;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bNeedToTarget;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="bNeedToTarget", EditConditionHides))
@@ -153,29 +155,29 @@ struct FCommandData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bCommandEnableCheckBeforeExecute;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	bool bArgumentsValidCheckBeforeExecute; 
+	bool bArgumentsValidCheckBeforeExecute;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Channel;
-	
+
 
 	FCommandData()
 	{
 		Name = NAME_None;
 		Icon = nullptr;
 		Description = TEXT("");
-		
-		RequiredTargetRadius = 250.f;
+
+		RequiredTargetRadius = 100.f;
 		bNeedToTarget = true;
 		bAbortCurrentCommand = true;
 
 		bCommandEnableCheckBeforeExecute = true;
 		bArgumentsValidCheckBeforeExecute = true;
-		
+
 		Channel = GCommandChannel_Default;
 	}
 
-	float GetRequiredTargetRadius() const  { return bNeedToTarget? RequiredTargetRadius : -1; }
+	float GetRequiredTargetRadius() const { return bNeedToTarget ? RequiredTargetRadius : -1; }
 };
 
 UENUM(BlueprintType)
@@ -202,8 +204,9 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandEndSignature, UCommandCompo
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandPushedToQueueSignature, UCommandComponent*, Command);
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandPoppedFromQueueSignature, UCommandComponent*, Command, ECommandPoppedReason,
-											 Reason);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FCommandPoppedFromQueueSignature, UCommandComponent*, Command,
+                                             ECommandPoppedReason,
+                                             Reason);
 
 #define DECLARE_COMMAND_NAME() \
 static FName StaticCommandName;
@@ -232,7 +235,8 @@ class PATHFINDING_API UCommandComponent : public UActorComponent
 public:
 	UCommandComponent();
 
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	// Command Default Arguments
@@ -246,7 +250,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FString GetCommandDescription() const;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	float GetRequiredTargetRadius() const;
 
@@ -261,7 +265,7 @@ protected:
 	FCommandData Data;
 
 public:
-	// State Query
+	// Execute State Query
 	UFUNCTION(BlueprintCallable)
 	AConsciousPawn* GetExecutePawn() const;
 
@@ -296,11 +300,12 @@ public:
 	/// 6.Wait for end
 	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
 	///	- Ended by failed Or success -> EndExecute
-
+	
+	
 	// Check before set arguments
 	UFUNCTION(BlueprintCallable)
-	bool IsCommandEnable();
-		
+	bool IsCommandEnable(bool bCheckBeforeExecute = false) const;
+
 	// Skip the arguments check
 	UFUNCTION(BlueprintCallable)
 	void SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest);
@@ -311,7 +316,7 @@ public:
 
 	// Check whether the command args is valid after set arguments
 	UFUNCTION(BlueprintCallable)
-	bool IsArgumentsValid();
+	bool IsArgumentsValid(bool bCheckBeforeExecute = false) const;
 
 	// Check whether the target is in required radius before execute
 	UFUNCTION(BlueprintCallable)
@@ -319,7 +324,7 @@ public:
 
 	// Check whether the current status can be executed before execute
 	UFUNCTION(BlueprintCallable)
-	bool CanExecute();
+	bool CanExecute() const;
 
 	UFUNCTION(BlueprintCallable)
 	void BeginExecute();
@@ -330,25 +335,25 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EndExecuteDelay(ECommandExecuteResult Result, float Duration);
 
-protected:
+private:
 	friend class AConsciousPawn;
-	
+
 	// Called On Pushed To Command Queue
 	void OnPushedToQueue();
 
 	// Called On Popped From Command Queue, just called when command is aborted or popped directly
 	void OnPoppedFromQueue(ECommandPoppedReason Reason);
-	
+
 protected:
 	UFUNCTION(BlueprintNativeEvent)
-	bool InternalIsCommandEnable();
-	
+	bool InternalIsCommandEnable() const;
+
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)
-	bool InternalIsArgumentsValid();
+	bool InternalIsArgumentsValid() const;
 
 	UFUNCTION(BlueprintNativeEvent)
-	bool InternalCanExecute();
+	bool InternalCanExecute() const;
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalBeginExecute();
@@ -358,13 +363,13 @@ protected:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalExecute(float DeltaTime);
-	
+
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalPushedToQueue();
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalPoppedFromQueue(ECommandPoppedReason Reason);
-	
+
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandBeginSignature OnCommandBegin;
@@ -381,5 +386,40 @@ public:
 protected:
 	FTargetRequest Request;
 
+private:
 	bool bExecuting = false;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	ACommanderPawn* GetTargetCommander() const { return TargetCommander; }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsTargeting() const { return bTargeting; }
+
+public:
+	// Targeting Progress
+	/// 0.BeginTarget
+	/// - InternalBeginTarget
+	UFUNCTION(BlueprintCallable)
+	void BeginTarget(ACommanderPawn* InTargetCommander);
+
+	UFUNCTION(BlueprintCallable)
+	void EndTarget();
+
+protected:
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalBeginTarget();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalEndTarget();
+
+	UFUNCTION(BlueprintNativeEvent)
+	void InternalTarget(float DeltaTime);
+
+protected:
+	UPROPERTY()
+	ACommanderPawn* TargetCommander;
+	
+private:
+	bool bTargeting = false;
 };

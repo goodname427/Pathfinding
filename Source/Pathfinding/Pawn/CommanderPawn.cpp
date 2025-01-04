@@ -379,6 +379,19 @@ void ACommanderPawn::DeselectAll()
 	ServerDeselectAll();
 }
 
+FRay ACommanderPawn::GetRayFromMousePosition() const
+{
+	const APlayerController* PlayerController = GetController<APlayerController>();
+
+	FVector2D MousePosition;
+	PlayerController->GetMousePosition(MousePosition.X, MousePosition.Y);
+
+	FRay OutRay;
+	UGameplayStatics::DeprojectScreenToWorld(PlayerController, MousePosition, OutRay.Origin, OutRay.Direction);
+
+	return OutRay;
+}
+
 void ACommanderPawn::ServerSelect_Implementation(APFPawn* Pawn)
 {
 	SelectedPawns.Add(Pawn);
@@ -513,6 +526,7 @@ void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)
 	{
 		bTargeting = true;
 		TargetingCommand = InTargetingCommand;
+		InTargetingCommand->BeginTarget(this);
 	}
 	else
 	{
@@ -523,6 +537,8 @@ void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)
 void ACommanderPawn::EndTarget()
 {
 	bTargeting = false;
+
+	TargetingCommand->EndTarget();
 	TargetingCommand = nullptr;
 }
 
@@ -584,6 +600,20 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 	{
 		EndTarget();
 	}
+}
+
+void ACommanderPawn::SpawnPawnFrom_Implementation(AActor* Source, TSubclassOf<AConsciousPawn> PawnClassToSpawn, FVector TargetLocation)
+{
+	const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
+		Source,
+		PawnClassToSpawn.GetDefaultObject()->GetSimpleCollisionRadius()
+	);
+
+	SpawnPawnAndMoveToLocation(
+		PawnClassToSpawn,
+		SpawnLocation,
+		TargetLocation
+	);
 }
 
 void ACommanderPawn::SpawnPawnAndMoveToLocation_Implementation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location,

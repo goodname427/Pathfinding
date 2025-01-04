@@ -24,7 +24,7 @@ float UProgressCommandComponent::GetProgressDuration_Implementation() const
 	return ProgressDuration;
 }
 
-bool UProgressCommandComponent::InternalIsCommandEnable_Implementation()
+bool UProgressCommandComponent::InternalIsCommandEnable_Implementation() const
 {
 	return GetProgressDuration() >= 0;
 }

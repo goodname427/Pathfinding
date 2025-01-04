@@ -29,7 +29,7 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
-bool UCollectCommandComponent::InternalIsArgumentsValid_Implementation()
+bool UCollectCommandComponent::InternalIsArgumentsValid_Implementation() const
 {
 	if (GetExecutePawn<ACollectorPawn>() == nullptr)
 	{

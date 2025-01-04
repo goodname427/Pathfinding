@@ -27,7 +27,7 @@ ASpawnBuildingPawn::ASpawnBuildingPawn()
 void ASpawnBuildingPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	SEND_TO_SELF_AUTHORITY(FTargetRequest(
 		GatherCommandComponent,
 		UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(this)

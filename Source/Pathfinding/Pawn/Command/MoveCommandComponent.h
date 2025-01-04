@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CommandComponent.h"
+#include "EnvironmentQuery/EnvQueryTypes.h"
 #include "Navigation/PathFollowingComponent.h"
 #include "MoveCommandComponent.generated.h"
 
@@ -18,12 +19,12 @@ public:
 
 public:
 	DECLARE_COMMAND_NAME()
-	
+
 	virtual float GetRequiredTargetRadius_Implementation() const override { return -1; }
 
 	// Set args for move command, return true whether it's reachable
 	bool SetMoveCommandArguments(UCommandComponent* InCommandNeedToMove, const FTargetRequest& InRequest);
-	
+
 protected:
 	virtual void InternalBeginExecute_Implementation() override;
 
@@ -38,4 +39,18 @@ protected:
 private:
 	UPROPERTY()
 	UCommandComponent* CommandNeedToMove;
+
+protected:
+	virtual void InternalBeginTarget_Implementation() override;
+	
+	virtual void InternalEndTarget_Implementation() override;
+
+	virtual void InternalTarget_Implementation(float DeltaTime) override;
+
+private:
+	UPROPERTY()
+	AActor* FlagActor;
+
+	UPROPERTY(Category = "Command|Move", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
+	TSubclassOf<AActor> FlagActorClass;
 };

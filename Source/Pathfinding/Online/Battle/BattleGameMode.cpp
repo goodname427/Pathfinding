@@ -10,6 +10,7 @@
 #include "CommanderPawn.h"
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 #include "Building/BaseCampPawn.h"
 #include "GameFramework/PlayerStart.h"
@@ -106,9 +107,9 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 	ErrorMessage = TEXT("Battle has Started");
 }
 
-void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn)
+void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 {
-	const APFPlayerState* PS = CommanderPawn->GetPlayerState<APFPlayerState>();
+	const ABattlePlayerState* PS = Commander->GetPlayerState<ABattlePlayerState>();
 	const UCamp* Camp = nullptr;
 	if (PS)
 	{
@@ -120,25 +121,30 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPaw
 		return;
 	}
 
-	const FVector CommanderLocation = CommanderPawn->GetActorLocation();
-
-	CommanderPawn->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
-
-	FVector RandomLocation;
+	const FVector CommanderLocation = Commander->GetActorLocation();
+	
+	Commander->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
+	
+	FVector GatherLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
+		if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+			Commander,
+			CommanderLocation,
+			GatherLocation,
+			1000.0f
+		))
+		{
+			return;
+		}
+		
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
-			if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-				this,
-				CommanderPawn->GetActorLocation(),
-				RandomLocation,
-				1000.0f))
-			{
-				continue;
-			}
-
-			CommanderPawn->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
+			Commander->SpawnPawnFrom(PS->GetFirstBaseCamp(), DefaultPawnInfo.Class, GatherLocation);
+			// Commander->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
+			//Commander->SpawnPawnAndMoveToLocation(DefaultPawnInfo.Class, CommanderLocation, GatherLocation);
 		}
 	}
+
+	
 }

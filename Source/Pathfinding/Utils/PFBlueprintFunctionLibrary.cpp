@@ -48,8 +48,12 @@ APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
 {
 	UWorld* World = WorldContextObject->GetWorld();
 
+	FActorSpawnParameters SpawnParameters;
+	{
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	}
 	// DEBUG_MESSAGE(TEXT("Spawn PFPawn [%s] at Location [(%s)] for Commander [%s]"), *PFPawnClass->GetName(), *Location.ToString(), *OwnerCommander->GetPlayerState()->GetPlayerName());
-	APFPawn* PFPawn = Cast<APFPawn>(World->SpawnActor(PFPawnClass, &Location, &Rotation));
+	APFPawn* PFPawn = Cast<APFPawn>(World->SpawnActor(PFPawnClass, &Location, &Rotation, SpawnParameters));
 	if (PFPawn)
 	{
 		PFPawn->SetOwner(OwnerCommander);

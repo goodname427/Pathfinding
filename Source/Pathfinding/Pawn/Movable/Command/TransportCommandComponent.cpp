@@ -17,7 +17,7 @@ UTransportCommandComponent::UTransportCommandComponent()
 	Data.Name = StaticCommandName;
 }
 
-bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation()
+bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation() const
 {
 	if (GetExecutePawn<ACollectorPawn>() == nullptr)
 	{

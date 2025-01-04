@@ -29,5 +29,5 @@ public:
 	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId, FString& ErrorMessage) override;
 
 protected:
-	void SpawnDefaultPawnsForCommander(ACommanderPawn* CommanderPawn);
+	void SpawnDefaultPawnsForCommander(ACommanderPawn* Commander);
 };
