@@ -56,6 +56,7 @@ enum class EResourceTookReason : uint8
 	Spawn = 0,
 	Collect = 128,
 	Return = 129,
+	Initialize = 130,
 };
 
 /**

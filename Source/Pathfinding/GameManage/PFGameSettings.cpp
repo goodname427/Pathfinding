@@ -12,3 +12,8 @@ const UCamp* UPFGameSettings::GetRandomlyCamp() const
 
 	return CampClasses[FMath::Rand() % CampClasses.Num()].GetDefaultObject();
 }
+
+UMaterialInterface* UPFGameSettings::LoadPawnFlagMaterial() const
+{
+	return Cast<UMaterialInterface>(PawnFlagMaterial.TryLoad());
+}

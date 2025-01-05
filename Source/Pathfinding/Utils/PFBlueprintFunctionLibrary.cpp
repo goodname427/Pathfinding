@@ -30,7 +30,7 @@ ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawnByController(AContr
 }
 
 void UPFBlueprintFunctionLibrary::SendRequestTo(const FTargetRequest& TargetRequest,
-	AConsciousPawn* ReceivedConsciousPawn)
+                                                AConsciousPawn* ReceivedConsciousPawn)
 {
 	if (ACommanderPawn* CommanderPawn = GetCommanderPawn(ReceivedConsciousPawn))
 	{
@@ -73,18 +73,18 @@ FVector UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
 	{
 		return FVector::ZeroVector;
 	}
-	
+
 	const UWorld* World = Actor->GetWorld();
-	
+
 	FVector Origin;
 	FVector Extent;
 	Actor->GetActorBounds(true, Origin, Extent);
 	// DrawDebugBox(World, Origin, Extent, FColor::Yellow, true, 10, 0, 5);
-	
+
 	float MinRadius = FMath::Sqrt(Extent.X * Extent.X + Extent.Y * Extent.Y);
 	float MaxRadius = MinRadius + PointAcceptedRadius;
 	const FCollisionShape CollisionShape = FCollisionShape::MakeSphere(PointAcceptedRadius);
-	
+
 	FHitResult Hit;
 	for (int32 i = 0; i < Attempts; i++)
 	{
@@ -95,7 +95,7 @@ FVector UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
 
 		// DrawDebugSphere(World, Origin, MinRadius, 30, FColor::Red, true, 10, 0, 5);
 		// DrawDebugSphere(World, Origin, MaxRadius, 30, FColor::Red, true, 10, 0, 5);
-		
+
 		World->SweepSingleByChannel(
 			Hit,
 			SpawnLocation,
@@ -125,6 +125,7 @@ void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
 		return;
 	}
 
+	// DEBUG_MESSAGE(TEXT("Create Dynamic Material Instance for Static Mesh [%s]"), *StaticMesh->GetName());
 	StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
 }
 
@@ -137,6 +138,74 @@ void UPFBlueprintFunctionLibrary::SetStaticMeshColor(UStaticMeshComponent* Stati
 		// DEBUG_MESSAGE(TEXT("Set Static Mesh Color [%s]"), *Color.ToString());
 		Material->SetVectorParameterValue("Color", Color);
 	}
+}
+
+bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(UObject* WorldContextObject, FBox ActorBounds)
+{
+	const UWorld* World = WorldContextObject->GetWorld();
+	if (World == nullptr)
+	{
+		return false;
+	}
+
+	//DEBUG_MESSAGE(TEXT("Actor Bounds [%s]"), *ActorBounds.ToString());
+
+	ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 10));
+	
+	DrawDebugBox(
+		World,
+		ActorBounds.GetCenter(),
+		ActorBounds.GetExtent(),
+		FColor::Yellow,
+		false,
+		0.01f,
+		0,
+		5
+	);
+
+	FCollisionQueryParams Params;
+	
+	
+	// Check if there is any blocking object at the location
+	FHitResult Hit;
+	World->SweepSingleByChannel(
+		Hit,
+		ActorBounds.GetCenter(),
+		ActorBounds.GetCenter(),
+		FQuat::Identity,
+		ECC_Camera,
+		FCollisionShape::MakeBox(ActorBounds.GetExtent())
+		
+	);
+
+	if (Hit.bBlockingHit)
+	{
+		// DEBUG_MESSAGE(TEXT("Hit [%s]"), *Hit.ToString());
+		return false;
+	}
+
+	// Check if there is any ground below the building
+	static float Step = 100.0f;
+	for (float X = -ActorBounds.Min.X; X < ActorBounds.Max.X; X += Step)
+	{
+		for (float Y = -ActorBounds.Min.Y; Y < ActorBounds.Max.Y; Y += Step)
+		{
+			FVector Point = FVector(X, Y, ActorBounds.Min.Z);
+			World->LineTraceSingleByChannel(
+				Hit,
+				Point,
+				Point + FVector::DownVector * 50.0f,
+				ECC_Visibility
+			);
+	
+			if (!Hit.bBlockingHit)
+			{
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 // UUserWidget* UPFBlueprintFunctionLibrary::CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass,

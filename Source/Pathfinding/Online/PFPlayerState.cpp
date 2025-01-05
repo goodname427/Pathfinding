@@ -3,7 +3,7 @@
 
 #include "PFPlayerState.h"
 
-#include "Editor.h"
+#include "PFGameSettings.h"
 #include "PFGameState.h"
 #include "Controller/PFPlayerController.h"
 #include "Net/UnrealNetwork.h"

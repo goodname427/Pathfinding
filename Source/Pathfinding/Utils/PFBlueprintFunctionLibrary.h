@@ -43,7 +43,8 @@ public:
 	);
 
 	UFUNCTION(BlueprintCallable)
-	static FVector GetRandomReachablePointOfActor(AActor* Actor, float PointAcceptedRadius = 100.f, float AdditionalRadius = 100.0f, int32 Attempts = 10);
+	static FVector GetRandomReachablePointOfActor(AActor* Actor, float PointAcceptedRadius = 100.f,
+	                                              float AdditionalRadius = 100.0f, int32 Attempts = 10);
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -52,4 +53,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static void SetStaticMeshColor(UStaticMeshComponent* StaticMesh, FLinearColor Color, int32 MaterialIndex = 0);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	static bool IsLocationEmptyAndOnGround(UObject* WorldContextObject, FBox ActorBounds);
 };

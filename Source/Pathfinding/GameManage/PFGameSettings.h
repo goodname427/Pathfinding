@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Camp.h"
+#include "Battle/BattlePlayerState.h"
 #include "Engine/DeveloperSettings.h"
 #include "PFGameSettings.generated.h"
 
@@ -44,6 +45,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Camp")
 	const UCamp* GetRandomlyCamp() const;
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Camp")
+	TMap<EResourceType, int32> InitializedResource;
 	
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
@@ -61,4 +65,7 @@ public:
 
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn", meta = (AllowedClasses = "Material"))
 	FSoftObjectPath PawnFlagMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "Pawn")
+	UMaterialInterface* LoadPawnFlagMaterial() const;
 };

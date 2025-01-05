@@ -58,8 +58,7 @@ void APFPawn::BeginPlay()
 	Super::BeginPlay();
 
 	// Set Flag Material
-	if (UMaterialInterface* FlagMaterial = Cast<UMaterialInterface>(
-		GetDefault<UPFGameSettings>()->PawnFlagMaterial.TryLoad()))
+	if (UMaterialInterface* FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial())
 	{
 		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial, 0);
 		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
@@ -77,7 +76,7 @@ void APFPawn::BeginPlay()
 			ActorLocation + FVector::DownVector * 100.0f,
 			ECC_Visibility
 		);
-		
+
 		if (Hit.bBlockingHit)
 		{
 			SetActorLocation(Hit.Location + FVector::UpVector + LocationToGroundOffset);

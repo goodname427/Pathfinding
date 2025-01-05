@@ -11,9 +11,9 @@ ABattlePlayerState::ABattlePlayerState()
 {
 	Resources.SetNum(GNumResourceType);
 
-	if (Resources.Num() > 0)
+	for (auto ResourceInfo : GetDefault<UPFGameSettings>()->InitializedResource)
 	{
-		Resources[0] = 0;
+		TakeResource(this, EResourceTookReason::Initialize, ResourceInfo);
 	}
 }
 

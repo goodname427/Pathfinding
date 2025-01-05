@@ -13,7 +13,4 @@ class PATHFINDING_API ABuildingPawn : public AConsciousPawn
 
 public:
 	ABuildingPawn();
-
-public:
-	bool IsLocationValid(const UObject* WorldContextObject, const FVector& Location) const;
 };

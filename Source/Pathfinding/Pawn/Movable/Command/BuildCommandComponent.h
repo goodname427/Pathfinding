@@ -29,11 +29,27 @@ public:
 
 protected:
 	virtual bool InternalIsCommandEnable_Implementation() const override;
-	
+
+	virtual bool InternalCanExecute_Implementation() const override;
+
 	virtual void InternalBeginExecute_Implementation() override;
-	
+
 protected:
-	const AConsciousPawn* GetDefaultObjectToBuild() const;
+	virtual void InternalBeginTarget_Implementation() override;
+	
+	virtual void InternalEndTarget_Implementation() override;
+
+	virtual void InternalTarget_Implementation(float DeltaTime) override;
+
+private:
+	UPROPERTY()
+	AActor* FlagActor;
+
+	UPROPERTY()
+	UStaticMeshComponent* FlagMesh;
+
+protected:
+	const ABuildingPawn* GetDefaultObjectToBuild() const;
 
 protected:
 	UPROPERTY(Category = "Command|Spawn", EditAnywhere, BlueprintReadOnly)
