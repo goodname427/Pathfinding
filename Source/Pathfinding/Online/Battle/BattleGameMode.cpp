@@ -123,7 +123,7 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 
 	const FVector CommanderLocation = Commander->GetActorLocation();
 	
-	Commander->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
+	Commander->ServerSpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
 	
 	FVector GatherLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
@@ -140,8 +140,12 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 		
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
-			Commander->SpawnPawnFrom(PS->GetFirstBaseCamp(), DefaultPawnInfo.Class, GatherLocation);
-			// Commander->SpawnPawn(DefaultPawnInfo.Class, RandomLocation);
+			AConsciousPawn* Pawn = Commander->SpawnPawnFrom<AConsciousPawn>(PS->GetFirstBaseCamp(), DefaultPawnInfo.Class);
+			if (Pawn)
+			{
+				Pawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(GatherLocation));
+			}
+			// Commander->ServerSpawnPawn(DefaultPawnInfo.Class, RandomLocation);
 			//Commander->SpawnPawnAndMoveToLocation(DefaultPawnInfo.Class, CommanderLocation, GatherLocation);
 		}
 	}

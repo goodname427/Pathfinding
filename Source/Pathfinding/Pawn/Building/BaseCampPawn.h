@@ -17,5 +17,5 @@ public:
 	ABaseCampPawn();
 
 public:
-	void TransportBy(ACollectorPawn* CollectorPawn);
+	void TransportBy(UCollectorComponent* Collector);
 };

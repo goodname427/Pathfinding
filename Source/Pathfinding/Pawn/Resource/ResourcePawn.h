@@ -32,7 +32,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	bool CollectBy(ACollectorPawn* CollectorPawn);
+	bool CollectBy(UCollectorComponent* Collector);
 
 	EResourceType GetResourceType() const { return ResourceData.Type; };
 

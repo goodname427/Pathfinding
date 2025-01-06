@@ -31,11 +31,7 @@ ACollectorPawn::ACollectorPawn()
 			this, &ACollectorPawn::OnTransportCommandPoppedFromQueue);
 	}
 
-	CollectedResource.Type = EResourceType::None;
-	CollectedResource.Point = 0;
-
-	ResourcePointPerCollecting = 2;
-	MaxCollectedResourcePoint = 10;
+	INIT_DEFAULT_SUBOBJECT(CollectorComponent);
 }
 
 void ACollectorPawn::OnReceive_Implementation(const FTargetRequest& Request)
@@ -59,7 +55,7 @@ UCommandComponent* ACollectorPawn::ResolveRequestWithoutName_Implementation(cons
 		}
 		else if (ABaseCampPawn* BaseCampPawn = Request.GetTargetPawn<ABaseCampPawn>())
 		{
-			if (GetPawnRole(BaseCampPawn) == EPawnRole::Self)
+			if (TransportCommandComponent->CanTransport(BaseCampPawn))
 			{
 				return TransportCommandComponent;
 			}
@@ -121,7 +117,7 @@ void ACollectorPawn::FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCo
 void ACollectorPawn::CollectOrTransportResource(AResourcePawn* CurrentCollectedResource)
 {
 	FindAndRecordNextResourceToCollect(CurrentCollectedResource);
-	if (IsCollectedResourceFull())
+	if (CollectorComponent->IsCollectedResourceFull())
 	{
 		TransportResource();
 	}
@@ -132,7 +128,7 @@ void ACollectorPawn::CollectOrTransportResource(AResourcePawn* CurrentCollectedR
 			CollectResource();
 		}
 		// transport the collected resource when can not find any resource to collect
-		else if (!IsCollectedResourceEmpty())
+		else if (!CollectorComponent->IsCollectedResourceEmpty())
 		{
 			TransportResource();
 		}
@@ -215,12 +211,4 @@ void ACollectorPawn::OnTransportCommandPoppedFromQueue(UCommandComponent* Comman
 	}
 }
 
-void ACollectorPawn::SetCollectedResourceType(EResourceType NewResourceType)
-{
-	if (NewResourceType != CollectedResource.Type)
-	{
-		CollectedResource.Point = 0;
-	}
 
-	CollectedResource.Type = NewResourceType;
-}

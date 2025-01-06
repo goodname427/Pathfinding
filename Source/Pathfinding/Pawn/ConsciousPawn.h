@@ -33,7 +33,7 @@ struct FConsciousData
 	int32 AllowedCreateMethod;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(EditCondition="AllowedCreateMethod != 0", EditConditionHides))
-	TMap<EResourceType, int32> ResourcesToAmount;
+	TMap<EResourceType, int32> ResourceCost;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,
 		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod != 0", EditConditionHides))
@@ -48,12 +48,6 @@ struct FConsciousData
 
 	bool IsAllowedToSpawn() const { return IsAllowedToCreate(EAllowedCreateMethod::Spawn); }
 	bool IsAllowedToBuild() const { return IsAllowedToCreate(EAllowedCreateMethod::Build); }
-
-	bool IsResourcesEnough(const ABattlePlayerState* PlayerState) const;
-	// Server only
-	void ConsumeResources(UObject* Source, ABattlePlayerState* PlayerState) const;
-	// Server only
-	void ReturnResources(UObject* Source, ABattlePlayerState* PlayerState) const;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);

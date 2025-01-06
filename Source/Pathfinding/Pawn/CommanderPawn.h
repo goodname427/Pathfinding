@@ -211,11 +211,15 @@ public:
 	void Test();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
+	void ServerSpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SpawnPawnAndMoveToLocation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location, FVector TargetLocation);
+	APFPawn* SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location);
 
-	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SpawnPawnFrom(AActor* Source, TSubclassOf<AConsciousPawn> PawnClassToSpawn, FVector TargetLocation);
+	template<class T>
+	T* SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location) { return Cast<T>(SpawnPawn(PawnClass, Location)); }
+	
+	APFPawn* SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn);
+	
+	template<class T>
+	T* SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn) { return Cast<T>(SpawnPawnFrom(Source, PawnClassToSpawn)); }
 };

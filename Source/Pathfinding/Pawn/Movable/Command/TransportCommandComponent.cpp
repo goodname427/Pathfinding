@@ -17,16 +17,26 @@ UTransportCommandComponent::UTransportCommandComponent()
 	Data.Name = StaticCommandName;
 }
 
-bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation() const
+bool UTransportCommandComponent::CanTransport(const ABaseCampPawn* BaseCamp) const
 {
-	if (GetExecutePawn<ACollectorPawn>() == nullptr)
+	if (BaseCamp == nullptr || BaseCamp->IsPendingKill())
 	{
 		return false;
 	}
-	
-	if (ABaseCampPawn* BaseCampPawn = Request.GetTargetPawn<ABaseCampPawn>())
+
+	return GetExecutePawn()->GetPawnRole(BaseCamp) == EPawnRole::Self;
+}
+
+bool UTransportCommandComponent::InternalIsCommandEnable_Implementation() const
+{
+	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;
+}
+
+bool UTransportCommandComponent::InternalIsArgumentsValid_Implementation() const
+{
+	if (const ABaseCampPawn* BaseCampPawn = Request.GetTargetPawn<ABaseCampPawn>())
 	{
-		if (!BaseCampPawn->IsPendingKill() && BaseCampPawn->GetPawnRole(GetExecutePawn()) == EPawnRole::Self)
+		if (CanTransport(BaseCampPawn))
 		{
 			return true;
 		}
@@ -40,7 +50,7 @@ void UTransportCommandComponent::InternalBeginExecute_Implementation()
 	AUTHORITY_CHECK();
 	
 	ABaseCampPawn* BaseCamp = Request.GetTargetPawn<ABaseCampPawn>();
-	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
+	UCollectorComponent* Collector = GetComponentFromExecutePawn<UCollectorComponent>();
 
 	if (BaseCamp && Collector)
 	{

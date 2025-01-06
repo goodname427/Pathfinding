@@ -61,11 +61,41 @@ AConsciousPawn* UCommandComponent::GetExecutePawn() const
 	return Cast<AConsciousPawn>(GetOwner());
 }
 
+UActorComponent* UCommandComponent::GetComponentFromExecutePawn(TSubclassOf<UActorComponent> ComponentClass) const
+{
+	if (const AActor* Actor = GetOwner())
+	{
+		return Actor->GetComponentByClass(ComponentClass);
+	}
+
+	return nullptr;
+}
+
 AConsciousAIController* UCommandComponent::GetExecuteController() const
 {
 	if (const AConsciousPawn* ExecutePawn = GetExecutePawn())
 	{
 		return Cast<AConsciousAIController>(ExecutePawn->GetController());
+	}
+
+	return nullptr;
+}
+
+ABattlePlayerState* UCommandComponent::GetExecutePlayerState() const
+{
+	if (const AConsciousPawn* ExecutePawn = GetExecutePawn())
+	{
+		return ExecutePawn->GetOwnerPlayer();
+	}
+
+	return nullptr;
+}
+
+ACommanderPawn* UCommandComponent::GetExecuteCommander() const
+{
+	if (const AConsciousPawn* ExecutePawn = GetExecutePawn())
+	{
+		return ExecutePawn->GetOwner<ACommanderPawn>();
 	}
 
 	return nullptr;

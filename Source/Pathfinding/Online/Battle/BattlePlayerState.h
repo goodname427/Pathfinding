@@ -54,6 +54,8 @@ UENUM()
 enum class EResourceTookReason : uint8
 {
 	Spawn = 0,
+	Build = 1,
+	Fixup = 2,
 	Collect = 128,
 	Return = 129,
 	Initialize = 130,
@@ -80,11 +82,19 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsResourceEnough(const FResourceInfo& ResourceInfo) const;
+
+	bool IsResourceEnough(const TArray<FResourceInfo>& ResourceInfos) const;
+
+	bool IsResourceEnough(const TMap<EResourceType, int32>& ResourceInfos) const;
 	
 	// Server only
 	UFUNCTION(BlueprintCallable)
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const FResourceInfo& ResourceInfo);
+	
+	void TakeResource(UObject* Source, EResourceTookReason TookReason, const TArray<FResourceInfo>& ResourceInfos);
 
+	void TakeResource(UObject* Source, EResourceTookReason TookReason, const TMap<EResourceType, int32>& ResourceInfos);
+	
 protected:
 	void SetResource(EResourceType ResourceType, int32 InValue)
 	{

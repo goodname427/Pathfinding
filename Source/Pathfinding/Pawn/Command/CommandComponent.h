@@ -273,7 +273,19 @@ public:
 	T* GetExecutePawn() const { return Cast<T>(GetOwner()); }
 
 	UFUNCTION(BlueprintCallable)
+	UActorComponent* GetComponentFromExecutePawn(TSubclassOf<UActorComponent> ComponentClass) const;
+
+	template <class T>
+	T* GetComponentFromExecutePawn() const { return Cast<T>(GetComponentFromExecutePawn(T::StaticClass())); }
+
+	UFUNCTION(BlueprintCallable)
 	AConsciousAIController* GetExecuteController() const;
+
+	UFUNCTION(BlueprintCallable)
+	ABattlePlayerState* GetExecutePlayerState() const;
+
+	UFUNCTION(BlueprintCallable)
+	ACommanderPawn* GetExecuteCommander() const;
 
 	UFUNCTION(BlueprintCallable)
 	bool IsExecuting() const { return bExecuting; }

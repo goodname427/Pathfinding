@@ -140,7 +140,7 @@ void UPFBlueprintFunctionLibrary::SetStaticMeshColor(UStaticMeshComponent* Stati
 	}
 }
 
-bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(UObject* WorldContextObject, FBox ActorBounds)
+bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* WorldContextObject, FBox ActorBounds)
 {
 	const UWorld* World = WorldContextObject->GetWorld();
 	if (World == nullptr)
@@ -194,7 +194,7 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(UObject* WorldConte
 			World->LineTraceSingleByChannel(
 				Hit,
 				Point,
-				Point + FVector::DownVector * 50.0f,
+				Point + FVector::DownVector * 10.0f,
 				ECC_Visibility
 			);
 	

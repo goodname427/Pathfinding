@@ -17,6 +17,9 @@ public:
 	// Sets default values for this pawn's properties
 	AMovablePawn();
 
+public:
+	virtual float GetApproximateRadius() const override;
+	
 protected:
 	virtual UCommandComponent* ResolveRequestWithoutName_Implementation(const FTargetRequest& Request) override;
 	

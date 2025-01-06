@@ -13,4 +13,13 @@ class PATHFINDING_API ABuildingPawn : public AConsciousPawn
 
 public:
 	ABuildingPawn();
+
+public:
+	UFUNCTION(BlueprintCallable)
+	bool IsInBuilding() const { return bInBuilding; }
+	
+	void SetupInBuilding();
+
+private:
+	bool bInBuilding;
 };

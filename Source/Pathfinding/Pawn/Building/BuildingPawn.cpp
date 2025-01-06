@@ -8,8 +8,13 @@
 
 
 // Sets default values
-ABuildingPawn::ABuildingPawn()
+ABuildingPawn::ABuildingPawn(): bInBuilding(false)
 {
-	ConsciousData.AllowedCreateMethod = static_cast<uint32>(EAllowedCreateMethod::Build);
-	ConsciousData.ResourcesToAmount = {{EResourceType::Coin, 1}};
+	ConsciousData.AllowedCreateMethod = TO_FLAG(EAllowedCreateMethod::Build);
+	ConsciousData.ResourceCost = {{EResourceType::Coin, 1}};
+}
+
+void ABuildingPawn::SetupInBuilding()
+{
+	bInBuilding = true;
 }

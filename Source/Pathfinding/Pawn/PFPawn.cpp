@@ -17,9 +17,12 @@ APFPawn::APFPawn()
 	PrimaryActorTick.bCanEverTick = false;
 	bReplicates = true;
 
-	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+	INIT_DEFAULT_SUBOBJECT(RootComponent);
 
 	// Collision
+	INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
+	StaticMeshComponent->SetupAttachment(RootComponent);
+	StaticMeshComponent->CanCharacterStepUpOn = ECB_No;
 	StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	StaticMeshComponent->AlwaysLoadOnClient = true;
 	StaticMeshComponent->AlwaysLoadOnServer = true;
@@ -104,6 +107,21 @@ void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 	DOREPLIFETIME(ThisClass, Defense);
 }
 
+float APFPawn::GetApproximateRadius() const
+{
+	const FVector& ComponentScale = StaticMeshComponent->GetComponentScale();
+	
+	FBox Bounds;
+	StaticMeshComponent->GetLocalBounds(Bounds.Min, Bounds.Max);
+
+	FVector Extents = Bounds.GetExtent();
+	Extents.X *= ComponentScale.X;
+	Extents.Y *= ComponentScale.Y;
+	Extents.Z = 0;
+
+	return Extents.Size();
+}
+
 void APFPawn::SetOwner(AActor* NewOwner)
 {
 	if (OwnerPlayer)
@@ -128,7 +146,7 @@ void APFPawn::SetOwner(AActor* NewOwner)
 	}
 }
 
-EPawnRole APFPawn::GetPawnRole(APFPawn* OtherPawn) const
+EPawnRole APFPawn::GetPawnRole(const APFPawn* OtherPawn) const
 {
 	if (OtherPawn == nullptr)
 	{

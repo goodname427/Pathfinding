@@ -18,8 +18,12 @@ public:
 
 public:
 	DECLARE_COMMAND_NAME()
+
+	bool CanTransport(const ABaseCampPawn* BaseCamp) const;
 	
 protected:
+	virtual bool InternalIsCommandEnable_Implementation() const override;
+	
 	virtual bool InternalIsArgumentsValid_Implementation() const override;
 	
 	virtual void InternalBeginExecute_Implementation() override;

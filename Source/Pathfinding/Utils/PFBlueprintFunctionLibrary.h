@@ -56,5 +56,5 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	static bool IsLocationEmptyAndOnGround(UObject* WorldContextObject, FBox ActorBounds);
+	static bool IsLocationEmptyAndOnGround(const UObject* WorldContextObject, FBox ActorBounds);
 };

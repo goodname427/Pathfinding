@@ -58,6 +58,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
+	virtual float GetApproximateRadius() const;
+	
+	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 	
 protected:
@@ -85,7 +88,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	EPawnRole GetPawnRole(APFPawn* OtherPawn) const;
+	EPawnRole GetPawnRole(const APFPawn* OtherPawn) const;
 	
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)

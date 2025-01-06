@@ -35,6 +35,32 @@ bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) con
 	return GetResource(ResourceInfo.Type) >= ResourceInfo.Point;
 }
 
+bool ABattlePlayerState::IsResourceEnough(const TArray<FResourceInfo>& ResourceInfos) const
+{
+	for (const auto& ResourceInfo : ResourceInfos)
+	{
+		if (!IsResourceEnough(ResourceInfo))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool ABattlePlayerState::IsResourceEnough(const TMap<EResourceType, int32>& ResourceInfos) const
+{
+	for (const auto& ResourceInfo : ResourceInfos)
+	{
+		if (!IsResourceEnough(ResourceInfo))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookReason,
                                       const FResourceInfo& ResourceInfo)
 {
@@ -47,7 +73,7 @@ void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookR
 	{
 		return;
 	}
-	
+
 	// add resource
 	if (TookReason >= EResourceTookReason::Collect)
 	{
@@ -57,6 +83,24 @@ void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookR
 
 	// remove resource
 	SetResource(ResourceInfo.Type, GetResource(ResourceInfo.Type) - ResourceInfo.Point);
+}
+
+void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookReason,
+                                      const TArray<FResourceInfo>& ResourceInfos)
+{
+	for (const auto& Resource : ResourceInfos)
+	{
+		TakeResource(Source, TookReason, Resource);
+	}
+}
+
+void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookReason,
+                                      const TMap<EResourceType, int32>& ResourceInfos)
+{
+	for (const auto& Resource : ResourceInfos)
+	{
+		TakeResource(Source, TookReason, Resource);
+	}
 }
 
 void ABattlePlayerState::OnPlayerOwnedPawnAdd(APFPawn* Pawn)

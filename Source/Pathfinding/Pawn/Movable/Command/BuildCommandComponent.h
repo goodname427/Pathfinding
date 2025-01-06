@@ -27,10 +27,14 @@ public:
 
 	virtual UObject* GetCommandIcon_Implementation() const override;
 
+	virtual float GetRequiredTargetRadius_Implementation() const override;
+
 protected:
 	virtual bool InternalIsCommandEnable_Implementation() const override;
 
-	virtual bool InternalCanExecute_Implementation() const override;
+	virtual bool InternalIsArgumentsValid_Implementation() const override;
+
+	bool IsValidLocationToBuild(const AActor* Actor, const FVector& Location, bool bOnlyCollidingComponents) const;
 
 	virtual void InternalBeginExecute_Implementation() override;
 
@@ -44,6 +48,8 @@ protected:
 private:
 	UPROPERTY()
 	AActor* FlagActor;
+
+	FVector FlagMeshRelativeLocation;
 
 	UPROPERTY()
 	UStaticMeshComponent* FlagMesh;

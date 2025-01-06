@@ -72,7 +72,7 @@ bool USpawnCommandComponent::InternalIsCommandEnable_Implementation() const
 		return false;
 	}
 
-	const ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+	const ABattlePlayerState* PS = GetExecutePlayerState();
 	if (PS == nullptr)
 	{
 		return false;
@@ -80,7 +80,7 @@ bool USpawnCommandComponent::InternalIsCommandEnable_Implementation() const
 
 	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	
-	return ConsciousData.IsResourcesEnough(PS);
+	return PS->IsResourceEnough(ConsciousData.ResourceCost);
 }
 
 void USpawnCommandComponent::InternalPushedToQueue_Implementation()
@@ -88,10 +88,10 @@ void USpawnCommandComponent::InternalPushedToQueue_Implementation()
 	AUTHORITY_CHECK();
 	
 	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
-	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+	ABattlePlayerState* PS = GetExecutePlayerState();
 
 	// Consume resources
-	ConsciousData.ConsumeResources(this, PS);
+	PS->TakeResource(this, EResourceTookReason::Spawn, ConsciousData.ResourceCost);
 }
 
 void USpawnCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
@@ -99,10 +99,10 @@ void USpawnCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPopp
 	AUTHORITY_CHECK();
 	
 	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
-	ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+	ABattlePlayerState* PS = GetExecutePlayerState();
 
 	// Return resources
-	ConsciousData.ReturnResources(this, PS);
+	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
 }
 
 void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
@@ -119,7 +119,11 @@ void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 			// compute spawn location
 			// DEBUG_MESSAGE(TEXT("Spawn [%s] at [%s]"), *PawnClassToSpawn->GetClass()->GetName(),
 			//               *ExecutePawn->GetActorLocation().ToString());
-			Commander->SpawnPawnFrom(ExecutePawn, PawnClassToSpawn, GatherLocation);
+			AConsciousPawn* Pawn = Commander->SpawnPawnFrom<AConsciousPawn>(ExecutePawn, PawnClassToSpawn);
+			if (Pawn)
+			{
+				Pawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(GatherLocation));
+			}
 		}
 	}
 }

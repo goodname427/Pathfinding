@@ -29,13 +29,13 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
+bool UCollectCommandComponent::InternalIsCommandEnable_Implementation() const
+{
+	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;
+}
+
 bool UCollectCommandComponent::InternalIsArgumentsValid_Implementation() const
 {
-	if (GetExecutePawn<ACollectorPawn>() == nullptr)
-	{
-		return false;
-	}
-
 	if (const AResourcePawn* ResourcePawn = Request.GetTargetPawn<AResourcePawn>())
 	{
 		if (CanCollect(ResourcePawn))
@@ -58,15 +58,16 @@ void UCollectCommandComponent::InternalBeginExecute_Implementation()
 	AUTHORITY_CHECK();
 
 	AResourcePawn* Resource = Request.GetTargetPawn<AResourcePawn>();
-	ACollectorPawn* Collector = GetExecutePawn<ACollectorPawn>();
+	const AConsciousPawn* ExecutePawn = GetExecutePawn();
+	UCollectorComponent* Collector = GetComponentFromExecutePawn<UCollectorComponent>();
 
-	if (Resource && Collector && Resource->CollectBy(Collector))
+	if (Resource && ExecutePawn && Collector && Resource->CollectBy(Collector))
 	{
-		EndExecuteDelay(ECommandExecuteResult::Success, 1 / Collector->GetAttackDuration());
+		EndExecuteDelay(ECommandExecuteResult::Success, 1 / ExecutePawn->GetAttackDuration());
 	}
 	else
 	{
-		EndExecuteDelay(ECommandExecuteResult::Failed, 1 / Collector->GetAttackDuration());
+		EndExecuteDelay(ECommandExecuteResult::Failed, 1 / ExecutePawn->GetAttackDuration());
 	}
 }
 

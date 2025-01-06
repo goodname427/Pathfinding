@@ -4,6 +4,7 @@
 #include "BaseCampPawn.h"
 
 #include "PFUtils.h"
+#include "Movable/Component/CollectorComponent.h"
 
 
 // Sets default values
@@ -11,16 +12,16 @@ ABaseCampPawn::ABaseCampPawn()
 {
 }
 
-void ABaseCampPawn::TransportBy(ACollectorPawn* CollectorPawn)
+void ABaseCampPawn::TransportBy(UCollectorComponent* Collector)
 {
-	if (!CollectorPawn->GetCollectedResource().IsValid())
+	if (!Collector->GetCollectedResource().IsValid())
 	{
 		return;
 	}
 
 	ABattlePlayerState* PS = GetOwnerPlayer();
 
-	PS->TakeResource(CollectorPawn, EResourceTookReason::Collect, CollectorPawn->GetCollectedResource());
+	PS->TakeResource(Collector, EResourceTookReason::Collect, Collector->GetCollectedResource());
 
-	CollectorPawn->EmptyCollectedResource();
+	Collector->EmptyCollectedResource();
 }

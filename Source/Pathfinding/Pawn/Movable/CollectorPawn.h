@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "MovablePawn.h"
+#include "Component/CollectorComponent.h"
 #include "CollectorPawn.generated.h"
 
 class AResourcePawn;
@@ -47,25 +48,6 @@ protected:
 	UFUNCTION()
 	void OnTransportCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason);
 
-public:
-	void SetCollectedResourceType(EResourceType NewResourceType);
-	
-	void SetCollectedResourcePoint(int32 NewResourcePoint) { CollectedResource.Point = FMath::Clamp(NewResourcePoint, 0, MaxCollectedResourcePoint); }
-
-	void EmptyCollectedResource() { CollectedResource.Empty(); };
-	
-	const FResourceInfo& GetCollectedResource() const { return CollectedResource; }
-
-	int32 GetMaxCollectedResourcePoint() const { return MaxCollectedResourcePoint; }
-
-	int32 GetResourcePointPerCollecting() const { return ResourcePointPerCollecting; }
-
-	bool IsCollectedResourceEmpty() const { return CollectedResource.Point == 0; }
-	
-	bool IsCollectedResourceFull() const { return CollectedResource.Point >= MaxCollectedResourcePoint; }
-
-	int32 GetMaxAvailableCollectedResourcePoint() const { return FMath::Min(ResourcePointPerCollecting, FMath::Max(0, MaxCollectedResourcePoint - CollectedResource.Point)); }
-
 protected:
 	UPROPERTY(Category = "Collect", VisibleAnywhere)
 	UCollectCommandComponent* CollectCommandComponent;
@@ -73,14 +55,9 @@ protected:
 	UPROPERTY(Category = "Collect", VisibleAnywhere)
 	UTransportCommandComponent* TransportCommandComponent;
 
-	UPROPERTY(Category = "State|Collector", EditAnywhere, BlueprintReadWrite, meta=(ClampMin=1))
-	int32 ResourcePointPerCollecting;
+	UPROPERTY(Category = "Collect", VisibleAnywhere)
+	UCollectorComponent* CollectorComponent;
 
-	UPROPERTY(Category = "State|Collector", EditAnywhere, BlueprintReadWrite, meta=(ClampMin=1))
-	int32 MaxCollectedResourcePoint;
-	
 	UPROPERTY(Transient)
 	AResourcePawn* NextResourceToCollect;
-
-	FResourceInfo CollectedResource;
 };

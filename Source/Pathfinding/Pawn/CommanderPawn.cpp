@@ -602,46 +602,33 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 	}
 }
 
-void ACommanderPawn::SpawnPawnFrom_Implementation(AActor* Source, TSubclassOf<AConsciousPawn> PawnClassToSpawn, FVector TargetLocation)
+APFPawn* ACommanderPawn::SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location)
+{
+	return UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
+		this,
+		PawnClass,
+		this,
+		Location,
+		FRotator::ZeroRotator
+	);
+}
+
+APFPawn* ACommanderPawn::SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn)
 {
 	const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
 		Source,
-		PawnClassToSpawn.GetDefaultObject()->GetSimpleCollisionRadius()
+		PawnClassToSpawn.GetDefaultObject()->GetApproximateRadius()
 	);
 
-	SpawnPawnAndMoveToLocation(
+	return SpawnPawn(
 		PawnClassToSpawn,
-		SpawnLocation,
-		TargetLocation
+		SpawnLocation
 	);
 }
 
-void ACommanderPawn::SpawnPawnAndMoveToLocation_Implementation(TSubclassOf<AConsciousPawn> PawnClass, FVector Location,
-                                                               FVector TargetLocation)
+void ACommanderPawn::ServerSpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
 {
-	APFPawn* Pawn = UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
-		this,
-		PawnClass,
-		this,
-		Location,
-		FRotator::ZeroRotator
-	);
-
-	if (AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(Pawn))
-	{
-		ConsciousPawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(TargetLocation));
-	}
-}
-
-void ACommanderPawn::SpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)
-{
-	UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
-		this,
-		PawnClass,
-		this,
-		Location,
-		FRotator::ZeroRotator
-	);
+	SpawnPawn(PawnClass, Location);
 }
 
 void ACommanderPawn::Test_Implementation()

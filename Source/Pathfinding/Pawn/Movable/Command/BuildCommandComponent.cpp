@@ -4,6 +4,7 @@
 #include "BuildCommandComponent.h"
 
 #include "CommanderPawn.h"
+#include "EditorCategoryUtils.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 
@@ -48,6 +49,34 @@ UObject* UBuildCommandComponent::GetCommandIcon_Implementation() const
 	return CDO ? CDO->GetData().Icon : nullptr;
 }
 
+float UBuildCommandComponent::GetRequiredTargetRadius_Implementation() const
+{
+	const AConsciousPawn* CDO = GetDefaultObjectToBuild();
+	return (CDO ? CDO->GetApproximateRadius() : 0) + Super::GetRequiredTargetRadius_Implementation();
+}
+
+bool UBuildCommandComponent::InternalIsArgumentsValid_Implementation() const
+{
+	if (Request.TargetPawn != nullptr)
+	{
+		return false;
+	}
+
+	return IsValidLocationToBuild(GetDefaultObjectToBuild(), Request.TargetLocation, true);
+}
+
+bool UBuildCommandComponent::IsValidLocationToBuild(const AActor* Actor, const FVector& Location,
+                                                    bool bOnlyCollidingComponents) const
+{
+	FVector Origin;
+	FVector BoxExtents;
+	Actor->GetActorBounds(bOnlyCollidingComponents, Origin, BoxExtents);
+	FBox ActorBounds(Origin - BoxExtents, Origin + BoxExtents);
+	ActorBounds = ActorBounds.ShiftBy(Location - Actor->GetActorLocation());
+
+	return UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(this, ActorBounds);
+}
+
 bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 {
 	if (!PawnClassToBuild.Get())
@@ -55,7 +84,7 @@ bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 		return false;
 	}
 
-	const ABattlePlayerState* PS = GetExecutePawn()->GetOwnerPlayer();
+	const ABattlePlayerState* PS = GetExecutePlayerState();
 	if (PS == nullptr)
 	{
 		return false;
@@ -63,12 +92,7 @@ bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 
 	const FConsciousData& ConsciousData = PawnClassToBuild.GetDefaultObject()->GetConsciousData();
 
-	return ConsciousData.IsResourcesEnough(PS);
-}
-
-bool UBuildCommandComponent::InternalCanExecute_Implementation() const
-{
-	return Super::InternalCanExecute_Implementation();
+	return PS->IsResourceEnough(ConsciousData.ResourceCost);
 }
 
 void UBuildCommandComponent::InternalBeginExecute_Implementation()
@@ -83,12 +107,20 @@ void UBuildCommandComponent::InternalBeginExecute_Implementation()
 		// DEBUG_MESSAGE(TEXT("Build [%s] at [%s]"), *PawnClassToBuild->GetClass()->GetName(),
 		//               *Request.TargetLocation.ToString());
 
-		GetDefaultObjectToBuild()->GetConsciousData().ConsumeResources(this, ExecutePawn->GetOwnerPlayer());
+		GetExecutePlayerState()->TakeResource(
+			this,
+			EResourceTookReason::Build,
+			PawnClassToBuild.GetDefaultObject()->GetConsciousData().ResourceCost
+		);
 
-		Commander->SpawnPawn(
+		ABuildingPawn* Building = Commander->SpawnPawn<ABuildingPawn>(
 			PawnClassToBuild,
 			Request.TargetLocation
 		);
+		if (Building)
+		{
+			Building->SetupInBuilding();
+		}
 
 		EndExecute(ECommandExecuteResult::Success);
 		return;
@@ -111,8 +143,11 @@ void UBuildCommandComponent::InternalBeginTarget_Implementation()
 			const UStaticMeshComponent* DefaultMesh = DefaultActor->GetStaticMeshComponent();
 
 			FlagMesh->SetStaticMesh(DefaultMesh->GetStaticMesh());
+
+			FlagMeshRelativeLocation = DefaultMesh->GetRelativeLocation();
 			FlagMesh->SetWorldScale3D(DefaultMesh->GetRelativeScale3D());
-			FlagMesh->SetWorldRotation(DefaultMesh->GetComponentRotation());
+			FlagMesh->SetWorldRotation(DefaultMesh->GetRelativeRotation());
+
 			FlagMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 
 			if (UMaterialInterface* FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial())
@@ -149,15 +184,9 @@ void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 		if (Hit.bBlockingHit)
 		{
 			FlagMesh->SetVisibility(true);
-			FlagActor->SetActorLocation(Hit.Location);
+			FlagActor->SetActorLocation(Hit.Location + FlagMeshRelativeLocation);
 
-			FVector Origin;
-			FVector BoxExtents;
-			
-			FlagActor->GetActorBounds(false, Origin, BoxExtents);
-			const FBox ActorBounds(Origin - BoxExtents, Origin + BoxExtents);
-
-			const bool bValidLocation = UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(this, ActorBounds);
+			const bool bValidLocation = IsValidLocationToBuild(FlagActor, FlagActor->GetActorLocation(), false);
 			if (bValidLocation)
 			{
 				UPFBlueprintFunctionLibrary::SetStaticMeshColor(FlagMesh, {0, 1, 0, 0.2f}, 0);
