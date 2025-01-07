@@ -125,6 +125,11 @@ void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
 		return;
 	}
 
+	if (MaterialIndex < 0)
+	{
+		MaterialIndex = 0;
+	}
+	
 	// DEBUG_MESSAGE(TEXT("Create Dynamic Material Instance for Static Mesh [%s]"), *StaticMesh->GetName());
 	StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
 }

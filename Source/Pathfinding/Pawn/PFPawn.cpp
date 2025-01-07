@@ -64,8 +64,8 @@ void APFPawn::BeginPlay()
 	// Set Flag Material
 	if (UMaterialInterface* FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial())
 	{
-		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial, 0);
-		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
+		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial);
+		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 	}
 
 	const FVector ActorLocation = GetActorLocation();
