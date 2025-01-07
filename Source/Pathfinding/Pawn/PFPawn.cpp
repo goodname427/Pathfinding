@@ -18,6 +18,7 @@ APFPawn::APFPawn()
 	bReplicates = true;
 
 	INIT_DEFAULT_SUBOBJECT(RootComponent);
+	RootComponent->SetMobility(EComponentMobility::Movable);
 
 	// Collision
 	INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
@@ -131,7 +132,7 @@ void APFPawn::SetOwner(AActor* NewOwner)
 
 	Super::SetOwner(NewOwner);
 
-	ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
+	const ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
 	if (CommanderPawn != nullptr)
 	{
 		// DEBUG_MESSAGE(TEXT("Set [%s]'s Owner To [%s]"), *GetName(), *CommanderPawn->GetName());

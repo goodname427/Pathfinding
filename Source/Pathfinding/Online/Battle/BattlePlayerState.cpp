@@ -15,6 +15,8 @@ ABattlePlayerState::ABattlePlayerState()
 	{
 		TakeResource(this, EResourceTookReason::Initialize, ResourceInfo);
 	}
+
+	NetUpdateFrequency = 100;
 }
 
 void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

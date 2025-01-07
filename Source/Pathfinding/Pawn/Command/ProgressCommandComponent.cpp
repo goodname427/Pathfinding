@@ -4,6 +4,7 @@
 #include "ProgressCommandComponent.h"
 
 #include "PFUtils.h"
+#include "Net/UnrealNetwork.h"
 
 int32 UProgressCommandComponent::StaticCommandChannel = 1;
 
@@ -19,6 +20,13 @@ UProgressCommandComponent::UProgressCommandComponent()
 	Data.Channel = StaticCommandChannel;
 }
 
+void UProgressCommandComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ThisClass, RemainedProgress);
+}
+
 float UProgressCommandComponent::GetProgressDuration_Implementation() const
 {
 	return ProgressDuration;
@@ -31,15 +39,18 @@ bool UProgressCommandComponent::InternalIsCommandEnable_Implementation() const
 
 void UProgressCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
 	RemainedProgress = GetProgressDuration();
 }
 
 void UProgressCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
+	AUTHORITY_CHECK();
+	
 	RemainedProgress -= DeltaTime;
 	if (RemainedProgress <= 0)
 	{
 		RemainedProgress = 0;
-		END_EXECUTE_AUTHORITY(ECommandExecuteResult::Success);
+		EndExecute(ECommandExecuteResult::Success);
 	}
 }

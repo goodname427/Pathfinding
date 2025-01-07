@@ -238,6 +238,10 @@ public:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	virtual void InitializeComponent() override;
+
+	virtual void UninitializeComponent() override;
+
 public:
 	// Command Default Arguments
 	FName GetCommandName() const { return Data.Name; };

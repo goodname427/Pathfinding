@@ -26,28 +26,11 @@ void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void AConsciousPawn::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void AConsciousPawn::PostInitProperties()
-{
-	Super::PostInitProperties();
-}
-
 void AConsciousPawn::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	for (UActorComponent* Component : GetComponents())
-	{
-		UCommandComponent* Command = Cast<UCommandComponent>(Component);
-		if (Command)
-		{
-			CommandList.Add(Command->GetCommandName(), Command);
-		}
-	}
+	// RefreshCommandList();
 }
 
 void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
@@ -224,16 +207,56 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
 	return CommandArray;
 }
 
-const UCommandComponent* AConsciousPawn::AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd)
+void AConsciousPawn::RefreshCommandList()
 {
-	UCommandComponent* NewCommand = Cast<UCommandComponent>(
-		AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, true));
-	if (NewCommand)
+	CommandList.Empty();
+	for (UActorComponent* Component : GetComponents())
 	{
-		CommandList.Add(NewCommand->GetCommandName(), NewCommand);
+		UCommandComponent* Command = Cast<UCommandComponent>(Component);
+		if (Command)
+		{
+			CommandList.Add(Command->GetCommandName(), Command);
+		}
 	}
 
+	if (OnCommandListUpdated.IsBound())
+	{
+		OnCommandListUpdated.Broadcast(this);
+	}
+}
+
+UCommandComponent* AConsciousPawn::AddNewCommand(TSubclassOf<UCommandComponent> CommandClassToAdd)
+{
+	UCommandComponent* NewCommand = Cast<UCommandComponent>(
+		AddComponentByClass(CommandClassToAdd, false, FTransform::Identity, false));
+
 	return NewCommand;
+}
+
+void AConsciousPawn::AddCommand(UCommandComponent* CommandToAdd)
+{
+	if (CommandToAdd && CommandToAdd->GetOwner() == this)
+	{
+		CommandList.Add(CommandToAdd->GetCommandName(), CommandToAdd);
+
+		if (OnCommandListUpdated.IsBound())
+		{
+			OnCommandListUpdated.Broadcast(this);
+		}
+	}
+}
+
+void AConsciousPawn::RemoveCommand(UCommandComponent* CommandToRemove)
+{
+	if (CommandToRemove && CommandToRemove->GetOwner() == this)
+	{
+		CommandList.Remove(CommandToRemove->GetCommandName(), CommandToRemove);
+
+		if (OnCommandListUpdated.IsBound())
+		{
+			OnCommandListUpdated.Broadcast(this);
+		}
+	}
 }
 
 void AConsciousPawn::DispatchCommand_OnPushedToQueue_Implementation(UCommandComponent* Command)

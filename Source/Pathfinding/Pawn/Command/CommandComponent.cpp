@@ -18,6 +18,9 @@ FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 UCommandComponent::UCommandComponent(): TargetCommander(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = false;
+
+	SetIsReplicatedByDefault(true);
+	bWantsInitializeComponent = true;
 }
 
 void UCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
@@ -33,6 +36,27 @@ void UCommandComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
 	if (IsTargeting())
 	{
 		InternalTarget(DeltaTime);
+	}
+}
+
+void UCommandComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	// DEBUG_FUNC_FLAG();
+	if (AConsciousPawn* ConsciousPawn = GetExecutePawn())
+	{
+		ConsciousPawn->AddCommand(this);
+	}
+}
+
+void UCommandComponent::UninitializeComponent()
+{
+	Super::UninitializeComponent();
+
+	if (AConsciousPawn* ConsciousPawn = GetExecutePawn())
+	{
+		ConsciousPawn->RemoveCommand(this);
 	}
 }
 
@@ -107,7 +131,7 @@ bool UCommandComponent::IsCommandEnable(bool bCheckBeforeExecute) const
 	{
 		return true;
 	}
-	
+
 	return GetExecutePawn() != nullptr && InternalIsCommandEnable();
 }
 
@@ -129,7 +153,7 @@ bool UCommandComponent::IsArgumentsValid(bool bCheckBeforeExecute) const
 	{
 		return true;
 	}
-	
+
 	return !IsNeedToTarget() || InternalIsArgumentsValid();
 }
 
@@ -203,7 +227,7 @@ void UCommandComponent::BeginExecute()
 	{
 		EndTarget();
 	}
-	
+
 	bExecuting = true;
 
 	if (OnCommandBegin.IsBound())
@@ -280,9 +304,9 @@ void UCommandComponent::EndTarget()
 	}
 
 	bTargeting = false;
-	
+
 	InternalEndTarget();
-	
+
 	TargetCommander = nullptr;
 }
 
@@ -324,19 +348,16 @@ void UCommandComponent::InternalTarget_Implementation(float DeltaTime)
 	{
 		if (PC->GetHUD())
 		{
-			
 		}
 	}
 }
 
 void UCommandComponent::InternalEndTarget_Implementation()
 {
-	
 }
 
 void UCommandComponent::InternalBeginTarget_Implementation()
 {
-	
 }
 
 bool UCommandComponent::InternalIsCommandEnable_Implementation() const

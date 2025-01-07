@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ConsciousPawn.h"
+#include "Command/BuildingCommandComponent.h"
 #include "BuildingPawn.generated.h"
 
 UCLASS()
@@ -13,13 +14,20 @@ class PATHFINDING_API ABuildingPawn : public AConsciousPawn
 
 public:
 	ABuildingPawn();
-
+	
 public:
 	UFUNCTION(BlueprintCallable)
 	bool IsInBuilding() const { return bInBuilding; }
 	
-	void SetupInBuilding();
+	UFUNCTION(NetMulticast, Reliable)
+	void BeginBuilding();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void EndBuilding();
 
 private:
 	bool bInBuilding;
+
+	UPROPERTY()
+	UBuildingCommandComponent* BuildingCommandComponent;
 };

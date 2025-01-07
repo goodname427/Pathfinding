@@ -107,23 +107,23 @@ void UBuildCommandComponent::InternalBeginExecute_Implementation()
 		// DEBUG_MESSAGE(TEXT("Build [%s] at [%s]"), *PawnClassToBuild->GetClass()->GetName(),
 		//               *Request.TargetLocation.ToString());
 
-		GetExecutePlayerState()->TakeResource(
-			this,
-			EResourceTookReason::Build,
-			PawnClassToBuild.GetDefaultObject()->GetConsciousData().ResourceCost
-		);
+		// GetExecutePlayerState()->TakeResource(
+		// 	this,
+		// 	EResourceTookReason::Build,
+		// 	PawnClassToBuild.GetDefaultObject()->GetConsciousData().ResourceCost
+		// );
 
 		ABuildingPawn* Building = Commander->SpawnPawn<ABuildingPawn>(
 			PawnClassToBuild,
 			Request.TargetLocation
 		);
+
 		if (Building)
 		{
-			Building->SetupInBuilding();
+			Building->BeginBuilding();
+			EndExecute(ECommandExecuteResult::Success);
+			return;
 		}
-
-		EndExecute(ECommandExecuteResult::Success);
-		return;
 	}
 
 	EndExecute(ECommandExecuteResult::Failed);

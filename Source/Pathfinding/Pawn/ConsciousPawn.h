@@ -37,7 +37,7 @@ struct FConsciousData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly,
 		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod != 0", EditConditionHides))
-	float SpawnDuration;
+	float CreateDuration;
 
 	bool IsAllowedToCreate() const { return AllowedCreateMethod != 0; }
 
@@ -51,6 +51,7 @@ struct FConsciousData
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandListUpdatedSignature, AConsciousPawn*, ConsciousPawn);
 
 #define SEND_TO_SELF_AUTHORITY(Request)\
 	if (HasAuthority())\
@@ -70,10 +71,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	virtual void BeginPlay() override;
-
-	virtual void PostInitProperties() override;
-
 	virtual void PostInitializeComponents() override;
 
 public:
@@ -113,10 +110,22 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<UCommandComponent*>& GetAllCommands() const;
-
+	
+	void RefreshCommandList();
+	
 	UFUNCTION(BlueprintCallable)
-	const UCommandComponent* AddCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
+	UCommandComponent* AddNewCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 
+	template<class TCommand>
+	TCommand* AddNewCommand() { return Cast<TCommand>(AddNewCommand(TCommand::StaticClass())); }
+	
+	void AddCommand(UCommandComponent* CommandToAdd);
+	void RemoveCommand(UCommandComponent* CommandToRemove);
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FCommandListUpdatedSignature OnCommandListUpdated;
+	
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void DispatchCommand_BeginExecute(UCommandComponent* Command, const FTargetRequest& Request);

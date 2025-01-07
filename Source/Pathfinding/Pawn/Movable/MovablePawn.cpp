@@ -41,7 +41,7 @@ AMovablePawn::AMovablePawn()
 
 	ConsciousData.AllowedCreateMethod = TO_FLAG(EAllowedCreateMethod::Spawn);
 	ConsciousData.ResourceCost = {{EResourceType::Coin, 1}};
-	ConsciousData.SpawnDuration = 1.0f;
+	ConsciousData.CreateDuration = 1.0f;
 }
 
 float AMovablePawn::GetApproximateRadius() const

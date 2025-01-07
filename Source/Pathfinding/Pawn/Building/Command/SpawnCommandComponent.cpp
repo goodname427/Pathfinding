@@ -33,7 +33,7 @@ void USpawnCommandComponent::BeginPlay()
 float USpawnCommandComponent::GetProgressDuration_Implementation() const
 {
 	return PawnClassToSpawn.Get()
-		       ? PawnClassToSpawn.GetDefaultObject()->GetConsciousData().SpawnDuration
+		       ? PawnClassToSpawn.GetDefaultObject()->GetConsciousData().CreateDuration
 		       : -1;
 }
 

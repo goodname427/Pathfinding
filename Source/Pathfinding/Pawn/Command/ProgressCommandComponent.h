@@ -14,6 +14,8 @@ class PATHFINDING_API UProgressCommandComponent : public UCommandComponent
 
 public:
 	UProgressCommandComponent();
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	
 public:
 	DECLARE_COMMAND_CHANNEL()
@@ -38,5 +40,6 @@ protected:
 	UPROPERTY(Category = "Command|Progress", EditAnywhere, meta=(AllowedClasses="Texture"))
 	UObject* ProgressIcon;
 
+	UPROPERTY(Replicated)
 	float RemainedProgress;
 };

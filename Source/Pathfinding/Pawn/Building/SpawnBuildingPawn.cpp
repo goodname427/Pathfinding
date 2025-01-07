@@ -16,7 +16,7 @@ ASpawnBuildingPawn::ASpawnBuildingPawn()
 {
 	INIT_DEFAULT_SUBOBJECT(GatherFlagMeshComponent);
 	GatherFlagMeshComponent->SetupAttachment(RootComponent);
-	GatherFlagMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GatherFlagMeshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	GatherFlagMeshComponent->SetVisibility(false);
 	GatherFlagMeshComponent->SetIsReplicated(true);
 
