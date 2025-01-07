@@ -68,4 +68,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Pawn")
 	UMaterialInterface* LoadPawnFlagMaterial() const;
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Pawn", meta = (AllowedClasses = "Material"))
+	FSoftObjectPath BuildingTranslucentMaterial;
+
+	UFUNCTION(BlueprintCallable, Category = "Pawn")
+	UMaterialInterface* LoadBuildingTranslucentMaterial() const;
 };

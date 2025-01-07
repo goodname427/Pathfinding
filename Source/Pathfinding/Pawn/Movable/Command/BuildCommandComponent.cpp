@@ -150,14 +150,11 @@ void UBuildCommandComponent::InternalBeginTarget_Implementation()
 
 			FlagMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 
-			if (UMaterialInterface* FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial())
-			{
-				UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
-					FlagMesh,
-					FlagMaterial,
-					0
-				);
-			}
+			UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
+				FlagMesh,
+				GetDefault<UPFGameSettings>()->LoadBuildingTranslucentMaterial(),
+				0
+			);
 		}
 	}
 }

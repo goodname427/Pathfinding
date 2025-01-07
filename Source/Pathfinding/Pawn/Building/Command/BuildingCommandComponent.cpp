@@ -4,6 +4,7 @@
 #include "BuildingCommandComponent.h"
 
 #include "ConsciousPawn.h"
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 #include "Building/BuildingPawn.h"
 
@@ -34,7 +35,7 @@ UObject* UBuildingCommandComponent::GetCommandIcon_Implementation() const
 
 void UBuildingCommandComponent::InternalPushedToQueue_Implementation()
 {
-	DEBUG_FUNC_FLAG();
+	// DEBUG_FUNC_FLAG();
 	
 	AUTHORITY_CHECK();
 
@@ -58,6 +59,11 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
 
 	ExecutePawn->Destroy();
+}
+
+void UBuildingCommandComponent::InternalBeginExecute_Implementation()
+{
+	Super::InternalBeginExecute_Implementation();
 }
 
 void UBuildingCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)

@@ -3,6 +3,7 @@
 
 #include "BuildingPawn.h"
 
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 #include "Command/BuildingCommandComponent.h"
 #include "Command/GatherCommandComponent.h"
@@ -27,8 +28,11 @@ void ABuildingPawn::EndBuilding_Implementation()
 			BuildingCommandComponent->DestroyComponent();
 		}
 	}
-
+	
 	RefreshCommandList();
+
+	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
 void ABuildingPawn::BeginBuilding_Implementation()
@@ -49,4 +53,8 @@ void ABuildingPawn::BeginBuilding_Implementation()
 	}
 	
 	CommandList.Empty();
+
+	UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadBuildingTranslucentMaterial());
+	FLinearColor Color = GetOwnerColor(); Color.A = 0.2f;
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, Color);
 }

@@ -17,3 +17,8 @@ UMaterialInterface* UPFGameSettings::LoadPawnFlagMaterial() const
 {
 	return Cast<UMaterialInterface>(PawnFlagMaterial.TryLoad());
 }
+
+UMaterialInterface* UPFGameSettings::LoadBuildingTranslucentMaterial() const
+{
+	return Cast<UMaterialInterface>(BuildingTranslucentMaterial.TryLoad());
+}

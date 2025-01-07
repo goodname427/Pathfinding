@@ -111,7 +111,7 @@ void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLif
 float APFPawn::GetApproximateRadius() const
 {
 	const FVector& ComponentScale = StaticMeshComponent->GetComponentScale();
-	
+
 	FBox Bounds;
 	StaticMeshComponent->GetLocalBounds(Bounds.Min, Bounds.Max);
 
@@ -125,25 +125,31 @@ float APFPawn::GetApproximateRadius() const
 
 void APFPawn::SetOwner(AActor* NewOwner)
 {
-	if (OwnerPlayer)
+	if (HasAuthority())
 	{
-		OwnerPlayer->OnPlayerOwnedPawnRemoved(this);
+		if (OwnerPlayer)
+		{
+			OwnerPlayer->OnPlayerOwnedPawnRemoved(this);
+		}
 	}
 
 	Super::SetOwner(NewOwner);
 
-	const ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
-	if (CommanderPawn != nullptr)
+	if (HasAuthority())
 	{
-		// DEBUG_MESSAGE(TEXT("Set [%s]'s Owner To [%s]"), *GetName(), *CommanderPawn->GetName());
-		OwnerPlayer = CommanderPawn->GetPlayerState<ABattlePlayerState>();
-
-		if (OwnerPlayer)
+		const ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
+		if (CommanderPawn != nullptr)
 		{
-			OwnerPlayer->OnPlayerOwnedPawnAdd(this);
-		}
+			// DEBUG_MESSAGE(TEXT("Set [%s]'s Owner To [%s]"), *GetName(), *CommanderPawn->GetName());
+			OwnerPlayer = CommanderPawn->GetPlayerState<ABattlePlayerState>();
 
-		OnRep_OwnerPlayer();
+			if (OwnerPlayer)
+			{
+				OwnerPlayer->OnPlayerOwnedPawnAdd(this);
+			}
+
+			OnRep_OwnerPlayer();
+		}
 	}
 }
 

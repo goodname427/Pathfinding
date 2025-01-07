@@ -123,7 +123,7 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 
 	const FVector CommanderLocation = Commander->GetActorLocation();
 	
-	Commander->ServerSpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
+	Commander->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
 	
 	FVector GatherLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
