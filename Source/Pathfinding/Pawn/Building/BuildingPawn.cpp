@@ -10,7 +10,7 @@
 
 
 // Sets default values
-ABuildingPawn::ABuildingPawn(): bInBuilding(false)
+ABuildingPawn::ABuildingPawn(): bInBuilding(false), BuildingCommandComponent(nullptr)
 {
 	ConsciousData.AllowedCreateMethod = TO_FLAG(EAllowedCreateMethod::Build);
 	ConsciousData.ResourceCost = {{EResourceType::Coin, 1}};
