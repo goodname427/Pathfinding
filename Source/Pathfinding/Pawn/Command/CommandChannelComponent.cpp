@@ -9,6 +9,8 @@
 
 UCommandChannelComponent::UCommandChannelComponent(): ChannelId(-1), CurrentCommand(nullptr)
 {
+	// PrimaryComponentTick.bCanEverTick = true;
+	
 	SetIsReplicatedByDefault(true);
 }
 
@@ -31,6 +33,17 @@ void UCommandChannelComponent::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(ThisClass, ChannelId);
 	DOREPLIFETIME(ThisClass, CommandQueue);
 	DOREPLIFETIME(ThisClass, CurrentCommand);
+}
+
+void UCommandChannelComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// if (!bIsClearing && CurrentCommand == nullptr && CommandQueue.Num() > 0)
+	// {
+	// 	ExecuteNextCommand();
+	// }
 }
 
 UCommandComponent* UCommandChannelComponent::GetCurrentCommand() const
@@ -71,6 +84,11 @@ void UCommandChannelComponent::PushCommand(UCommandComponent* CommandToPush)
 
 void UCommandChannelComponent::PopCommand(int32 CommandIndexToPop)
 {
+	if (bIsClearing)
+	{
+		return;
+	}
+	
 	if (CommandIndexToPop == -1)
 	{
 		AbortCurrentCommand();
@@ -95,7 +113,6 @@ bool UCommandChannelComponent::BeginClear()
 	}
 
 	bIsClearing = true;
-	//NumToClear = CommandQueue.Num();
 	PendingCommandQueue.Empty();
 
 	return true;
@@ -105,8 +122,8 @@ void UCommandChannelComponent::EndClear()
 {
 	bIsClearing = false;
 
-	//NumToClear = -1;
 	CommandQueue = MoveTemp(PendingCommandQueue);
+
 	ExecuteNextCommand();
 }
 
@@ -118,16 +135,9 @@ void UCommandChannelComponent::ClearCommands(ECommandPoppedReason Reason)
 	{
 		UCommandComponent* PoppedCommand = CommandQueue[0].Command;
 		CommandQueue.RemoveAt(0);
-		//NumToClear--;
 
 		DispatchCommand(OnPoppedFromQueue, PoppedCommand, Reason);
 	}
-
-	// for (const FCommandWrapper& CommandWrapper : CommandQueue)
-	// {
-	// 	GetConsciousPawnOwner()->DispatchCommand_OnPoppedFromQueue(CommandWrapper.Command, Reason);
-	// }
-	// CommandQueue.Reset();
 
 	OnRep_CommandQueue();
 }
@@ -158,10 +168,10 @@ void UCommandChannelComponent::ExecuteNextCommand()
 	// check if the command can be executed
 	if (NextCommand->CanExecute())
 	{
-		NextCommand->OnCommandEnd.AddDynamic(this, &UCommandChannelComponent::OnCommandEnd);
 		CurrentCommand = NextCommand;
+		CurrentCommand->OnCommandEnd.AddDynamic(this, &UCommandChannelComponent::OnCommandEnd);
 
-		DispatchCommand(BeginExecute, NextCommand, NextCommand->GetRequest());
+		DispatchCommand(BeginExecute, CurrentCommand, CurrentCommand->GetRequest());
 
 		OnRep_CurrentCommand();
 	}

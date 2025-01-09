@@ -25,7 +25,7 @@ struct FCommandWrapper
 	{
 	}
 
-	FCommandWrapper(UCommandComponent* InCommand, bool InNeedToClean = true)
+	FCommandWrapper(UCommandComponent* InCommand)
 		: Command(InCommand)
 	{
 		Request = InCommand->GetRequest();
@@ -33,7 +33,10 @@ struct FCommandWrapper
 
 	UCommandComponent* Get() const
 	{
-		Command->SetCommandArgumentsSkipCheck(Request);
+		if (Command)
+		{
+			Command->SetCommandArgumentsSkipCheck(Request);
+		}
 		return Command;
 	}
 };
@@ -68,8 +71,11 @@ public:
 	UCommandChannelComponent();
 
 	static UCommandChannelComponent* NewCommandChannel(AConsciousPawn* Owner, int32 InChannelId);
-	
+
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -84,24 +90,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	const FTargetRequest& GetRequestAt(int32 Index) const { return CommandQueue[Index].Request; }
 
+public:
 	void PushCommand(UCommandComponent* CommandToPush);
 
 	void PopCommand(int32 CommandIndexToPop);
 
 	bool BeginClear();
-	
+
 	void EndClear();
-	
+
 	void ClearCommands(ECommandPoppedReason Reason);
 
-	bool AbortCurrentCommand();
-	
 	void ExecuteNextCommand();
 
 protected:
+	bool AbortCurrentCommand();
+
 	AConsciousPawn* GetConsciousPawnOwner() const;
-	
-	
+
 	// Server only
 	UFUNCTION()
 	void OnCommandEnd(UCommandComponent* Command, ECommandExecuteResult Result);
@@ -111,11 +117,10 @@ public:
 	FCommandChannelUpdatedSignature OnCommandUpdated;
 
 private:
-	int32 NumToClear = -1;
 	bool bIsClearing = false;
 	UPROPERTY(Transient)
 	TArray<FCommandWrapper> PendingCommandQueue;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_ChannelId)
 	int32 ChannelId;
 	UFUNCTION()
