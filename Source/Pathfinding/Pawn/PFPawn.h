@@ -116,6 +116,9 @@ public:
 	virtual bool ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser) const override;
 
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	virtual void Die();
+
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,
 	                                      class AController* EventInstigator, AActor* DamageCauser) override;

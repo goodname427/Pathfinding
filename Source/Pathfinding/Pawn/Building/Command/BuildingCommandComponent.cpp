@@ -58,7 +58,7 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 	// Return resources
 	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
 
-	ExecutePawn->Destroy();
+	ExecutePawn->Die();
 }
 
 void UBuildingCommandComponent::InternalBeginExecute_Implementation()

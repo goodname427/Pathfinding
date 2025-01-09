@@ -50,7 +50,7 @@ bool AResourcePawn::CollectBy(UCollectorComponent* Collector)
 
 	if (ResourcePoint <= 0)
 	{
-		Destroy();
+		Die();
 	}
 
 	return true;

@@ -11,10 +11,12 @@
 #include "EngineUtils.h"
 #include "NavigationSystem.h"
 #include "PFBlueprintFunctionLibrary.h"
+#include "PFGameInstance.h"
 #include "PFUtils.h"
 #include "Building/BaseCampPawn.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameManage/GameStage/MainMenuGameStage.h"
 
 ABattleGameMode::ABattleGameMode()
 {
@@ -24,6 +26,8 @@ ABattleGameMode::ABattleGameMode()
 	PlayerStateClass = ABattlePlayerState::StaticClass();
 	HUDClass = ABattleHUD::StaticClass();
 	DefaultPawnClass = ACommanderPawn::StaticClass();
+
+	NumLivingPlayer = 0;
 }
 
 void ABattleGameMode::BeginPlay()
@@ -64,6 +68,12 @@ void ABattleGameMode::FinishRestartPlayer(AController* NewPlayer, const FRotator
 	{
 		// DEBUG_MESSAGE(TEXT("Init Player[%s]"), *NewPlayer->GetName());
 		SpawnDefaultPawnsForCommander(CommanderPawn);
+	}
+
+	if (ABattlePlayerState* PS = NewPlayer->GetPlayerState<ABattlePlayerState>())
+	{
+		NumLivingPlayer++;
+		PS->OnPlayerFailed.AddDynamic(this, &ABattleGameMode::OnPlayerFailed);
 	}
 }
 
@@ -107,6 +117,16 @@ void ABattleGameMode::PreLogin(const FString& Options, const FString& Address, c
 	ErrorMessage = TEXT("Battle has Started");
 }
 
+void ABattleGameMode::Logout(AController* Exiting)
+{
+	if (ABattlePlayerState* PS = Exiting->GetPlayerState<ABattlePlayerState>())
+	{
+		PS->Fail();
+	}
+
+	Super::Logout(Exiting);
+}
+
 void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 {
 	const ABattlePlayerState* PS = Commander->GetPlayerState<ABattlePlayerState>();
@@ -122,9 +142,9 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 	}
 
 	const FVector CommanderLocation = Commander->GetActorLocation();
-	
+
 	Commander->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
-	
+
 	FVector GatherLocation;
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
@@ -137,10 +157,11 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 		{
 			return;
 		}
-		
+
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
-			AConsciousPawn* Pawn = Commander->SpawnPawnFrom<AConsciousPawn>(PS->GetFirstBaseCamp(), DefaultPawnInfo.Class);
+			AConsciousPawn* Pawn = Commander->SpawnPawnFrom<AConsciousPawn>(
+				PS->GetFirstBaseCamp(), DefaultPawnInfo.Class);
 			if (Pawn)
 			{
 				Pawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(GatherLocation));
@@ -149,6 +170,16 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 			//Commander->SpawnPawnAndMoveToLocation(DefaultPawnInfo.Class, CommanderLocation, GatherLocation);
 		}
 	}
+}
 
-	
+void ABattleGameMode::OnPlayerFailed(ABattlePlayerState* PS)
+{
+	DEBUG_FUNC_FLAG();
+
+	NumLivingPlayer--;
+
+	if (NumLivingPlayer <= 1)
+	{
+		GetGameInstance<UPFGameInstance>()->TransitionToStage<FMainMenuGameStage>();
+	}
 }

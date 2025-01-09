@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ClassViewerFilter.h"
 #include "PFPlayerState.h"
 #include "BattlePlayerState.generated.h"
 
@@ -61,6 +62,8 @@ enum class EResourceTookReason : uint8
 	Initialize = 130,
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerFailedSignature, ABattlePlayerState*, Player);
+
 /**
  * 
  */
@@ -106,8 +109,16 @@ protected:
 	TArray<int32> Resources;
 
 public:
-	void OnPlayerOwnedPawnAdd(APFPawn* Pawn);
-	void OnPlayerOwnedPawnRemoved(APFPawn* Pawn);
+	UPROPERTY(BlueprintAssignable)
+	FPlayerFailedSignature OnPlayerFailed;
+	
+	UFUNCTION(BlueprintCallable)
+	bool HasFailed() const { return bFailed; }
+	
+	void Fail();
+	
+	void AddOwnedPawn(APFPawn* PawnToAdd);
+	void RemoveOwnedPawn(APFPawn* PawnToRemove);
 
 	UFUNCTION(BlueprintCallable)
 	ABaseCampPawn* GetFirstBaseCamp() const;
@@ -117,5 +128,11 @@ public:
 
 protected:
 	UPROPERTY(Transient, Replicated)
+	bool bFailed = false;
+	
+	UPROPERTY(Transient, Replicated)
 	TArray<ABaseCampPawn*> BaseCamps;
+
+	UPROPERTY(Transient, Replicated)
+	TArray<APFPawn*> OwnedPawns;
 };

@@ -125,27 +125,28 @@ float APFPawn::GetApproximateRadius() const
 
 void APFPawn::SetOwner(AActor* NewOwner)
 {
-	if (HasAuthority())
-	{
-		if (OwnerPlayer)
-		{
-			OwnerPlayer->OnPlayerOwnedPawnRemoved(this);
-		}
-	}
+	const ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
+	// if (HasAuthority())
+	// {
+	// 	if (CommanderPawn && OwnerPlayer)
+	// 	{
+	// 		OwnerPlayer->RemoveOwnedPawn(this);
+	// 		OwnerPlayer == nullptr;
+	// 	}
+	// }
 
 	Super::SetOwner(NewOwner);
 
 	if (HasAuthority())
 	{
-		const ACommanderPawn* CommanderPawn = Cast<ACommanderPawn>(NewOwner);
-		if (CommanderPawn != nullptr)
+		if (CommanderPawn)
 		{
 			// DEBUG_MESSAGE(TEXT("Set [%s]'s Owner To [%s]"), *GetName(), *CommanderPawn->GetName());
 			OwnerPlayer = CommanderPawn->GetPlayerState<ABattlePlayerState>();
 
 			if (OwnerPlayer)
 			{
-				OwnerPlayer->OnPlayerOwnedPawnAdd(this);
+				OwnerPlayer->AddOwnedPawn(this);
 			}
 
 			OnRep_OwnerPlayer();
@@ -222,6 +223,12 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 	if (ActualDamage != 0.0f)
 	{
 		CurrentHealth = FMath::Max(0, CurrentHealth - ActualDamage);
+
+		// died
+		if (CurrentHealth == 0)
+		{
+			Die();
+		}
 	}
 
 	return ActualDamage;
@@ -236,6 +243,16 @@ bool APFPawn::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 	}
 
 	return MaxHealth > 0;
+}
+
+void APFPawn::Die_Implementation()
+{
+	if (OwnerPlayer)
+	{
+		OwnerPlayer->RemoveOwnedPawn(this);
+	}
+
+	Destroy();
 }
 
 float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,

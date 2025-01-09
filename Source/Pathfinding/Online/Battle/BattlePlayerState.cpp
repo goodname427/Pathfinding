@@ -25,6 +25,7 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 
 	DOREPLIFETIME(ThisClass, Resources);
 	DOREPLIFETIME(ThisClass, BaseCamps);
+	DOREPLIFETIME(ThisClass, OwnedPawns);
 }
 
 bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) const
@@ -105,19 +106,62 @@ void ABattlePlayerState::TakeResource(UObject* Source, EResourceTookReason TookR
 	}
 }
 
-void ABattlePlayerState::OnPlayerOwnedPawnAdd(APFPawn* Pawn)
+void ABattlePlayerState::Fail()
 {
-	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Pawn))
+	if (bFailed)
 	{
-		BaseCamps.Add(BaseCampPawn);
+		return;
+	}
+	
+	bFailed = true;
+	
+	for (APFPawn* OwnedPawn : OwnedPawns)
+	{
+		OwnedPawn->Die();
+	}
+
+	BaseCamps.Empty();
+	OwnedPawns.Empty();
+
+	if (OnPlayerFailed.IsBound())
+	{
+		OnPlayerFailed.Broadcast(this);
 	}
 }
 
-void ABattlePlayerState::OnPlayerOwnedPawnRemoved(APFPawn* Pawn)
+void ABattlePlayerState::AddOwnedPawn(APFPawn* PawnToAdd)
 {
-	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(Pawn))
+	if (PawnToAdd == nullptr || bFailed)
+	{
+		return;
+	}
+	
+	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToAdd))
+	{
+		BaseCamps.Add(BaseCampPawn);
+	}
+
+	OwnedPawns.Add(PawnToAdd);
+}
+
+void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
+{
+	if (PawnToRemove == nullptr || bFailed)
+	{
+		return;
+	}
+		
+	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToRemove))
 	{
 		BaseCamps.Remove(BaseCampPawn);
+	}
+
+	OwnedPawns.Remove(PawnToRemove);
+
+	// failure
+	if (BaseCamps.Num() == 0)
+	{
+		Fail();
 	}
 }
 

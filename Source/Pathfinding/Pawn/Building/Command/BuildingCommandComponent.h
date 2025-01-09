@@ -8,7 +8,7 @@
 #include "BuildingCommandComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UBuildingCommandComponent : public UProgressCommandComponent
 {
 	GENERATED_BODY()
