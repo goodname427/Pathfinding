@@ -20,33 +20,7 @@ public:
 	ACollectorPawn();
 
 public:
-	virtual void OnReceive_Implementation(const FTargetRequest& Request) override;
-
 	virtual UCommandComponent* ResolveRequestWithoutName_Implementation(const FTargetRequest& Request) override;
-
-protected:
-	void FindAndRecordNextResourceToCollect(AResourcePawn* CurrentCollectedResource);
-
-	// Server only
-	void CollectOrTransportResource(AResourcePawn* CurrentCollectedResource);
-	
-	// Server only
-	void CollectResource();
-
-	// Server only
-	void TransportResource();
-
-	UFUNCTION()
-	void OnCollectCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result);
-
-	UFUNCTION()
-	void OnCollectCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason);
-
-	UFUNCTION()
-	void OnTransportCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result);
-
-	UFUNCTION()
-	void OnTransportCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason);
 
 protected:
 	UPROPERTY(Category = "Collect", VisibleAnywhere)
@@ -57,7 +31,4 @@ protected:
 
 	UPROPERTY(Category = "Collect", VisibleAnywhere)
 	UCollectorComponent* CollectorComponent;
-
-	UPROPERTY(Transient)
-	AResourcePawn* NextResourceToCollect;
 };

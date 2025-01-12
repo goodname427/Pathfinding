@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CommandComponent.h"
+#include "Command/CommandComponent.h"
 #include "UObject/Object.h"
 #include "CommandChannelComponent.generated.h"
 

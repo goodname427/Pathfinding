@@ -126,6 +126,11 @@ protected:
 public:
 	const FPFPawnData& GetData() const { return Data; }
 
+	UFUNCTION(BlueprintCallable)
+	bool CanAttack() const { return Attack > 0 && AttackSpeed > 0;  }
+	
+	float GetAttack() const { return Attack; }
+	
 	float GetAttackSpeed() const { return AttackSpeed; }
 
 	float GetAttackDuration() const { return 1.f / AttackSpeed; }

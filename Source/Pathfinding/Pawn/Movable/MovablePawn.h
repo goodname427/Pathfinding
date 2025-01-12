@@ -35,6 +35,6 @@ protected:
 	UPROPERTY(Category = "Movable", VisibleAnywhere)
 	UPawnMovementComponent* MovementComponent;
 
-	UPROPERTY(Category = "Movable", VisibleAnywhere)
+	UPROPERTY(Category = "Movable", VisibleAnywhere, BlueprintReadOnly)
 	UMoveCommandComponent* MoveCommandComponent;
 };

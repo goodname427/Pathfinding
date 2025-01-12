@@ -52,6 +52,7 @@ struct FConsciousData
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandListUpdatedSignature, AConsciousPawn*, ConsciousPawn);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FReceivedRequestSignature, AConsciousPawn*, ConsciousPawn, const FTargetRequest&, Request);
 
 #define SEND_TO_SELF_AUTHORITY(Request)\
 	if (HasAuthority())\
@@ -74,6 +75,9 @@ protected:
 	virtual void PostInitializeComponents() override;
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FReceivedRequestSignature OnReceivedRequest;
+	
 	// Request Command
 	// Server only
 	UFUNCTION(BlueprintCallable, Server, Reliable)

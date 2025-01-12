@@ -5,11 +5,8 @@
 
 #include "Controller/ConsciousAIController.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "PFUtils.h"
-#include "Command/CommandChannelComponent.h"
+#include "Component/CommandChannelComponent.h"
 #include "Command/MoveCommandComponent.h"
-#include "CookOnTheSide/CookOnTheFlyServer.h"
-#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AConsciousPawn::AConsciousPawn(): ConsciousData()
@@ -38,6 +35,10 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 	// DEBUG_MESSAGE(TEXT("Pawn [%s] Received Request [%s]"), *GetName(), *Request.CommandName.ToString());
 
 	OnReceive(Request);
+	if (OnReceivedRequest.IsBound())
+	{
+		OnReceivedRequest.Broadcast(this, Request);
+	}
 
 	if (Request.Type == ETargetRequestType::AbortOrPop
 		|| Request.Type == ETargetRequestType::Clear)
@@ -104,6 +105,7 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 
 void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request)
 {
+	
 }
 
 void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
