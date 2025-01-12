@@ -59,8 +59,6 @@ void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRes
 
 void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
-	
-
 	AUTHORITY_CHECK();
 	
 	if (CommandNeedToMove)
