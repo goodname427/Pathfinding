@@ -45,7 +45,7 @@ void UCollectorComponent::BeginPlay()
 
 	if (CollectCommandComponent == nullptr || TransportCommandComponent == nullptr || Collector == nullptr)
 	{
-		DestroyComponent();
+		// DestroyComponent();
 		return;
 	}
 
@@ -60,11 +60,11 @@ void UCollectorComponent::BeginPlay()
 		TransportCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
 			this, &ThisClass::OnTransportCommandPoppedFromQueue);
 	}
-	else
-	{
-		DestroyComponent();
-		return;
-	}
+	// else
+	// {
+	// 	DestroyComponent();
+	// 	return;
+	// }
 }
 
 
@@ -171,14 +171,20 @@ void UCollectorComponent::CollectResource()
 	Collector->Receive(CollectRequest);
 }
 
-void UCollectorComponent::TransportResource()
+void UCollectorComponent::TransportResource(bool bSkipLastTransposedBaseCamp)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
 		return;
 	}
-
-	FTargetRequest TransportRequest(TransportCommandComponent, Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector));
+	
+	ABaseCampPawn* BaseCamp = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
+	if (bSkipLastTransposedBaseCamp && BaseCamp && BaseCamp == TransportCommandComponent->GetRequest().TargetPawn)
+	{
+		return;
+	}
+	
+	FTargetRequest TransportRequest(TransportCommandComponent, BaseCamp);
 	{
 		TransportRequest.Type = ETargetRequestType::Append;
 	}
@@ -221,7 +227,7 @@ void UCollectorComponent::OnTransportCommandEnd(UCommandComponent* CommandCompon
 	}
 	else if (Result == ECommandExecuteResult::Failed)
 	{
-		TransportResource();
+		TransportResource(true);
 	}
 }
 
@@ -230,6 +236,6 @@ void UCollectorComponent::OnTransportCommandPoppedFromQueue(UCommandComponent* C
 {
 	if (Reason == ECommandPoppedReason::CanNotExecute || Reason == ECommandPoppedReason::PreTaskFailed)
 	{
-		TransportResource();
+		TransportResource(true);
 	}
 }

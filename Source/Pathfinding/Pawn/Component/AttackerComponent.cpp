@@ -31,10 +31,9 @@ void UAttackerComponent::BeginPlay()
 		}
 	}
 
-
 	if (AttackCommandComponent == nullptr || Attacker == nullptr)
 	{
-		DestroyComponent();
+		// DestroyComponent();
 		return;
 	}
 
