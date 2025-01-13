@@ -13,6 +13,8 @@
 AMovablePawn::AMovablePawn()
 {
 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
 	RootComponent = INIT_DEFAULT_SUBOBJECT(CapsuleComponent);
 
 	CapsuleComponent->InitCapsuleSize(34.0f, 88.0f);
@@ -42,6 +44,20 @@ AMovablePawn::AMovablePawn()
 	ConsciousData.AllowedCreateMethod = TO_FLAG(EAllowedCreateMethod::Spawn);
 	ConsciousData.ResourceCost = {{EResourceType::Coin, 1}};
 	ConsciousData.CreateDuration = 1.0f;
+}
+
+void AMovablePawn::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	if (HasAuthority())
+	{
+		if (const UConsciousPawnMovementComponent* ConsciousMovementComponent = Cast<UConsciousPawnMovementComponent>(
+			MovementComponent))
+		{
+			CapsuleComponent->SetCanEverAffectNavigation(ConsciousMovementComponent->IsStopping());
+		}
+	}
 }
 
 float AMovablePawn::GetApproximateRadius() const

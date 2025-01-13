@@ -61,7 +61,7 @@ protected:
 	void CollectResource();
 
 	// Server only
-	void TransportResource(bool bSkipLastTransposedBaseCamp = false);
+	void TransportResource(bool bLastTransposingFailed = false);
 
 	UFUNCTION()
 	void OnReceivedRequest(AConsciousPawn* ConsciousPawn, const FTargetRequest& Request);

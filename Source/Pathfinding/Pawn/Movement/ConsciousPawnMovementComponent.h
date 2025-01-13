@@ -19,6 +19,8 @@ private:
 public:
 	virtual float GetMaxSpeed() const override { return MaxSpeed; }
 
+	bool IsStopping() const { return bStopping; };
+
 protected:
 	virtual bool ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit, const FQuat& NewRotation) override;
 
@@ -53,6 +55,12 @@ protected:
 	/** Set to true when a position correction is applied. Used to avoid recalculating velocity when this occurs. */
 	UPROPERTY(Transient)
 	uint32 bPositionCorrected : 1;
+
+	UPROPERTY(Transient)
+	uint32 bStopping : 1;
+	
+	UPROPERTY(Transient)
+	FVector LastLocation;
 
 public:
 	// Ground detection parameters

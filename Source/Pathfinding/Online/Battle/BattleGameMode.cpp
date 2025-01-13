@@ -174,7 +174,11 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 
 void ABattleGameMode::OnPlayerFailed(ABattlePlayerState* PS)
 {
-	DEBUG_FUNC_FLAG();
+	// DEBUG_FUNC_FLAG();
+	if (PS)
+	{
+		PS->OnPlayerFailed.RemoveAll(this);
+	}
 
 	NumLivingPlayer--;
 

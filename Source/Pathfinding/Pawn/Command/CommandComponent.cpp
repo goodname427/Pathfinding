@@ -5,6 +5,7 @@
 
 #include "CommanderPawn.h"
 #include "ConsciousPawn.h"
+#include "DelayHelper.h"
 #include "PFUtils.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -269,18 +270,18 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 
 void UCommandComponent::EndExecuteDelay(ECommandExecuteResult Result, float Duration)
 {
-	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
+	auto L = [this, Result]() { EndExecute(Result); };
 
-	GetWorld()->GetTimerManager().SetTimer(
-		*TimerHandle,
-		FTimerDelegate::CreateLambda([this, Result, TimerHandle]()
-		{
-			GetWorld()->GetTimerManager().ClearTimer(*TimerHandle);
-			EndExecute(Result);
-		}),
-		Duration,
-		false
-	);
+	// Delay(this, Duration, L);
+	UDelayHelper::Delay(this, Duration, L);
+	// TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
+	//
+	// GetWorld()->GetTimerManager().SetTimer(
+	// 	*TimerHandle,
+	// 	FTimerDelegate::CreateLambda(),
+	// 	Duration,
+	// 	false
+	// );
 }
 
 void UCommandComponent::BeginTarget(ACommanderPawn* InTargetCommander)

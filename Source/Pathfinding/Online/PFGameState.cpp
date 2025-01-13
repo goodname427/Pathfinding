@@ -57,6 +57,7 @@ void APFGameState::SetPlayerLocation(int32 InLocation, APFPlayerState* Player)
 	{
 		Player->PlayerLocation = InLocation;
 		Player->PlayerColor = GetDefault<UPFGameSettings>()->PlayerColors[InLocation];
+		Player->TeamId = InLocation;
 	}
 
 	OnRep_PlayerLocations();

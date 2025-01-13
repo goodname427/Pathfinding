@@ -3,6 +3,8 @@
 
 #include "CollectorComponent.h"
 
+#include "DelayHelper.h"
+#include "PFUtils.h"
 #include "Kismet/GameplayStatics.h"
 #include "Movable/Command/CollectCommandComponent.h"
 #include "Movable/Command/TransportCommandComponent.h"
@@ -16,7 +18,7 @@ UCollectorComponent::UCollectorComponent(): CollectCommandComponent(nullptr), Tr
                                             MaxCollectedResourcePoint(10),
                                             NextResourceToCollect(nullptr)
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 }
 
 void UCollectorComponent::BeginPlay()
@@ -171,7 +173,7 @@ void UCollectorComponent::CollectResource()
 	Collector->Receive(CollectRequest);
 }
 
-void UCollectorComponent::TransportResource(bool bSkipLastTransposedBaseCamp)
+void UCollectorComponent::TransportResource(bool bLastTransposingFailed)
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
@@ -179,17 +181,24 @@ void UCollectorComponent::TransportResource(bool bSkipLastTransposedBaseCamp)
 	}
 	
 	ABaseCampPawn* BaseCamp = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
-	if (bSkipLastTransposedBaseCamp && BaseCamp && BaseCamp == TransportCommandComponent->GetRequest().TargetPawn)
-	{
-		return;
-	}
 	
 	FTargetRequest TransportRequest(TransportCommandComponent, BaseCamp);
 	{
 		TransportRequest.Type = ETargetRequestType::Append;
 	}
 
-	Collector->Receive(TransportRequest);
+	auto Receive = [this, TransportRequest]{ Collector->Receive(TransportRequest); };
+	
+	if (bLastTransposingFailed)
+	{
+		// Delay the transport request to prevent stack overflow caused by recursive calling.
+		// Delay(this, 0.1f, Receive);
+		UDelayHelper::Delay(this, 0.1f, Receive);
+	}
+	else
+	{
+		Receive();
+	}
 }
 
 void UCollectorComponent::OnCollectCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)

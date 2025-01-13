@@ -6,12 +6,10 @@
 
 #define DOWHILE_WRAP_OPEN \
 do \
-{ \
-
+{
 #define DOWHILE_WRAP_CLOSE \
 } \
-while(0) \
-
+while(0)
 //
 // LOG
 //
@@ -38,8 +36,7 @@ while(0) \
 DOWHILE_WRAP_OPEN \
 	PlayerInputComponent->BindAction(#ActionName, IE_Pressed, this, &ThisClass::ActionName##Pressed); \
 	PlayerInputComponent->BindAction(#ActionName, IE_Released, this, &ThisClass::ActionName##Released); \
-DOWHILE_WRAP_CLOSE \
-
+DOWHILE_WRAP_CLOSE
 //
 // CHECK
 // 
@@ -51,8 +48,7 @@ DOWHILE_WRAP_OPEN \
 		UE_LOG(CategoryName, Warning, Format, __VA_ARGS__); \
 		return; \
 	} \
-DOWHILE_WRAP_CLOSE \
-
+DOWHILE_WRAP_CLOSE
 #define SAFE_CHECK_RET(Expr, Ret, CategoryName, Format, ...) \
 DOWHILE_WRAP_OPEN \
 	if (!(Expr))\
@@ -60,8 +56,7 @@ DOWHILE_WRAP_OPEN \
 		UE_LOG(CategoryName, Warning, Format, __VA_ARGS__); \
 		return Ret; \
 	} \
-DOWHILE_WRAP_CLOSE \
-
+DOWHILE_WRAP_CLOSE
 #define SAFE_CHECK_TEMP(Expr, Format, ...) SAFE_CHECK(Expr, LogTemp, Format, __VA_ARGS__)
 
 #define SAFE_CHECK_RET_TEMP(Expr, Ret, Format, ...) SAFE_CHECK_RET(Expr, Ret, LogTemp, Format, __VA_ARGS__)
@@ -69,3 +64,41 @@ DOWHILE_WRAP_CLOSE \
 #define NULL_CHECK(Ptr) SAFE_CHECK_TEMP(Ptr, TEXT("%s Is Null"), #Ptr)
 
 #define NULL_CHECK_RET(Ptr, Ret) SAFE_CHECK_RET_TEMP(Ptr, Ret, TEXT("%s Is Null"), #Ptr)
+
+template <class TFunc>
+void Delay(UObject* WorldContextObject, float Delay, TFunc Func)
+{
+	// check object
+	NULL_CHECK(WorldContextObject);
+	NULL_CHECK(GEngine);
+
+	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
+	NULL_CHECK(World);
+	
+	// use shared ptr to handle timer handle
+	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
+	
+	// create timer delegate
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindLambda([WorldContextObject, TimerHandle, Func]()
+	{
+		// check object
+		if (!IsValid(WorldContextObject))
+		{
+			return;
+		}
+		
+		// get world
+		if (UWorld* CurrentWorld = WorldContextObject->GetWorld())
+		{
+			// clear timer
+			CurrentWorld->GetTimerManager().ClearTimer(*TimerHandle);
+			
+			// call func
+			Func();
+		}
+	});
+	
+	// set timer
+	World->GetTimerManager().SetTimer(*TimerHandle, TimerDelegate, Delay, false);
+}

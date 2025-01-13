@@ -76,7 +76,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 		// Improved ground and step detection
 		const FVector MovedLocation = UpdatedComponent->GetComponentLocation();
-		
+
 		// Get capsule component and its properties
 		UCapsuleComponent* CapsuleComponent = Cast<UCapsuleComponent>(UpdatedComponent);
 		if (!CapsuleComponent)
@@ -88,7 +88,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 		const float CapsuleHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
 
 		// Setup sweep parameters based on capsule size
-		FCollisionShape SweepShape = FCollisionShape::MakeSphere(CapsuleRadius * 0.5f);  // 使用胶囊体半径的一半作为扫描球体
+		FCollisionShape SweepShape = FCollisionShape::MakeSphere(CapsuleRadius * 0.5f); // 使用胶囊体半径的一半作为扫描球体
 		FCollisionQueryParams QueryParams;
 		QueryParams.AddIgnoredActor(PawnOwner);
 
@@ -97,25 +97,25 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 		// Check points for ground detection
 		TArray<FVector> CheckPoints = {
-			MovedLocation,                    // Current position
-			ForwardLocation,                  // Forward position
-			MovedLocation + FVector(-CapsuleRadius,0,0), // Left
-			MovedLocation + FVector(CapsuleRadius,0,0),  // Right
-			MovedLocation + FVector(0,-CapsuleRadius,0), // Forward
-			MovedLocation + FVector(0,CapsuleRadius,0)   // Back
+			MovedLocation, // Current position
+			ForwardLocation, // Forward position
+			MovedLocation + FVector(-CapsuleRadius, 0, 0), // Left
+			MovedLocation + FVector(CapsuleRadius, 0, 0), // Right
+			MovedLocation + FVector(0, -CapsuleRadius, 0), // Forward
+			MovedLocation + FVector(0, CapsuleRadius, 0) // Back
 		};
 
 		// Perform multiple ground checks
 		bool bHasGroundContact = false;
 		FHitResult BestHit;
 		float ClosestDistance = GroundTraceDistance;
-		
+
 		for (const FVector& CheckPoint : CheckPoints)
 		{
 			FHitResult GroundHit;
 			FVector TraceStart = CheckPoint;
 			FVector TraceEnd = CheckPoint + FVector::DownVector * GroundTraceDistance;
-			
+
 			if (GetWorld()->SweepSingleByChannel(
 				GroundHit,
 				TraceStart,
@@ -138,42 +138,43 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 				}
 			}
 		}
-		
+
 		if (bHasGroundContact)
 		{
 			// Calculate slope angle using the hit normal
-			float SlopeAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(BestHit.Normal, FVector::UpVector)));
-			
+			float SlopeAngle = FMath::RadiansToDegrees(
+				FMath::Acos(FVector::DotProduct(BestHit.Normal, FVector::UpVector)));
+
 			if (SlopeAngle <= MaxSlopeAngle)
 			{
 				FVector TargetLocation;
-				
+
 				// Handle steps and slopes differently
 				if (SlopeAngle > StepDetectionAngle) // It's a slope
 				{
 					// Project velocity onto slope plane
 					FVector ProjectedVelocity = FVector::VectorPlaneProject(Velocity, BestHit.Normal);
 					Velocity = ProjectedVelocity;
-					
+
 					TargetLocation = BestHit.ImpactPoint;
 				}
 				else // It's potentially a step or flat ground
 				{
 					// Maintain horizontal velocity
 					Velocity.Z = 0.0f;
-					
+
 					TargetLocation = BestHit.ImpactPoint;
 				}
-				
+
 				// Use exponential smoothing for height adjustment
 				FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
 				FVector NewLocation = CurrentLocation;
-				
+
 				// Set Z position with capsule offset
 				NewLocation.Z = TargetLocation.Z + CapsuleHalfHeight;
-				
+
 				UpdatedComponent->SetWorldLocation(NewLocation);
-				
+
 				// Apply adaptive ground stick force
 				if (!bPositionCorrected)
 				{
@@ -183,7 +184,7 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 						FVector2D(MinGroundStickForce, MaxGroundStickForce),
 						GroundDistance
 					);
-					
+
 					Velocity += FVector::DownVector * StickForce;
 				}
 			}
@@ -192,6 +193,11 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 	// Finalize
 	UpdateComponentVelocity();
+
+	FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
+	FVector ActuallyVelocity = (CurrentLocation - LastLocation) / DeltaTime;
+	bStopping = Velocity.IsNearlyZero() || ActuallyVelocity.IsNearlyZero();
+	LastLocation = CurrentLocation;
 }
 
 bool UConsciousPawnMovementComponent::LimitWorldBounds()

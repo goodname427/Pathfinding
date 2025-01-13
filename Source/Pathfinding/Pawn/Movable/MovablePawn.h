@@ -17,6 +17,8 @@ public:
 	// Sets default values for this pawn's properties
 	AMovablePawn();
 
+	virtual void Tick(float DeltaSeconds) override;
+
 public:
 	virtual float GetApproximateRadius() const override;
 	

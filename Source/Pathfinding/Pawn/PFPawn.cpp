@@ -177,7 +177,7 @@ EPawnRole APFPawn::GetPawnRole(const APFPawn* OtherPawn) const
 		return EPawnRole::Teammate;
 	}
 
-	return EPawnRole::None;
+	return EPawnRole::Enemy;
 }
 
 void APFPawn::OnRep_OwnerPlayer()
