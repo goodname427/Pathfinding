@@ -534,11 +534,11 @@ void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)
 	}
 }
 
-void ACommanderPawn::EndTarget()
+void ACommanderPawn::EndTarget(bool bCanceled)
 {
 	bTargeting = false;
 
-	TargetingCommand->EndTarget();
+	TargetingCommand->EndTarget(bCanceled);
 	TargetingCommand = nullptr;
 }
 
@@ -550,7 +550,7 @@ void ACommanderPawn::TargetPressed()
 	}
 	else
 	{
-		EndTarget();
+		EndTarget(true);
 	}
 }
 
@@ -565,7 +565,7 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 	{
 		if (bTargeting)
 		{
-			EndTarget();
+			EndTarget(true);
 		}
 		return;
 	}
@@ -598,7 +598,7 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 
 	if (bTargeting)
 	{
-		EndTarget();
+		EndTarget(false);
 	}
 }
 

@@ -10,7 +10,7 @@
 
 FName UMoveCommandComponent::StaticCommandName = FName("Move");
 
-UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr), FlagActor(nullptr)
+UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -98,33 +98,4 @@ void UMoveCommandComponent::OnMoveComplete(FAIRequestID RequestID, EPathFollowin
 
 	// DEBUG_FUNC_FLAG();
 	EndExecute(ExecuteResult);
-}
-
-void UMoveCommandComponent::InternalBeginTarget_Implementation()
-{
-	FlagActor = GetWorld()->SpawnActor(FlagActorClass);
-}
-
-void UMoveCommandComponent::InternalEndTarget_Implementation()
-{
-	if (FlagActor)
-	{
-		FlagActor->Destroy();
-	}
-}
-
-void UMoveCommandComponent::InternalTarget_Implementation(float DeltaTime)
-{
-	if (FlagActor)
-	{
-		const FRay Ray = TargetCommander->GetRayFromMousePosition();
-
-		FHitResult Hit;
-		GetWorld()->LineTraceSingleByChannel(Hit, Ray.Origin, Ray.PointAt(100 * 100), ECC_Visibility);
-
-		if(Hit.bBlockingHit)
-		{
-			FlagActor->SetActorLocation(Hit.Location);
-		}
-	}
 }

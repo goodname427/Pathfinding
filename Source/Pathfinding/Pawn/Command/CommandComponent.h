@@ -159,7 +159,9 @@ struct FCommandData
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Channel;
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bHiddenInCommandListMenu;
 
 	FCommandData()
 	{
@@ -175,6 +177,8 @@ struct FCommandData
 		bArgumentsValidCheckBeforeExecute = true;
 
 		Channel = GCommandChannel_Default;
+
+		bHiddenInCommandListMenu = false;
 	}
 
 	float GetRequiredTargetRadius() const { return bNeedToTarget ? RequiredTargetRadius : -1; }
@@ -420,14 +424,14 @@ public:
 	void BeginTarget(ACommanderPawn* InTargetCommander);
 
 	UFUNCTION(BlueprintCallable)
-	void EndTarget();
+	void EndTarget(bool bCanceled);
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalBeginTarget();
 
 	UFUNCTION(BlueprintNativeEvent)
-	void InternalEndTarget();
+	void InternalEndTarget(bool bCanceled);
 
 	UFUNCTION(BlueprintNativeEvent)
 	void InternalTarget(float DeltaTime);

@@ -87,6 +87,8 @@ public:
 		return OwnerPlayer ? OwnerPlayer->GetPlayerColor() : GetDefault<UPFGameSettings>()->PawnNormalColor;
 	}
 
+	virtual void SetColor(const FLinearColor& InColor);
+
 	UFUNCTION(BlueprintCallable)
 	EPawnRole GetPawnRole(const APFPawn* OtherPawn) const;
 	

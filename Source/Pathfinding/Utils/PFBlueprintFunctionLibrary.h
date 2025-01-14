@@ -47,6 +47,9 @@ public:
 	                                              float AdditionalRadius = 100.0f, int32 Attempts = 10);
 
 public:
+	static void TryCreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,
+	                                                       int32 MaterialIndex = 0);
+	
 	UFUNCTION(BlueprintCallable)
 	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,
 	                                                       int32 MaterialIndex = 0);

@@ -6,6 +6,7 @@
 #include "ConsciousPawn.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
+#include "Building/BuildingFramePawn.h"
 #include "Building/BuildingPawn.h"
 
 FName UBuildingCommandComponent::StaticCommandName = FName("Building");
@@ -16,21 +17,42 @@ UBuildingCommandComponent::UBuildingCommandComponent()
 
 	Data.Name = StaticCommandName;
 	Data.bNeedToTarget = false;
+	Data.bHiddenInCommandListMenu = true;
 }
 
 bool UBuildingCommandComponent::InternalIsCommandEnable_Implementation() const
 {
-	return GetExecutePawn<ABuildingPawn>() != nullptr && GetExecutePlayerState() != nullptr;
+	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	if (!Frame)
+	{
+		return false;
+	}
+
+	if (!Frame->GetBuildingClassToBuild().Get())
+	{
+		return false;
+	}
+
+	if (!Frame->GetCommander())
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 float UBuildingCommandComponent::GetProgressDuration_Implementation() const
 {
-	return GetExecutePawn()->GetConsciousData().CreateDuration;
+	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	const AConsciousPawn* CDO = Frame ? Frame->GetDefaultObjectToBuild() : nullptr;
+	return CDO ? CDO->GetConsciousData().CreateDuration : 0;
 }
 
 UObject* UBuildingCommandComponent::GetCommandIcon_Implementation() const
 {
-	return GetExecutePawn()->GetData().Icon;
+	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	const AConsciousPawn* CDO = Frame ? Frame->GetDefaultObjectToBuild() : nullptr;
+	return CDO ? CDO->GetData().Icon : nullptr;
 }
 
 void UBuildingCommandComponent::InternalPushedToQueue_Implementation()
@@ -39,9 +61,9 @@ void UBuildingCommandComponent::InternalPushedToQueue_Implementation()
 	
 	AUTHORITY_CHECK();
 
-	const AConsciousPawn* ExecutePawn = GetExecutePawn();
-	const FConsciousData& ConsciousData = ExecutePawn->GetConsciousData();
-	ABattlePlayerState* PS = ExecutePawn->GetOwnerPlayer();
+	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->GetConsciousData();
+	ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>();
 
 	// Consume resources
 	PS->TakeResource(this, EResourceTookReason::Build, ConsciousData.ResourceCost);
@@ -51,19 +73,27 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 {
 	AUTHORITY_CHECK();
 
-	AConsciousPawn* ExecutePawn = GetExecutePawn();
-	const FConsciousData& ConsciousData = ExecutePawn->GetConsciousData();
-	ABattlePlayerState* PS = ExecutePawn->GetOwnerPlayer();
+	ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->GetConsciousData();
+	ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>();
 
 	// Return resources
 	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
 
-	ExecutePawn->Die();
+	Frame->Die();
 }
 
 void UBuildingCommandComponent::InternalBeginExecute_Implementation()
 {
 	Super::InternalBeginExecute_Implementation();
+	
+	ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+	Frame->GetStaticMeshComponent()->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		Frame->SetOwner(Frame->GetCommander());
+	}
 }
 
 void UBuildingCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
@@ -72,10 +102,22 @@ void UBuildingCommandComponent::InternalEndExecute_Implementation(ECommandExecut
 
 	if (Result == ECommandExecuteResult::Success)
 	{
-		ABuildingPawn* BuildingPawn = GetExecutePawn<ABuildingPawn>();
-		if (BuildingPawn)
-		{
-			BuildingPawn->EndBuilding();
-		}
+		ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
+
+		Frame->GetCommander()->SpawnPawn(Frame->GetBuildingClassToBuild(), Frame->GetActorLocation());
+	
+		Frame->Die();
 	}
+}
+
+void UBuildingCommandComponent::InternalExecute_Implementation(float DeltaTime)
+{
+	if (ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>())
+	{
+		FLinearColor Color = Frame->GetOwnerColor();
+		Color.A = GetNormalizedProgress();
+		Frame->SetColor(Color);
+	}
+	
+	Super::InternalExecute_Implementation(DeltaTime);
 }

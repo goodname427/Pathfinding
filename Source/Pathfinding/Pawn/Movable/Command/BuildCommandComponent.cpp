@@ -7,10 +7,11 @@
 #include "EditorCategoryUtils.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
+#include "Building/BuildingFramePawn.h"
 
 FName UBuildCommandComponent::StaticCommandName = FName("Build");
 
-UBuildCommandComponent::UBuildCommandComponent(): FlagActor(nullptr), FlagMesh(nullptr)
+UBuildCommandComponent::UBuildCommandComponent(): FrameActor(nullptr)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -62,15 +63,15 @@ bool UBuildCommandComponent::InternalIsArgumentsValid_Implementation() const
 		return false;
 	}
 
-	return IsValidLocationToBuild(GetDefaultObjectToBuild(), Request.TargetLocation, true);
+	return IsValidLocationToBuild(Request.TargetLocation);
 }
 
-bool UBuildCommandComponent::IsValidLocationToBuild(const AActor* Actor, const FVector& Location,
-                                                    bool bOnlyCollidingComponents) const
+bool UBuildCommandComponent::IsValidLocationToBuild(const FVector& Location) const
 {
 	FVector Origin;
 	FVector BoxExtents;
-	Actor->GetActorBounds(bOnlyCollidingComponents, Origin, BoxExtents);
+	const AActor* Actor = GetDefaultObjectToBuild();
+	Actor->GetActorBounds(true, Origin, BoxExtents);
 	FBox ActorBounds(Origin - BoxExtents, Origin + BoxExtents);
 	ActorBounds = ActorBounds.ShiftBy(Location - Actor->GetActorLocation());
 
@@ -97,30 +98,37 @@ bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 
 void UBuildCommandComponent::InternalBeginExecute_Implementation()
 {
-	AUTHORITY_CHECK();
+	if (GetOwnerRole() < ROLE_Authority)
+	{
+		if (FrameActor)
+		{
+			FrameActor->Destroy();
+			FrameActor = nullptr;
+		}
+
+		return;
+	}
 
 	AConsciousPawn* ExecutePawn = GetExecutePawn();
 	ACommanderPawn* Commander = ExecutePawn->GetOwner<ACommanderPawn>();
 
 	if (Commander)
 	{
-		// DEBUG_MESSAGE(TEXT("Build [%s] at [%s]"), *PawnClassToBuild->GetClass()->GetName(),
-		//               *Request.TargetLocation.ToString());
-
-		// GetExecutePlayerState()->TakeResource(
-		// 	this,
-		// 	EResourceTookReason::Build,
-		// 	PawnClassToBuild.GetDefaultObject()->GetConsciousData().ResourceCost
-		// );
-
-		ABuildingPawn* Building = Commander->SpawnPawn<ABuildingPawn>(
-			PawnClassToBuild,
-			Request.TargetLocation
-		);
-
-		if (Building)
+		// Server load for client
+		if (FrameActor == nullptr)
 		{
-			Building->BeginBuilding();
+			FrameActor = GetWorld()->SpawnActor<ABuildingFramePawn>();
+		}
+
+		if (FrameActor)
+		{
+			FrameActor->SetReplicates(true);
+			
+			FrameActor->SetActorLocation(Request.TargetLocation);
+			FrameActor->SetBuildingClassToBuild(PawnClassToBuild, Commander);
+			
+			FrameActor->Receive(FTargetRequest::Make<UBuildingCommandComponent>());
+
 			EndExecute(ECommandExecuteResult::Success);
 			return;
 		}
@@ -129,49 +137,48 @@ void UBuildCommandComponent::InternalBeginExecute_Implementation()
 	EndExecute(ECommandExecuteResult::Failed);
 }
 
-void UBuildCommandComponent::InternalBeginTarget_Implementation()
+void UBuildCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)
 {
-	FlagActor = GetWorld()->SpawnActor<AActor>();
-	if (FlagActor)
+	if (FrameActor)
 	{
-		const AConsciousPawn* DefaultActor = GetDefaultObjectToBuild();
-
-		UActorComponent* ActorComponent = FlagActor->AddComponentByClass(
-			UStaticMeshComponent::StaticClass(), false, FTransform::Identity, false);
-		if ((FlagMesh = Cast<UStaticMeshComponent>(ActorComponent)))
+		if (Result == ECommandExecuteResult::Failed)
 		{
-			const UStaticMeshComponent* DefaultMesh = DefaultActor->GetStaticMeshComponent();
-
-			FlagMesh->SetStaticMesh(DefaultMesh->GetStaticMesh());
-
-			FlagMeshRelativeLocation = DefaultMesh->GetRelativeLocation();
-			FlagMesh->SetWorldScale3D(DefaultMesh->GetRelativeScale3D());
-			FlagMesh->SetWorldRotation(DefaultMesh->GetRelativeRotation());
-
-			FlagMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
-
-			UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
-				FlagMesh,
-				GetDefault<UPFGameSettings>()->LoadBuildingTranslucentMaterial(),
-				0
-			);
+			FrameActor->Destroy();
 		}
+		FrameActor = nullptr;
 	}
 }
 
-void UBuildCommandComponent::InternalEndTarget_Implementation()
+void UBuildCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
 {
-	if (FlagActor)
+	if (FrameActor)
 	{
-		FlagActor->Destroy();
-		FlagActor = nullptr;
-		FlagMesh = nullptr;
+		FrameActor->Destroy();
+		FrameActor = nullptr;
+	}
+}
+
+void UBuildCommandComponent::InternalBeginTarget_Implementation()
+{
+	FrameActor = GetWorld()->SpawnActor<ABuildingFramePawn>();
+	if (FrameActor)
+	{
+		FrameActor->SetBuildingClassToBuild(PawnClassToBuild, GetExecuteCommander());
+	}
+}
+
+void UBuildCommandComponent::InternalEndTarget_Implementation(bool bCanceled)
+{
+	if (FrameActor && (bCanceled || !IsValidLocationToBuild(FrameActor->GetActorLocation())))
+	{
+		FrameActor->Destroy();
+		FrameActor = nullptr;
 	}
 }
 
 void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 {
-	if (FlagActor && FlagMesh)
+	if (FrameActor)
 	{
 		const FRay Ray = TargetCommander->GetRayFromMousePosition();
 
@@ -180,22 +187,22 @@ void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 
 		if (Hit.bBlockingHit)
 		{
-			FlagMesh->SetVisibility(true);
-			FlagActor->SetActorLocation(Hit.Location + FlagMeshRelativeLocation);
+			FrameActor->GetStaticMeshComponent()->SetVisibility(true);
+			FrameActor->SetActorLocation(Hit.Location);
 
-			const bool bValidLocation = IsValidLocationToBuild(FlagActor, FlagActor->GetActorLocation(), false);
+			const bool bValidLocation = IsValidLocationToBuild(FrameActor->GetActorLocation());
 			if (bValidLocation)
 			{
-				UPFBlueprintFunctionLibrary::SetStaticMeshColor(FlagMesh, {0, 1, 0, 0.2f}, 0);
+				FrameActor->SetColor({0, 1, 0, 0.2f});
 			}
 			else
 			{
-				UPFBlueprintFunctionLibrary::SetStaticMeshColor(FlagMesh, {1, 0, 0, 0.2f}, 0);
+				FrameActor->SetColor({1, 0, 0, 0.2f});
 			}
 		}
 		else
 		{
-			FlagMesh->SetVisibility(false);
+			FrameActor->GetStaticMeshComponent()->SetVisibility(false);
 		}
 	}
 }

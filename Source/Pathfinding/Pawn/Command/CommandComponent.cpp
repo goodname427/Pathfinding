@@ -225,7 +225,7 @@ void UCommandComponent::BeginExecute()
 
 	if (IsTargeting())
 	{
-		EndTarget();
+		EndTarget(true);
 	}
 
 	bExecuting = true;
@@ -296,7 +296,7 @@ void UCommandComponent::BeginTarget(ACommanderPawn* InTargetCommander)
 	InternalBeginTarget();
 }
 
-void UCommandComponent::EndTarget()
+void UCommandComponent::EndTarget(bool bCanceled)
 {
 	if (!bTargeting)
 	{
@@ -305,7 +305,7 @@ void UCommandComponent::EndTarget()
 
 	bTargeting = false;
 
-	InternalEndTarget();
+	InternalEndTarget(bCanceled);
 
 	TargetCommander = nullptr;
 }
@@ -344,15 +344,9 @@ void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 
 void UCommandComponent::InternalTarget_Implementation(float DeltaTime)
 {
-	if (APlayerController* PC = TargetCommander->GetController<APlayerController>())
-	{
-		if (PC->GetHUD())
-		{
-		}
-	}
 }
 
-void UCommandComponent::InternalEndTarget_Implementation()
+void UCommandComponent::InternalEndTarget_Implementation(bool bCanceled)
 {
 }
 

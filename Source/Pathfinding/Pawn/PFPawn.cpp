@@ -61,12 +61,7 @@ void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Set Flag Material
-	if (UMaterialInterface* FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial())
-	{
-		UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, FlagMaterial);
-		UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
-	}
+	// SetColor(GetOwnerColor());
 
 	const FVector ActorLocation = GetActorLocation();
 
@@ -154,6 +149,13 @@ void APFPawn::SetOwner(AActor* NewOwner)
 	}
 }
 
+void APFPawn::SetColor(const FLinearColor& InColor)
+{
+	UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(
+		StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
+	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, InColor);
+}
+
 EPawnRole APFPawn::GetPawnRole(const APFPawn* OtherPawn) const
 {
 	if (OtherPawn == nullptr)
@@ -183,7 +185,7 @@ EPawnRole APFPawn::GetPawnRole(const APFPawn* OtherPawn) const
 void APFPawn::OnRep_OwnerPlayer()
 {
 	// DEBUG_MESSAGE(TEXT("%s__Pawn [%s] Set OwnerPlayer [%s]"), GetLocalRole() == ROLE_Authority ? TEXT("Server") : TEXT("Client"), *GetName(), OwnerPlayer ? *OwnerPlayer->GetPlayerName() : TEXT("NULL"));
-	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor(), 0);
+	SetColor(GetOwnerColor());
 }
 
 void APFPawn::OnSelected(ACommanderPawn* SelectCommander)
@@ -206,9 +208,9 @@ void APFPawn::OnTarget(class ACommanderPawn* TargetCommander)
 	{
 		for (int32 i = 0; i < 2; i++)
 		{
-			UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, FLinearColor::Yellow);
+			SetColor(FLinearColor::Yellow);
 			FPlatformProcess::Sleep(0.1f);
-			UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
+			SetColor(GetOwnerColor());
 			FPlatformProcess::Sleep(0.1f);
 		}
 	});

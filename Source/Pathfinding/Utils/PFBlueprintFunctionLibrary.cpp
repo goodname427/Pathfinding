@@ -117,6 +117,30 @@ FVector UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
 	return Origin;
 }
 
+void UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh,
+	UMaterialInterface* Parent, int32 MaterialIndex)
+{
+	if (StaticMesh == nullptr || Parent == nullptr)
+	{
+		return;
+	}
+
+	if (MaterialIndex < 0 || MaterialIndex >= StaticMesh->GetNumMaterials())
+	{
+		return;
+	}
+
+	if (const UMaterialInstanceDynamic* CurrentMaterial = Cast<UMaterialInstanceDynamic>(StaticMesh->GetMaterial(MaterialIndex)))
+	{
+		if (CurrentMaterial->Parent == Parent)
+		{
+			return;
+		}
+	}
+
+	StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
+}
+
 void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
 	UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent, int32 MaterialIndex)
 {
@@ -125,9 +149,9 @@ void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
 		return;
 	}
 
-	if (MaterialIndex < 0)
+	if (MaterialIndex < 0 || MaterialIndex >= StaticMesh->GetNumMaterials())
 	{
-		MaterialIndex = 0;
+		return;
 	}
 	
 	// DEBUG_MESSAGE(TEXT("Create Dynamic Material Instance for Static Mesh [%s]"), *StaticMesh->GetName());
@@ -148,10 +172,7 @@ void UPFBlueprintFunctionLibrary::SetStaticMeshColor(UStaticMeshComponent* Stati
 bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* WorldContextObject, FBox ActorBounds)
 {
 	const UWorld* World = WorldContextObject->GetWorld();
-	if (World == nullptr)
-	{
-		return false;
-	}
+	NULL_CHECK_RET(World, false);
 
 	//DEBUG_MESSAGE(TEXT("Actor Bounds [%s]"), *ActorBounds.ToString());
 

@@ -188,7 +188,7 @@ public:
 	void BeginTarget(UCommandComponent* InTargetingCommand);
 
 	UFUNCTION(BlueprintCallable)
-	void EndTarget();
+	void EndTarget(bool bCanceled);
 
 protected:
 	void TargetPressed();

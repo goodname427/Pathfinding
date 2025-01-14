@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Building/BuildingFramePawn.h"
 #include "Building/BuildingPawn.h"
 #include "Command/CommandComponent.h"
 #include "BuildCommandComponent.generated.h"
@@ -34,25 +35,25 @@ protected:
 
 	virtual bool InternalIsArgumentsValid_Implementation() const override;
 
-	bool IsValidLocationToBuild(const AActor* Actor, const FVector& Location, bool bOnlyCollidingComponents) const;
+	bool IsValidLocationToBuild(const FVector& Location) const;
 
 	virtual void InternalBeginExecute_Implementation() override;
+
+	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
+	
+	virtual void InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason) override;
+
 
 protected:
 	virtual void InternalBeginTarget_Implementation() override;
 	
-	virtual void InternalEndTarget_Implementation() override;
+	virtual void InternalEndTarget_Implementation(bool bCanceled) override;
 
 	virtual void InternalTarget_Implementation(float DeltaTime) override;
 
 private:
 	UPROPERTY()
-	AActor* FlagActor;
-
-	FVector FlagMeshRelativeLocation;
-
-	UPROPERTY()
-	UStaticMeshComponent* FlagMesh;
+	ABuildingFramePawn* FrameActor;
 
 protected:
 	const ABuildingPawn* GetDefaultObjectToBuild() const;

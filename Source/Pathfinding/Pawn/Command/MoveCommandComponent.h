@@ -39,18 +39,4 @@ protected:
 private:
 	UPROPERTY()
 	UCommandComponent* CommandNeedToMove;
-
-protected:
-	virtual void InternalBeginTarget_Implementation() override;
-	
-	virtual void InternalEndTarget_Implementation() override;
-
-	virtual void InternalTarget_Implementation(float DeltaTime) override;
-
-private:
-	UPROPERTY()
-	AActor* FlagActor;
-
-	UPROPERTY(Category = "Command|Move", EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = true))
-	TSubclassOf<AActor> FlagActorClass;
 };
