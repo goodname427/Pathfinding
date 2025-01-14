@@ -272,8 +272,8 @@ void UCommandComponent::EndExecuteDelay(ECommandExecuteResult Result, float Dura
 {
 	auto L = [this, Result]() { EndExecute(Result); };
 
-	// Delay(this, Duration, L);
-	UDelayHelper::Delay(this, Duration, L);
+	Delay(this, Duration, L);
+	// UDelayHelper::Delay(this, Duration, L);
 	// TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
 	//
 	// GetWorld()->GetTimerManager().SetTimer(

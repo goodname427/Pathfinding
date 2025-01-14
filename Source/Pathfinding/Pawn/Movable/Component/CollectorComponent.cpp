@@ -192,8 +192,8 @@ void UCollectorComponent::TransportResource(bool bLastTransposingFailed)
 	if (bLastTransposingFailed)
 	{
 		// Delay the transport request to prevent stack overflow caused by recursive calling.
-		// Delay(this, 0.1f, Receive);
-		UDelayHelper::Delay(this, 0.1f, Receive);
+		Delay(this, 0.1f, Receive);
+		// UDelayHelper::Delay(this, 0.1f, Receive);
 	}
 	else
 	{

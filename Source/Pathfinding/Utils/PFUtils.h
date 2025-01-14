@@ -49,6 +49,7 @@ DOWHILE_WRAP_OPEN \
 		return; \
 	} \
 DOWHILE_WRAP_CLOSE
+
 #define SAFE_CHECK_RET(Expr, Ret, CategoryName, Format, ...) \
 DOWHILE_WRAP_OPEN \
 	if (!(Expr))\
@@ -57,6 +58,7 @@ DOWHILE_WRAP_OPEN \
 		return Ret; \
 	} \
 DOWHILE_WRAP_CLOSE
+
 #define SAFE_CHECK_TEMP(Expr, Format, ...) SAFE_CHECK(Expr, LogTemp, Format, __VA_ARGS__)
 
 #define SAFE_CHECK_RET_TEMP(Expr, Ret, Format, ...) SAFE_CHECK_RET(Expr, Ret, LogTemp, Format, __VA_ARGS__)
@@ -64,6 +66,10 @@ DOWHILE_WRAP_CLOSE
 #define NULL_CHECK(Ptr) SAFE_CHECK_TEMP(Ptr, TEXT("%s Is Null"), #Ptr)
 
 #define NULL_CHECK_RET(Ptr, Ret) SAFE_CHECK_RET_TEMP(Ptr, Ret, TEXT("%s Is Null"), #Ptr)
+
+#define VALID_CHECK(Obj) SAFE_CHECK_TEMP(Obj->IsValidLowLevel(), TEXT("%s Is Not Valid"), #Obj)
+
+#define VALID_CHECK_RET(Obj, Ret) SAFE_CHECK_RET_TEMP(Obj->IsValidLowLevel(), Ret, TEXT("%s Is Not Valid"), #Obj)
 
 template <class TFunc>
 void Delay(UObject* WorldContextObject, float Delay, TFunc Func)
@@ -74,31 +80,29 @@ void Delay(UObject* WorldContextObject, float Delay, TFunc Func)
 
 	const UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
 	NULL_CHECK(World);
-	
+
 	// use shared ptr to handle timer handle
 	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
-	
+
 	// create timer delegate
 	FTimerDelegate TimerDelegate;
 	TimerDelegate.BindLambda([WorldContextObject, TimerHandle, Func]()
 	{
 		// check object
-		if (!IsValid(WorldContextObject))
-		{
-			return;
-		}
+		VALID_CHECK(WorldContextObject);
+		VALID_CHECK(GEngine);
 		
 		// get world
-		if (UWorld* CurrentWorld = WorldContextObject->GetWorld())
-		{
-			// clear timer
-			CurrentWorld->GetTimerManager().ClearTimer(*TimerHandle);
-			
-			// call func
-			Func();
-		}
+		const UWorld* CurrentWorld = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
+		VALID_CHECK(CurrentWorld);
+		
+		// clear timer
+		CurrentWorld->GetTimerManager().ClearTimer(*TimerHandle);
+		
+		// call func
+		Func();
 	});
-	
+
 	// set timer
 	World->GetTimerManager().SetTimer(*TimerHandle, TimerDelegate, Delay, false);
 }
