@@ -522,6 +522,11 @@ void ACommanderPawn::BeginTarget(UCommandComponent* InTargetingCommand)
 		return;
 	}
 
+	if (bTargeting)
+	{
+		EndTarget(true);
+	}
+
 	if (InTargetingCommand->IsNeedToTarget())
 	{
 		bTargeting = true;
@@ -570,6 +575,11 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 		return;
 	}
 
+	if (bTargeting)
+	{
+		EndTarget(false);
+	}
+	
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
 	if (PlayerController != nullptr)
 	{
@@ -595,11 +605,6 @@ void ACommanderPawn::Target(UCommandComponent* Command)
 			Send(Request);
 		}
 	}
-
-	if (bTargeting)
-	{
-		EndTarget(false);
-	}
 }
 
 APFPawn* ACommanderPawn::SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location)
@@ -613,17 +618,23 @@ APFPawn* ACommanderPawn::SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Locat
 	);
 }
 
-APFPawn* ACommanderPawn::SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn)
+APFPawn* ACommanderPawn::SpawnPawnFrom(APFPawn* Source, TSubclassOf<APFPawn> PawnClassToSpawn)
 {
-	const FVector SpawnLocation = UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
-		Source,
-		PawnClassToSpawn.GetDefaultObject()->GetApproximateRadius()
-	);
+	FVector SpawnLocation;
 
-	return SpawnPawn(
-		PawnClassToSpawn,
-		SpawnLocation
-	);
+	if (UPFBlueprintFunctionLibrary::GetRandomReachablePointOfPawn(
+		Source,
+		SpawnLocation,
+		PawnClassToSpawn.GetDefaultObject()->GetApproximateRadius()
+	))
+	{
+		return SpawnPawn(
+			PawnClassToSpawn,
+			SpawnLocation
+		);
+	}
+
+	return nullptr;
 }
 
 void ACommanderPawn::ServerSpawnPawn_Implementation(TSubclassOf<APFPawn> PawnClass, FVector Location)

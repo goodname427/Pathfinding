@@ -25,6 +25,9 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable)
+	static bool IsPlayerStateLocal(const APlayerState* PlayerState);
+	
+	UFUNCTION(BlueprintCallable)
 	static ACommanderPawn* GetCommanderPawn(UObject* WorldContextObject);
 
 	UFUNCTION(BlueprintCallable)
@@ -43,13 +46,17 @@ public:
 	);
 
 	UFUNCTION(BlueprintCallable)
-	static FVector GetRandomReachablePointOfActor(AActor* Actor, float PointAcceptedRadius = 100.f,
-	                                              float AdditionalRadius = 100.0f, int32 Attempts = 10);
-
-public:
-	static void TryCreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,
-	                                                       int32 MaterialIndex = 0);
+	static bool GetRandomReachablePointOfPawn(APFPawn* Pawn,
+	                                          FVector& OutLocation,
+	                                          float PointAcceptedRadius = 100,
+	                                          float AdditionalRadius = 100,
+	                                          int32 Attempts = 8);
 	
+public:
+	static void TryCreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh,
+	                                                          UMaterialInterface* Parent,
+	                                                          int32 MaterialIndex = 0);
+
 	UFUNCTION(BlueprintCallable)
 	static void CreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh, UMaterialInterface* Parent,
 	                                                       int32 MaterialIndex = 0);
@@ -60,4 +67,7 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	static bool IsLocationEmptyAndOnGround(const UObject* WorldContextObject, FBox ActorBounds);
+
+	UFUNCTION(BlueprintCallable)
+	static FBox GetCDOActorBounds(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, bool bNonColliding = false);
 };

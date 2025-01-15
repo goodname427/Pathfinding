@@ -124,6 +124,14 @@ void USpawnCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 			{
 				Pawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(GatherLocation));
 			}
+			else
+			{
+				const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
+				ABattlePlayerState* PS = GetExecutePlayerState();
+
+				// Return resources
+				PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
+			}
 		}
 	}
 }

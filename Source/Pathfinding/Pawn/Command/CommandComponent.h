@@ -151,11 +151,13 @@ struct FCommandData
 	float RequiredTargetRadius;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bAbortCurrentCommand;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bCommandEnableCheckBeforeExecute;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bArgumentsValidCheckBeforeExecute;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bNeedEverCheckWhileMoving;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	int32 Channel;
@@ -177,6 +179,7 @@ struct FCommandData
 
 		bCommandEnableCheckBeforeExecute = true;
 		bArgumentsValidCheckBeforeExecute = true;
+		bNeedEverCheckWhileMoving = true;
 
 		Channel = GCommandChannel_Default;
 
@@ -268,6 +271,8 @@ public:
 	bool IsNeedToTarget() const { return Data.bNeedToTarget; };
 
 	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
+
+	bool NeedEverCheckWhileMoving() const { return Data.bNeedEverCheckWhileMoving; }
 
 	int32 GetCommandChannel() const { return Data.Channel; };
 

@@ -39,7 +39,7 @@ void UMoveCommandComponent::InternalBeginExecute_Implementation()
 	AConsciousAIController* AIController = GetExecuteController();
 
 	AIController->ReceiveMoveCompleted.AddDynamic(this, &ThisClass::OnMoveComplete);
-	
+
 	if (Request.IsTargetPawnValid())
 	{
 		AIController->MoveToActor(Request.TargetPawn, -1, false);
@@ -61,7 +61,7 @@ void UMoveCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRes
 void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 {
 	AUTHORITY_CHECK();
-	
+
 	if (CommandNeedToMove)
 	{
 		if (CommandNeedToMove->IsTargetInRequiredRadius())
@@ -69,12 +69,14 @@ void UMoveCommandComponent::InternalExecute_Implementation(float DeltaTime)
 			EndExecute(ECommandExecuteResult::Success);
 			return;
 		}
-		
-		if (!CommandNeedToMove->IsCommandEnable(true)
-			|| !CommandNeedToMove->IsArgumentsValid(true))
+
+		if (CommandNeedToMove->NeedEverCheckWhileMoving() &&
+			(!CommandNeedToMove->IsCommandEnable(true) || !CommandNeedToMove->IsArgumentsValid(true))
+		)
 		{
 			// DEBUG_FUNC_FLAG();
 			EndExecute(ECommandExecuteResult::Failed);
+			return;
 		}
 	}
 }

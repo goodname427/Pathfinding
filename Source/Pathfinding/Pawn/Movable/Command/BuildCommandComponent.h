@@ -40,6 +40,8 @@ protected:
 	virtual void InternalBeginExecute_Implementation() override;
 
 	virtual void InternalEndExecute_Implementation(ECommandExecuteResult Result) override;
+
+	virtual void InternalPushedToQueue_Implementation() override;
 	
 	virtual void InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason) override;
 
@@ -52,8 +54,14 @@ protected:
 	virtual void InternalTarget_Implementation(float DeltaTime) override;
 
 private:
+	void SpawnFrameActor();
+	
+	void TryDestroyFrameActor();
+	
 	UPROPERTY()
 	ABuildingFramePawn* FrameActor;
+
+	FBox BoundsToBuild;
 
 protected:
 	const ABuildingPawn* GetDefaultObjectToBuild() const;

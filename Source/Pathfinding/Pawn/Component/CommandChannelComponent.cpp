@@ -10,7 +10,7 @@
 UCommandChannelComponent::UCommandChannelComponent(): ChannelId(-1), CurrentCommand(nullptr)
 {
 	// PrimaryComponentTick.bCanEverTick = true;
-	
+
 	SetIsReplicatedByDefault(true);
 }
 
@@ -36,7 +36,7 @@ void UCommandChannelComponent::GetLifetimeReplicatedProps(TArray<class FLifetime
 }
 
 void UCommandChannelComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                             FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -77,7 +77,7 @@ void UCommandChannelComponent::PushCommand(UCommandComponent* CommandToPush)
 			CommandQueue.Push(CommandToPush);
 		}
 
-		DispatchCommand(OnPushedToQueue, CommandToPush);
+		DispatchCommand(OnPushedToQueue, CommandToPush, CommandToPush->GetRequest());
 		OnRep_CommandQueue();
 	}
 }
@@ -88,7 +88,7 @@ void UCommandChannelComponent::PopCommand(int32 CommandIndexToPop)
 	{
 		return;
 	}
-	
+
 	if (CommandIndexToPop == -1)
 	{
 		AbortCurrentCommand();
@@ -170,7 +170,7 @@ void UCommandChannelComponent::ExecuteNextCommand()
 	{
 		CurrentCommand = NextCommand;
 		CurrentCommand->OnCommandEnd.AddDynamic(this, &UCommandChannelComponent::OnCommandEnd);
-
+		
 		DispatchCommand(BeginExecute, CurrentCommand, CurrentCommand->GetRequest());
 
 		OnRep_CurrentCommand();

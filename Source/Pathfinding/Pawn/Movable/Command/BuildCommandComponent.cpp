@@ -16,7 +16,8 @@ UBuildCommandComponent::UBuildCommandComponent(): FrameActor(nullptr)
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
-	// Data.RequiredTargetRadius = -1;
+	Data.bNeedEverCheckWhileMoving = false;
+	Data.RequiredTargetRadius = 200;
 }
 
 void UBuildCommandComponent::BeginPlay()
@@ -29,6 +30,8 @@ void UBuildCommandComponent::BeginPlay()
 		{
 			PawnClassToBuild = nullptr;
 		}
+
+		BoundsToBuild = UPFBlueprintFunctionLibrary::GetCDOActorBounds(this, PawnClassToBuild);
 	}
 }
 
@@ -68,12 +71,16 @@ bool UBuildCommandComponent::InternalIsArgumentsValid_Implementation() const
 
 bool UBuildCommandComponent::IsValidLocationToBuild(const FVector& Location) const
 {
-	FVector Origin;
-	FVector BoxExtents;
 	const AActor* Actor = GetDefaultObjectToBuild();
-	Actor->GetActorBounds(true, Origin, BoxExtents);
-	FBox ActorBounds(Origin - BoxExtents, Origin + BoxExtents);
-	ActorBounds = ActorBounds.ShiftBy(Location - Actor->GetActorLocation());
+	NULL_CHECK_RET(Actor, false);
+
+	// FVector Origin;
+	// FVector BoxExtents;
+	// Actor->GetActorBounds(false, Origin, BoxExtents);
+	// BoundsToBuild = {Origin - BoxExtents, Origin + BoxExtents};
+	// InitLocationToBuild = FrameActor->GetActorLocation();
+	//FBox ActorBounds = {Origin - BoxExtents, Origin + BoxExtents};
+	const FBox ActorBounds = BoundsToBuild.ShiftBy(Location);
 
 	return UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(this, ActorBounds);
 }
@@ -100,12 +107,7 @@ void UBuildCommandComponent::InternalBeginExecute_Implementation()
 {
 	if (GetOwnerRole() < ROLE_Authority)
 	{
-		if (FrameActor)
-		{
-			FrameActor->Destroy();
-			FrameActor = nullptr;
-		}
-
+		TryDestroyFrameActor();
 		return;
 	}
 
@@ -123,10 +125,10 @@ void UBuildCommandComponent::InternalBeginExecute_Implementation()
 		if (FrameActor)
 		{
 			FrameActor->SetReplicates(true);
-			
+
 			FrameActor->SetActorLocation(Request.TargetLocation);
 			FrameActor->SetBuildingClassToBuild(PawnClassToBuild, Commander);
-			
+
 			FrameActor->Receive(FTargetRequest::Make<UBuildingCommandComponent>());
 
 			EndExecute(ECommandExecuteResult::Success);
@@ -143,37 +145,44 @@ void UBuildCommandComponent::InternalEndExecute_Implementation(ECommandExecuteRe
 	{
 		if (Result == ECommandExecuteResult::Failed)
 		{
-			FrameActor->Destroy();
+			FrameActor->Die();
 		}
 		FrameActor = nullptr;
 	}
 }
 
+void UBuildCommandComponent::InternalPushedToQueue_Implementation()
+{
+	if (UPFBlueprintFunctionLibrary::IsPlayerStateLocal(GetExecutePlayerState()))
+	{
+		SpawnFrameActor();
+		if (FrameActor)
+		{
+			FrameActor->SetActorLocation(Request.TargetLocation);
+
+			FLinearColor Color = GetExecutePlayerState()->GetPlayerColor();
+			Color.A = 0.5f;
+			FrameActor->SetColor(Color);
+		}
+	}
+}
+
 void UBuildCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
 {
-	if (FrameActor)
-	{
-		FrameActor->Destroy();
-		FrameActor = nullptr;
-	}
+	TryDestroyFrameActor();
 }
 
 void UBuildCommandComponent::InternalBeginTarget_Implementation()
 {
-	FrameActor = GetWorld()->SpawnActor<ABuildingFramePawn>();
-	if (FrameActor)
-	{
-		FrameActor->SetBuildingClassToBuild(PawnClassToBuild, GetExecuteCommander());
-	}
+	SpawnFrameActor();
 }
 
 void UBuildCommandComponent::InternalEndTarget_Implementation(bool bCanceled)
 {
-	if (FrameActor && (bCanceled || !IsValidLocationToBuild(FrameActor->GetActorLocation())))
-	{
-		FrameActor->Destroy();
-		FrameActor = nullptr;
-	}
+	// if (bCanceled || !IsValidLocationToBuild(FrameActor->GetActorLocation()))
+	// {
+	TryDestroyFrameActor();
+	// }
 }
 
 void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
@@ -204,6 +213,24 @@ void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 		{
 			FrameActor->GetStaticMeshComponent()->SetVisibility(false);
 		}
+	}
+}
+
+void UBuildCommandComponent::SpawnFrameActor()
+{
+	FrameActor = GetWorld()->SpawnActor<ABuildingFramePawn>();
+	if (FrameActor)
+	{
+		FrameActor->SetBuildingClassToBuild(PawnClassToBuild, GetExecuteCommander());
+	}
+}
+
+void UBuildCommandComponent::TryDestroyFrameActor()
+{
+	if (FrameActor)
+	{
+		FrameActor->Die();
+		FrameActor = nullptr;
 	}
 }
 

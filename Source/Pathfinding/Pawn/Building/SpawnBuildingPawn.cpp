@@ -28,10 +28,14 @@ void ASpawnBuildingPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	SEND_TO_SELF_AUTHORITY(FTargetRequest(
-		GatherCommandComponent,
-		UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(this)
-	));
+	if (HasAuthority())
+	{
+		FVector GatherLocation;
+		if (UPFBlueprintFunctionLibrary::GetRandomReachablePointOfPawn(this, GatherLocation))
+		{
+			Receive(FTargetRequest(GatherCommandComponent, GatherLocation));
+		}
+	}
 }
 
 bool ASpawnBuildingPawn::HasSpawnCommand() const

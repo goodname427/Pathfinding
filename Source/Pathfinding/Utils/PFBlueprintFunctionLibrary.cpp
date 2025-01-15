@@ -6,10 +6,31 @@
 #include "DrawDebugHelpers.h"
 #include "NavigationSystem.h"
 #include "PFUtils.h"
+#include "Kismet/GameplayStatics.h"
 
 const UPFGameSettings* UPFBlueprintFunctionLibrary::GetPFGameSettings()
 {
 	return GetDefault<UPFGameSettings>();
+}
+
+bool UPFBlueprintFunctionLibrary::IsPlayerStateLocal(const APlayerState* PlayerState)
+{
+	// get the local player controller
+	const APlayerController* LocalPlayerController = UGameplayStatics::GetPlayerController(PlayerState, 0);
+	if (LocalPlayerController == nullptr)
+	{
+		return false;
+	}
+
+	// get the player state of the local player controller
+	const APlayerState* LocalPlayerState = LocalPlayerController->PlayerState;
+	if (LocalPlayerState == nullptr)
+	{
+		return false;
+	}
+
+	// compare the PlayerState with LocalPlayerState
+	return PlayerState == LocalPlayerState;
 }
 
 ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawn(UObject* WorldContextObject)
@@ -62,59 +83,71 @@ APFPawn* UPFBlueprintFunctionLibrary::SpawnPawnForCommander(
 	return PFPawn;
 }
 
-FVector UPFBlueprintFunctionLibrary::GetRandomReachablePointOfActor(
-	AActor* Actor,
+bool UPFBlueprintFunctionLibrary::GetRandomReachablePointOfPawn(
+	APFPawn* Pawn,
+	FVector& OutLocation,
 	float PointAcceptedRadius,
 	float AdditionalRadius,
 	int32 Attempts
 )
 {
-	if (Actor == nullptr)
-	{
-		return FVector::ZeroVector;
-	}
+	NULL_CHECK_RET(Pawn, false);
 
-	const UWorld* World = Actor->GetWorld();
+	const UWorld* World = Pawn->GetWorld();
+	NULL_CHECK_RET(World, false);
 
-	FVector Origin;
-	FVector Extent;
-	Actor->GetActorBounds(true, Origin, Extent);
-	// DrawDebugBox(World, Origin, Extent, FColor::Yellow, true, 10, 0, 5);
-
-	float MinRadius = FMath::Sqrt(Extent.X * Extent.X + Extent.Y * Extent.Y);
+	const FVector Origin = Pawn->GetActorLocation();
+	float MinRadius = Pawn->GetApproximateRadius();
 	float MaxRadius = MinRadius + PointAcceptedRadius;
-	const FCollisionShape CollisionShape = FCollisionShape::MakeSphere(PointAcceptedRadius);
 
+	const FCollisionShape CollisionShape = FCollisionShape::MakeSphere(PointAcceptedRadius);
 	FHitResult Hit;
+
 	for (int32 i = 0; i < Attempts; i++)
 	{
-		const float Radius = FMath::RandRange(MinRadius, MaxRadius);
-		const float Degree = FMath::RandRange(0.0f, FMath::DegreesToRadians(360.0f));
+		// if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(Pawn, Origin, OutLocation, MinRadius))
+		// {
+		// 	continue;
+		// }
 
-		FVector SpawnLocation = Origin + FVector(FMath::Cos(Degree), FMath::Sin(Degree), 0) * Radius;
+		const float RRadius = FMath::RandRange(MinRadius, MaxRadius);
+		const float RDegree = FMath::RandRange(0.0f, FMath::DegreesToRadians(360.0f));
 
+		OutLocation = Origin + FVector(FMath::Cos(RDegree), FMath::Sin(RDegree), 0) * RRadius;
+		// return true;
 		// DrawDebugSphere(World, Origin, MinRadius, 30, FColor::Red, true, 10, 0, 5);
 		// DrawDebugSphere(World, Origin, MaxRadius, 30, FColor::Red, true, 10, 0, 5);
 
-		World->SweepSingleByChannel(
+		// World->SweepSingleByChannel(
+		// 	Hit,
+		// 	OutLocation,
+		// 	OutLocation,
+		// 	FQuat::Identity,
+		// 	ECC_Pawn,
+		// 	CollisionShape
+		// );
+
+		const FVector TestLocation = OutLocation + FVector(0, 0, PointAcceptedRadius);
+		
+		World->SweepSingleByProfile(
 			Hit,
-			SpawnLocation,
-			SpawnLocation,
+			TestLocation,
+			TestLocation,
 			FQuat::Identity,
-			ECC_Camera,
+			UCollisionProfile::Pawn_ProfileName,
 			CollisionShape
 		);
 
 		if (!Hit.bBlockingHit)
 		{
-			return SpawnLocation;
+			return true;
 		}
 
 		MinRadius += AdditionalRadius;
 		MaxRadius += AdditionalRadius;
 	}
 
-	return Origin;
+	return false;
 }
 
 void UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(UStaticMeshComponent* StaticMesh,
@@ -130,7 +163,8 @@ void UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(
 		return;
 	}
 
-	if (const UMaterialInstanceDynamic* CurrentMaterial = Cast<UMaterialInstanceDynamic>(StaticMesh->GetMaterial(MaterialIndex)))
+	if (const UMaterialInstanceDynamic* CurrentMaterial = Cast<UMaterialInstanceDynamic>(
+		StaticMesh->GetMaterial(MaterialIndex)))
 	{
 		if (CurrentMaterial->Parent == Parent)
 		{
@@ -153,7 +187,7 @@ void UPFBlueprintFunctionLibrary::CreateDynamicMaterialInstanceForStaticMesh(
 	{
 		return;
 	}
-	
+
 	// DEBUG_MESSAGE(TEXT("Create Dynamic Material Instance for Static Mesh [%s]"), *StaticMesh->GetName());
 	StaticMesh->SetMaterial(MaterialIndex, UMaterialInstanceDynamic::Create(Parent, StaticMesh));
 }
@@ -177,7 +211,7 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 	//DEBUG_MESSAGE(TEXT("Actor Bounds [%s]"), *ActorBounds.ToString());
 
 	ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 10));
-	
+
 	DrawDebugBox(
 		World,
 		ActorBounds.GetCenter(),
@@ -190,18 +224,17 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 	);
 
 	FCollisionQueryParams Params;
-	
-	
+
+
 	// Check if there is any blocking object at the location
 	FHitResult Hit;
-	World->SweepSingleByChannel(
+	World->SweepSingleByProfile(
 		Hit,
 		ActorBounds.GetCenter(),
 		ActorBounds.GetCenter(),
 		FQuat::Identity,
-		ECC_Camera,
+		UCollisionProfile::Pawn_ProfileName,
 		FCollisionShape::MakeBox(ActorBounds.GetExtent())
-		
 	);
 
 	if (Hit.bBlockingHit)
@@ -211,27 +244,62 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 	}
 
 	// Check if there is any ground below the building
-	static float Step = 100.0f;
-	for (float X = -ActorBounds.Min.X; X < ActorBounds.Max.X; X += Step)
-	{
-		for (float Y = -ActorBounds.Min.Y; Y < ActorBounds.Max.Y; Y += Step)
-		{
-			FVector Point = FVector(X, Y, ActorBounds.Min.Z);
-			World->LineTraceSingleByChannel(
-				Hit,
-				Point,
-				Point + FVector::DownVector * 10.0f,
-				ECC_Visibility
-			);
-	
-			if (!Hit.bBlockingHit)
-			{
-				return false;
-			}
-		}
-	}
+	// static float Step = 100.0f;
+	// for (float X = -ActorBounds.Min.X; X < ActorBounds.Max.X; X += Step)
+	// {
+	// 	for (float Y = -ActorBounds.Min.Y; Y < ActorBounds.Max.Y; Y += Step)
+	// 	{
+	// 		FVector Point = FVector(X, Y, ActorBounds.Min.Z);
+	// 		World->LineTraceSingleByChannel(
+	// 			Hit,
+	// 			Point,
+	// 			Point + FVector::DownVector * 10.0f,
+	// 			ECC_Visibility
+	// 		);
+	//
+	// 		if (!Hit.bBlockingHit)
+	// 		{
+	// 			return false;
+	// 		}
+	// 	}
+	// }
 
 	return true;
+}
+
+FBox UPFBlueprintFunctionLibrary::GetCDOActorBounds(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass,
+                                                    bool bNonColliding)
+{
+	static const FBox ForceInitBox(ForceInit);
+	NULL_CHECK_RET(WorldContextObject, ForceInitBox);
+	NULL_CHECK_RET(ActorClass.Get(), ForceInitBox);
+	NULL_CHECK_RET(GEngine, ForceInitBox);
+
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
+	NULL_CHECK_RET(World, ForceInitBox);
+
+	// create a temporary actor
+	static FVector Location = FVector::ZeroVector;
+	static FRotator Rotation = FRotator::ZeroRotator;
+	static FActorSpawnParameters SpawnParams;
+	{
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	}
+	AActor* TempActor = World->SpawnActor(ActorClass, &Location, &Rotation, SpawnParams);
+	NULL_CHECK_RET(TempActor, ForceInitBox);
+
+	// initialize the actor
+	// TempActor->PreInitializeComponents();
+	// TempActor->PostInitializeComponents();
+	// TempActor->RerunConstructionScripts();
+
+	// get bounds
+	const FBox ActorBounds = TempActor->GetComponentsBoundingBox(bNonColliding);
+
+	// destroy the temporary actor
+	TempActor->Destroy();
+
+	return ActorBounds;
 }
 
 // UUserWidget* UPFBlueprintFunctionLibrary::CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass,

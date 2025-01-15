@@ -6,7 +6,8 @@
 #include "CommanderPawn.h"
 #include "ConsciousPawn.h"
 #include "PFUtils.h"
-#include "GameFramework/CharacterMovementComponent.h"
+
+// #define COMMAND_DEBUG
 
 FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 {
@@ -235,11 +236,13 @@ void UCommandComponent::BeginExecute()
 		OnCommandBegin.Broadcast(this);
 	}
 
-	// DEBUG_MESSAGE(
-	// 	TEXT("Conscious Pawn [%s] Execute Command [%s]"),
-	// 	*GetExecutePawn()->GetName(),
-	// 	*GetCommandName().ToString()
-	// );
+#ifdef COMMAND_DEBUG
+	DEBUG_MESSAGE(
+		TEXT("Conscious Pawn [%s] Execute Command [%s]"),
+		*GetExecutePawn()->GetName(),
+		*GetCommandName().ToString()
+	);
+#endif
 
 	InternalBeginExecute();
 }
@@ -253,11 +256,13 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 
 	bExecuting = false;
 
-	// DEBUG_MESSAGE(
-	// 	TEXT("Conscious Pawn [%s] End Execute Command [%s]"),
-	// 	*GetExecutePawn()->GetName(),
-	// 	*GetCommandName().ToString()
-	// );
+#ifdef COMMAND_DEBUG
+	DEBUG_MESSAGE(
+		TEXT("Conscious Pawn [%s] End Execute Command [%s]"),
+		*GetExecutePawn()->GetName(),
+		*GetCommandName().ToString()
+	);
+#endif
 
 	InternalEndExecute(Result);
 
@@ -317,22 +322,26 @@ void UCommandComponent::OnPushedToQueue()
 		OnCommandPushedToQueue.Broadcast(this);
 	}
 
-	// DEBUG_MESSAGE(
-	// 	TEXT("Conscious Pawn [%s] Push Command [%s]"),
-	// 	*GetExecutePawn()->GetName(),
-	// 	*GetCommandName().ToString()
-	// );
+#ifdef COMMAND_DEBUG
+	DEBUG_MESSAGE(
+		TEXT("Conscious Pawn [%s] Push Command [%s]"),
+		*GetExecutePawn()->GetName(),
+		*GetCommandName().ToString()
+	);
+#endif
 
 	InternalPushedToQueue();
 }
 
 void UCommandComponent::OnPoppedFromQueue(ECommandPoppedReason Reason)
 {
-	// DEBUG_MESSAGE(
-	// 	TEXT("Conscious Pawn [%s] Pop Command [%s]"),
-	// 	*GetExecutePawn()->GetName(),
-	// 	*GetCommandName().ToString()
-	// );
+#ifdef COMMAND_DEBUG
+	DEBUG_MESSAGE(
+		TEXT("Conscious Pawn [%s] Pop Command [%s]"),
+		*GetExecutePawn()->GetName(),
+		*GetCommandName().ToString()
+	);
+#endif
 
 	InternalPoppedFromQueue(Reason);
 

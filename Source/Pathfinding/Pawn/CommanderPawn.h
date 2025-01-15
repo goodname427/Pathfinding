@@ -218,8 +218,8 @@ public:
 	template<class T>
 	T* SpawnPawn(TSubclassOf<APFPawn> PawnClass, FVector Location) { return Cast<T>(SpawnPawn(PawnClass, Location)); }
 	
-	APFPawn* SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn);
+	APFPawn* SpawnPawnFrom(APFPawn* Source, TSubclassOf<APFPawn> PawnClassToSpawn);
 	
 	template<class T>
-	T* SpawnPawnFrom(AActor* Source, TSubclassOf<APFPawn> PawnClassToSpawn) { return Cast<T>(SpawnPawnFrom(Source, PawnClassToSpawn)); }
+	T* SpawnPawnFrom(APFPawn* Source, TSubclassOf<APFPawn> PawnClassToSpawn) { return Cast<T>(SpawnPawnFrom(Source, PawnClassToSpawn)); }
 };

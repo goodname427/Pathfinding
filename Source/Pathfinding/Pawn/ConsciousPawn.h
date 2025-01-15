@@ -21,6 +21,7 @@ enum class EAllowedCreateMethod : uint32
 	Spawn = 1,
 	Build = 2,
 };
+
 ENUM_CLASS_FLAGS(EAllowedCreateMethod)
 #define TO_FLAG(CreateMethod) 1 << (static_cast<int32>(CreateMethod) - 1)
 
@@ -51,8 +52,11 @@ struct FConsciousData
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelCreatedSignature, AConsciousPawn*, ConsciousPawn);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandListUpdatedSignature, AConsciousPawn*, ConsciousPawn);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FReceivedRequestSignature, AConsciousPawn*, ConsciousPawn, const FTargetRequest&, Request);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FReceivedRequestSignature, AConsciousPawn*, ConsciousPawn,
+                                             const FTargetRequest&, Request);
 
 #define SEND_TO_SELF_AUTHORITY(Request)\
 	if (HasAuthority())\
@@ -77,7 +81,7 @@ protected:
 public:
 	UPROPERTY(BlueprintAssignable)
 	FReceivedRequestSignature OnReceivedRequest;
-	
+
 	// Request Command
 	// Server only
 	UFUNCTION(BlueprintCallable, Server, Reliable)
@@ -117,22 +121,22 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	const TArray<UCommandComponent*>& GetAllCommandsForCommandListMenu() const;
-	
+
 	void RefreshCommandList();
-	
+
 	UFUNCTION(BlueprintCallable)
 	UCommandComponent* AddNewCommand(TSubclassOf<UCommandComponent> CommandClassToAdd);
 
-	template<class TCommand>
+	template <class TCommand>
 	TCommand* AddNewCommand() { return Cast<TCommand>(AddNewCommand(TCommand::StaticClass())); }
-	
+
 	void AddCommand(UCommandComponent* CommandToAdd);
 	void RemoveCommand(UCommandComponent* CommandToRemove);
 
 public:
 	UPROPERTY(BlueprintAssignable)
 	FCommandListUpdatedSignature OnCommandListUpdated;
-	
+
 protected:
 	UFUNCTION(NetMulticast, Reliable)
 	void DispatchCommand_BeginExecute(UCommandComponent* Command, const FTargetRequest& Request);
@@ -141,7 +145,7 @@ protected:
 	void DispatchCommand_EndExecute(UCommandComponent* Command, ECommandExecuteResult Result);
 
 	UFUNCTION(NetMulticast, Reliable)
-	void DispatchCommand_OnPushedToQueue(UCommandComponent* Command);
+	void DispatchCommand_OnPushedToQueue(UCommandComponent* Command, const FTargetRequest& Request);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void DispatchCommand_OnPoppedFromQueue(UCommandComponent* Command, ECommandPoppedReason Reason);

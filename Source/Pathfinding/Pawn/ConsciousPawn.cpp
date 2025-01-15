@@ -298,11 +298,17 @@ void AConsciousPawn::RemoveCommand(UCommandComponent* CommandToRemove)
 	}
 }
 
-void AConsciousPawn::DispatchCommand_OnPushedToQueue_Implementation(UCommandComponent* Command)
+void AConsciousPawn::DispatchCommand_OnPushedToQueue_Implementation(UCommandComponent* Command,
+																 const FTargetRequest& Request)
 {
 	if (!Command)
 		return;
 
+	if (!HasAuthority())
+	{
+		Command->SetCommandArgumentsSkipCheck(Request);
+	}
+	
 	Command->OnPushedToQueue();
 }
 
@@ -323,7 +329,11 @@ void AConsciousPawn::DispatchCommand_BeginExecute_Implementation(UCommandCompone
 		return;
 	}
 
-	Command->SetCommandArguments(Request);
+	if (!HasAuthority())
+	{
+		Command->SetCommandArgumentsSkipCheck(Request);
+	}
+	
 	Command->BeginExecute();
 }
 
