@@ -17,7 +17,7 @@ struct FPFPawnData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FName Name;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(MultiLine=true))
 	FString Description;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
@@ -135,7 +135,7 @@ public:
 	
 	float GetAttackSpeed() const { return AttackSpeed; }
 
-	float GetAttackDuration() const { return 1.f / AttackSpeed; }
+	float GetAttackDuration() const { return AttackSpeed <= 0 ? 0 : 1.f / AttackSpeed; }
 	
 protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)

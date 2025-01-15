@@ -14,6 +14,7 @@ UGatherCommandComponent::UGatherCommandComponent()
 
 	Data.Name = StaticCommandName;
 	Data.RequiredTargetRadius = -1;
+	Data.bHiddenInCommandListMenu = true;
 
 	GatherFlagMeshComponent = nullptr;
 }

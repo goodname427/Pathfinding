@@ -142,7 +142,7 @@ struct FCommandData
 	FName Name;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
 	UObject* Icon;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(MultiLine=true))
 	FString Description;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
