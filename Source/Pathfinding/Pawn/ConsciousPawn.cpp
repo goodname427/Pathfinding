@@ -209,6 +209,43 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
 	return CommandArray;
 }
 
+const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommandsForCommandListMenu() const
+{
+	static TArray<UCommandComponent*> CommandArray;
+
+	CommandList.GenerateValueArray(CommandArray);
+
+	// Remove all hidden commands
+	for (int32 i = 0; i < CommandArray.Num();)
+	{
+		if (CommandArray[i]->IsHideInCommandListMenu())
+		{
+			CommandArray.RemoveAt(i);
+			continue;
+		}
+		i++;
+	}
+
+	CommandArray.SetNum(16);
+
+	// reorder by wants index
+	for (int32 i = 0; i < CommandArray.Num(); i++)
+	{
+		if (CommandArray[i] == nullptr)
+		{
+			continue;
+		}
+		
+		const int32 WantsIndex = CommandArray[i]->GetWantsIndexInCommandListMenu();
+		if (WantsIndex != i && WantsIndex >= 0 && WantsIndex < CommandArray.Num())
+		{
+			Swap(CommandArray[i], CommandArray[WantsIndex]);
+		}
+	}
+
+	return CommandArray;
+}
+
 void AConsciousPawn::RefreshCommandList()
 {
 	CommandList.Empty();

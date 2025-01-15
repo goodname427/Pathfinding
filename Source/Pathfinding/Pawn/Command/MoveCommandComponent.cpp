@@ -15,6 +15,7 @@ UMoveCommandComponent::UMoveCommandComponent(): CommandNeedToMove(nullptr)
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
+	Data.WantsIndexInCommandListMenu = 0;
 }
 
 bool UMoveCommandComponent::SetMoveCommandArguments(UCommandComponent* InCommandNeedToMove,

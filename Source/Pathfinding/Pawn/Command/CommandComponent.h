@@ -162,6 +162,8 @@ struct FCommandData
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bHiddenInCommandListMenu;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 WantsIndexInCommandListMenu;
 
 	FCommandData()
 	{
@@ -179,6 +181,7 @@ struct FCommandData
 		Channel = GCommandChannel_Default;
 
 		bHiddenInCommandListMenu = false;
+		WantsIndexInCommandListMenu = -1;
 	}
 
 	float GetRequiredTargetRadius() const { return bNeedToTarget ? RequiredTargetRadius : -1; }
@@ -267,6 +270,10 @@ public:
 	bool IsAbortCurrentCommand() const { return Data.bAbortCurrentCommand; };
 
 	int32 GetCommandChannel() const { return Data.Channel; };
+
+	bool IsHideInCommandListMenu() const { return Data.bHiddenInCommandListMenu; }
+
+	int32 GetWantsIndexInCommandListMenu() const { return Data.WantsIndexInCommandListMenu; };
 
 protected:
 	UPROPERTY(Category = "Command", EditDefaultsOnly, BlueprintReadOnly)
