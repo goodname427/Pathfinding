@@ -6,10 +6,12 @@
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 #include "WidgetSettings.h"
+#include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 
 FName APFPawn::StateWidgetClassName = FName("PFPawnStateBar");
+FName APFPawn::PawnBounds_ProfileName = FName("PawnBounds");
 
 // Sets default values
 APFPawn::APFPawn()
@@ -29,6 +31,13 @@ APFPawn::APFPawn()
 	StaticMeshComponent->AlwaysLoadOnServer = true;
 	StaticMeshComponent->bCastDynamicShadow = true;
 	StaticMeshComponent->bAffectDynamicIndirectLighting = true;
+
+	INIT_DEFAULT_SUBOBJECT(BoxComponent);
+	BoxComponent->SetupAttachment(RootComponent);
+	BoxComponent->SetCollisionProfileName(PawnBounds_ProfileName);
+	BoxComponent->SetBoxExtent(FVector(0, 0, 0));
+	BoxComponent->SetCanEverAffectNavigation(false);
+	BoxComponent->bDynamicObstacle = false;
 
 	// Adjust Location
 	bAdjustLocationToGround = true;
@@ -61,7 +70,8 @@ void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// SetColor(GetOwnerColor());
+	SetColor(GetOwnerColor());
+	SetBoxComponentToBounds();
 
 	const FVector ActorLocation = GetActorLocation();
 
@@ -116,6 +126,13 @@ float APFPawn::GetApproximateRadius() const
 	Extents.Z = 0;
 
 	return Extents.Size();
+}
+
+void APFPawn::SetBoxComponentToBounds()
+{
+	const FBox Bounds = GetComponentsBoundingBox();
+	BoxComponent->SetBoxExtent(Bounds.GetExtent());
+	BoxComponent->SetRelativeLocation(Bounds.GetCenter() - GetActorLocation());
 }
 
 void APFPawn::SetOwner(AActor* NewOwner)

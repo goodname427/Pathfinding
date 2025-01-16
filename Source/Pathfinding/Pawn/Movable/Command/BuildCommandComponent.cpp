@@ -192,7 +192,7 @@ void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 		const FRay Ray = TargetCommander->GetRayFromMousePosition();
 
 		FHitResult Hit;
-		GetWorld()->LineTraceSingleByChannel(Hit, Ray.Origin, Ray.PointAt(100 * 100), ECC_Visibility);
+		GetWorld()->LineTraceSingleByChannel(Hit, Ray.Origin, Ray.PointAt(500 * 100), ECC_Visibility);
 
 		if (Hit.bBlockingHit)
 		{

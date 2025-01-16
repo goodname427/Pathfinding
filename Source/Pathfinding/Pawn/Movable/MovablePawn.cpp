@@ -4,6 +4,7 @@
 #include "MovablePawn.h"
 
 #include "PFUtils.h"
+#include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Movement/ConsciousPawnMovementComponent.h"
@@ -38,6 +39,8 @@ AMovablePawn::AMovablePawn()
 	StaticMeshComponent->SetCollisionProfileName(MeshCollisionProfileName);
 	StaticMeshComponent->SetGenerateOverlapEvents(false);
 	StaticMeshComponent->SetCanEverAffectNavigation(false);
+
+	BoxComponent->SetupAttachment(CapsuleComponent);
 
 	INIT_DEFAULT_SUBOBJECT(MoveCommandComponent);
 

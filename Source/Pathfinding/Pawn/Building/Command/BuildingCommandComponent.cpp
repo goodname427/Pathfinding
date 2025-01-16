@@ -8,6 +8,7 @@
 #include "PFUtils.h"
 #include "Building/BuildingFramePawn.h"
 #include "Building/BuildingPawn.h"
+#include "Components/BoxComponent.h"
 
 FName UBuildingCommandComponent::StaticCommandName = FName("Building");
 
@@ -89,6 +90,8 @@ void UBuildingCommandComponent::InternalBeginExecute_Implementation()
 	
 	ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
 	Frame->GetStaticMeshComponent()->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
+	Frame->GetBoxComponent()->SetCollisionProfileName(APFPawn::PawnBounds_ProfileName);
+	Frame->SetBoxComponentToBounds();
 
 	if (GetOwnerRole() == ROLE_Authority)
 	{

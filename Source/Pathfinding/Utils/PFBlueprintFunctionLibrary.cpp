@@ -129,12 +129,12 @@ bool UPFBlueprintFunctionLibrary::GetRandomReachablePointOfPawn(
 
 		const FVector TestLocation = OutLocation + FVector(0, 0, PointAcceptedRadius);
 		
-		World->SweepSingleByProfile(
+		World->SweepSingleByChannel(
 			Hit,
 			TestLocation,
 			TestLocation,
 			FQuat::Identity,
-			UCollisionProfile::Pawn_ProfileName,
+			ECC_GameTraceChannel1,
 			CollisionShape
 		);
 
@@ -210,7 +210,7 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 
 	//DEBUG_MESSAGE(TEXT("Actor Bounds [%s]"), *ActorBounds.ToString());
 
-	ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 10));
+	// ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 10));
 
 	DrawDebugBox(
 		World,
@@ -228,12 +228,12 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 
 	// Check if there is any blocking object at the location
 	FHitResult Hit;
-	World->SweepSingleByProfile(
+	World->SweepSingleByChannel(
 		Hit,
 		ActorBounds.GetCenter(),
 		ActorBounds.GetCenter(),
 		FQuat::Identity,
-		UCollisionProfile::Pawn_ProfileName,
+		ECC_GameTraceChannel1,
 		FCollisionShape::MakeBox(ActorBounds.GetExtent())
 	);
 

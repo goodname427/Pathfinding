@@ -9,6 +9,8 @@
 #include "GameFramework/Pawn.h"
 #include "PFPawn.generated.h"
 
+class UBoxComponent;
+
 USTRUCT(BlueprintType)
 struct FPFPawnData
 {
@@ -57,13 +59,24 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	static FName PawnBounds_ProfileName;
+	
 	UFUNCTION(BlueprintCallable)
 	virtual float GetApproximateRadius() const;
 	
 	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
-	
+
+	UFUNCTION(BlueprintCallable)
+	UBoxComponent* GetBoxComponent() const { return BoxComponent; }
+
+	UFUNCTION(BlueprintCallable)
+	void SetBoxComponentToBounds();
+
 protected:
+	UPROPERTY(Category = "Pawn", VisibleAnywhere, BlueprintReadOnly)
+	UBoxComponent* BoxComponent;
+	
 	// Static Mesh
 	UPROPERTY(Category = "StaticMesh", VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;

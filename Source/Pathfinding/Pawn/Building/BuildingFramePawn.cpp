@@ -6,6 +6,7 @@
 #include "CommanderPawn.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
+#include "Components/BoxComponent.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -13,9 +14,9 @@
 ABuildingFramePawn::ABuildingFramePawn()
 {
 	bReplicates = false;
-	PrimaryActorTick.bCanEverTick = true;
 
 	StaticMeshComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	BoxComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	
 	INIT_DEFAULT_SUBOBJECT(BuildingCommandComponent);
 
