@@ -186,18 +186,20 @@ void UCollectorComponent::TransportResource(bool bLastTransposingFailed)
 		TransportRequest.Type = ETargetRequestType::Append;
 	}
 
-	auto Receive = [this, TransportRequest]{ Collector->Receive(TransportRequest); };
-	
-	if (bLastTransposingFailed)
-	{
-		// Delay the transport request to prevent stack overflow caused by recursive calling.
-		Delay(this, 0.1f, Receive);
-		// UDelayHelper::Delay(this, 0.1f, Receive);
-	}
-	else
-	{
-		Receive();
-	}
+	Collector->Receive(TransportRequest);
+
+	// auto Receive = [this, TransportRequest]{ Collector->Receive(TransportRequest); };
+	//
+	// if (bLastTransposingFailed)
+	// {
+	// 	// Delay the transport request to prevent stack overflow caused by recursive calling.
+	// 	Delay(this, 0.1f, Receive);
+	// 	// UDelayHelper::Delay(this, 0.1f, Receive);
+	// }
+	// else
+	// {
+	// 	Receive();
+	// }
 }
 
 void UCollectorComponent::OnCollectCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)

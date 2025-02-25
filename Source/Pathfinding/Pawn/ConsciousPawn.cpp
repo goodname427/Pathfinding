@@ -97,10 +97,10 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 		CommandChannel->PushCommand(CommandToExecute);
 	}
 
-	if (bAbortCurrentCommand || CommandChannel->GetCurrentCommand() == nullptr)
-	{
-		CommandChannel->ExecuteNextCommand();
-	}
+	// if (bAbortCurrentCommand || CommandChannel->GetCurrentCommand() == nullptr)
+	// {
+	// 	CommandChannel->ExecuteNextCommand();
+	// }
 }
 
 void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request)

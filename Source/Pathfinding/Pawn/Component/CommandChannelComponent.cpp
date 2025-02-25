@@ -9,7 +9,7 @@
 
 UCommandChannelComponent::UCommandChannelComponent(): ChannelId(-1), CurrentCommand(nullptr)
 {
-	// PrimaryComponentTick.bCanEverTick = true;
+	PrimaryComponentTick.bCanEverTick = true;
 
 	SetIsReplicatedByDefault(true);
 }
@@ -40,10 +40,10 @@ void UCommandChannelComponent::TickComponent(float DeltaTime, enum ELevelTick Ti
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// if (!bIsClearing && CurrentCommand == nullptr && CommandQueue.Num() > 0)
-	// {
-	// 	ExecuteNextCommand();
-	// }
+	if (!bIsClearing && CurrentCommand == nullptr && CommandQueue.Num() > 0)
+	{
+		ExecuteNextCommand();
+	}
 }
 
 UCommandComponent* UCommandChannelComponent::GetCurrentCommand() const
@@ -122,9 +122,16 @@ void UCommandChannelComponent::EndClear()
 {
 	bIsClearing = false;
 
-	CommandQueue = MoveTemp(PendingCommandQueue);
-
-	ExecuteNextCommand();
+	//CommandQueue = MoveTemp(PendingCommandQueue);
+	
+	for (const auto CommandWrapper : PendingCommandQueue)
+	{
+		CommandQueue.Add(CommandWrapper);
+	}
+	//
+	// PendingCommandQueue.Empty();
+	
+	// ExecuteNextCommand();
 }
 
 void UCommandChannelComponent::ClearCommands(ECommandPoppedReason Reason)
@@ -166,7 +173,7 @@ void UCommandChannelComponent::ExecuteNextCommand()
 	CommandQueue.RemoveAt(0);
 
 	// check if the command can be executed
-	if (NextCommand->CanExecute())
+	if (NextCommand && NextCommand->CanExecute())
 	{
 		CurrentCommand = NextCommand;
 		CurrentCommand->OnCommandEnd.AddDynamic(this, &UCommandChannelComponent::OnCommandEnd);
@@ -217,7 +224,7 @@ void UCommandChannelComponent::OnCommandEnd(UCommandComponent* Command, ECommand
 	{
 	case ECommandExecuteResult::Success:
 		{
-			ExecuteNextCommand();
+			// ExecuteNextCommand();
 			break;
 		}
 	case ECommandExecuteResult::Failed:
@@ -227,7 +234,7 @@ void UCommandChannelComponent::OnCommandEnd(UCommandComponent* Command, ECommand
 		}
 	case ECommandExecuteResult::Aborted:
 		{
-			ExecuteNextCommand();
+			// ExecuteNextCommand();
 			break;
 		}
 	default:
