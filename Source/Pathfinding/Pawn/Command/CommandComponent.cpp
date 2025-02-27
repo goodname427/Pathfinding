@@ -5,6 +5,7 @@
 
 #include "CommanderPawn.h"
 #include "ConsciousPawn.h"
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 
 // #define COMMAND_DEBUG
@@ -173,21 +174,23 @@ bool UCommandComponent::IsTargetInRequiredRadius() const
 		return FVector::Dist(Request.TargetLocation, ExecutePawn->GetActorLocation()) <= TargetRadius;
 	}
 
-	const FVector CurrentLocation = ExecutePawn->GetActorLocation();
-
-	TArray<FHitResult> HitResults;
-	// FCollisionQueryParams Params;
-	// Params.AddIgnoredActor(ExecutePawn);
-
-	GetWorld()->SweepMultiByChannel(
-		HitResults,
-		CurrentLocation,
-		CurrentLocation,
-		FQuat::Identity,
-		ECC_Camera,
-		FCollisionShape::MakeSphere(TargetRadius),
-		FCollisionQueryParams::DefaultQueryParam
-	);
+	static TArray<FHitResult> HitResults;
+	UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(ExecutePawn, HitResults, TargetRadius);
+	
+	// const FVector CurrentLocation = ExecutePawn->GetActorLocation();
+	//
+	// // FCollisionQueryParams Params;
+	// // Params.AddIgnoredActor(ExecutePawn);
+	//
+	// GetWorld()->SweepMultiByChannel(
+	// 	HitResults,
+	// 	CurrentLocation,
+	// 	CurrentLocation,
+	// 	FQuat::Identity,
+	// 	ECC_Camera,
+	// 	FCollisionShape::MakeSphere(TargetRadius),
+	// 	FCollisionQueryParams::DefaultQueryParam
+	// );
 
 	for (const FHitResult& Hit : HitResults)
 	{

@@ -15,16 +15,21 @@ class PATHFINDING_API UAttackerComponent : public UActorComponent
 
 public:
 	UAttackerComponent();
+	
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual void BeginPlay() override;
-
+	
 protected:
 	UFUNCTION()
 	void OnAttackCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result);
 
 	UFUNCTION()
 	void OnAttackCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason);
+
+	UFUNCTION()
+	void OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
 public:
 	UPROPERTY()

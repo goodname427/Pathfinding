@@ -70,4 +70,79 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static FBox GetCDOActorBounds(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, bool bNonColliding = false);
+
+	template<class TPFPawn>
+	static TPFPawn* GetAroundPawn(const APFPawn* Pawn, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None);
+	
+	template<class TPFPawn>
+	static void GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None);
+
+	UFUNCTION(BlueprintCallable)
+	static void GetAroundPawns(const APFPawn* Pawn, TArray<APFPawn*>& OutPawns, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None)
+	{
+		GetAroundPawns<APFPawn>(Pawn, OutPawns, RequiredRadius, RequiredPawnRole);
+	}
+
+	UFUNCTION(BlueprintCallable)
+	static void GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults, float RequiredRadius);
 };
+
+template <class TPFPawn>
+TPFPawn* UPFBlueprintFunctionLibrary::GetAroundPawn(const APFPawn* Pawn, float RequiredRadius,
+	EPawnRole RequiredPawnRole)
+{
+	static TArray<FHitResult> HitResults;
+	GetAroundPawnHitResults(Pawn, HitResults, RequiredRadius);
+
+	for (const FHitResult& Hit : HitResults)
+	{
+		TPFPawn* AroundPawn = Cast<TPFPawn>(Hit.GetActor());
+		if (AroundPawn == nullptr || !AroundPawn->IsValidLowLevelFast())
+		{
+			continue;
+		}
+
+		// Skip self
+		if (AroundPawn == Pawn)
+		{
+			continue;
+		}
+
+		// Skip if pawn role is not required
+		if (RequiredPawnRole == EPawnRole::None || Pawn->GetPawnRole(AroundPawn) == RequiredPawnRole)
+		{
+			return AroundPawn;
+		}
+	}
+
+	return nullptr;
+}
+
+template <class TPFPawn>
+void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius,
+	EPawnRole RequiredPawnRole)
+{
+	static TArray<FHitResult> HitResults;
+	GetAroundPawnHitResults(Pawn, HitResults, RequiredRadius);
+
+	for (const FHitResult& Hit : HitResults)
+	{
+		TPFPawn* AroundPawn = Cast<TPFPawn>(Hit.GetActor());
+		if (AroundPawn == nullptr || !AroundPawn->IsValidLowLevelFast())
+		{
+			continue;
+		}
+
+		// Skip self
+		if (AroundPawn == Pawn)
+		{
+			continue;
+		}
+
+		// Skip if pawn role is not required
+		if (RequiredPawnRole == EPawnRole::None || Pawn->GetPawnRole(AroundPawn) == RequiredPawnRole)
+		{
+			OutPawns.Add(AroundPawn);
+		}
+	}
+}

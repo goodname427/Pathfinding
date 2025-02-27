@@ -302,6 +302,28 @@ FBox UPFBlueprintFunctionLibrary::GetCDOActorBounds(const UObject* WorldContextO
 	return ActorBounds;
 }
 
+void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults,
+	float RequiredRadius)
+{
+	NULL_CHECK(Pawn);
+	NULL_CHECK(GEngine);
+	
+	UWorld* World = GEngine->GetWorldFromContextObject(Pawn, EGetWorldErrorMode::LogAndReturnNull);
+	NULL_CHECK(World);
+	
+	const FVector CurrentLocation = Pawn->GetActorLocation();
+
+	World->SweepMultiByChannel(
+		OutHitResults,
+		CurrentLocation,
+		CurrentLocation,
+		FQuat::Identity,
+		ECC_Camera,
+		FCollisionShape::MakeSphere(RequiredRadius),
+		FCollisionQueryParams::DefaultQueryParam
+	);
+}
+
 // UUserWidget* UPFBlueprintFunctionLibrary::CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass,
 // 	TArray<UUserWidget*>& WidgetArray, UPanelWidget* ParentPanelWidget)
 // {
