@@ -7,7 +7,7 @@
 #include "ProjectileAttackCommandComponent.generated.h"
 
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UProjectileAttackCommandComponent : public UAttackCommandComponent
 {
 	GENERATED_BODY()

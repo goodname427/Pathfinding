@@ -15,6 +15,7 @@ UTransportCommandComponent::UTransportCommandComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	Data.Name = StaticCommandName;
+	Data.bHiddenInCommandListMenu = true;
 }
 
 bool UTransportCommandComponent::CanTransport(const ABaseCampPawn* BaseCamp) const

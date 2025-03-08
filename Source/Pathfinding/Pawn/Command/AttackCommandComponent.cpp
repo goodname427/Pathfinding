@@ -14,6 +14,7 @@ UAttackCommandComponent::UAttackCommandComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
+	Data.WantsIndexInCommandListMenu = 1;
 }
 
 bool UAttackCommandComponent::InternalIsCommandEnable_Implementation() const

@@ -42,6 +42,8 @@ enum class EPawnRole : uint8
 	Enemy,
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPawnDiedSignature, APFPawn*, DiedPawn);
+
 UCLASS()
 class PATHFINDING_API APFPawn : public APawn
 {
@@ -60,10 +62,10 @@ public:
 
 public:
 	static FName PawnBounds_ProfileName;
-	
+
 	UFUNCTION(BlueprintCallable)
 	virtual float GetApproximateRadius() const;
-	
+
 	UFUNCTION(BlueprintCallable)
 	UStaticMeshComponent* GetStaticMeshComponent() const { return StaticMeshComponent; }
 
@@ -76,7 +78,7 @@ public:
 protected:
 	UPROPERTY(Category = "Pawn", VisibleAnywhere, BlueprintReadOnly)
 	UBoxComponent* BoxComponent;
-	
+
 	// Static Mesh
 	UPROPERTY(Category = "StaticMesh", VisibleAnywhere, BlueprintReadOnly)
 	UStaticMeshComponent* StaticMeshComponent;
@@ -104,7 +106,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	EPawnRole GetPawnRole(const APFPawn* OtherPawn) const;
-	
+
 private:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)
 	ABattlePlayerState* OwnerPlayer;
@@ -123,6 +125,13 @@ public:
 private:
 	UPROPERTY(Transient, Category = "Select", VisibleAnywhere)
 	uint32 bSelected : 1;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FPawnDiedSignature OnPawnDied;
+
+	UPROPERTY(Transient, BlueprintReadWrite)
+	bool bShouldSkipDied;
 	
 public:
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
@@ -130,7 +139,7 @@ public:
 
 	virtual bool ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser) const override;
-
+	
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	virtual void Die();
 
@@ -142,21 +151,29 @@ public:
 	const FPFPawnData& GetData() const { return Data; }
 
 	UFUNCTION(BlueprintCallable)
-	bool CanAttack() const { return Attack > 0 && AttackSpeed > 0;  }
+	bool CanAttack() const { return Attack > 0 && AttackSpeed > 0; }
+
+	UFUNCTION(BlueprintCallable)
+	bool HasDied() const { return CurrentHealth == 0; }
+
+	UFUNCTION(BlueprintCallable)
+	bool IsInvincible() const { return MaxHealth <= 0 || Defense <= 0; }
 	
+	float GetCurrentHealth() const { return CurrentHealth; }
+
 	float GetAttack() const { return Attack; }
-	
+
 	float GetAttackSpeed() const { return AttackSpeed; }
 
 	float GetAttackDuration() const { return AttackSpeed <= 0 ? 0 : 1.f / AttackSpeed; }
-	
+
 protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)
 	FPFPawnData Data;
 
 	UPROPERTY(Transient, Category = "State", VisibleAnywhere, BlueprintReadWrite, Replicated)
 	int32 CurrentHealth;
-	
+
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 MaxHealth;
 
@@ -171,7 +188,7 @@ protected:
 
 protected:
 	static FName StateWidgetClassName;
-	
+
 	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadOnly)
 	UWidgetComponent* StateWidgetComponent;
 };

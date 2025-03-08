@@ -14,6 +14,7 @@ UAttackerComponent::UAttackerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	AttackCommandComponent = nullptr;
+	Attacker = nullptr;
 
 	// ...
 }

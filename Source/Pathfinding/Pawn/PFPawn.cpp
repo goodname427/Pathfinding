@@ -261,16 +261,28 @@ bool APFPawn::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 		return false;
 	}
 
-	return MaxHealth > 0;
+	return !IsInvincible();
 }
 
 void APFPawn::Die_Implementation()
 {
+	bShouldSkipDied = false;
+	if (OnPawnDied.IsBound())
+	{
+		OnPawnDied.Broadcast(this);
+	}
+
+	// Modify the 'bShouldSkipDied' to ture so that skipping died
+	if (bShouldSkipDied)
+	{
+		return;
+	}
+
 	if (OwnerPlayer)
 	{
 		OwnerPlayer->RemoveOwnedPawn(this);
 	}
-
+	
 	Destroy();
 }
 

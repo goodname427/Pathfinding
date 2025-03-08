@@ -17,6 +17,7 @@ UCollectCommandComponent::UCollectCommandComponent(): ResourceTypesToAllowCollec
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
+	Data.bHiddenInCommandListMenu = true;
 }
 
 bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) const

@@ -125,6 +125,7 @@ void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPF
 	static TArray<FHitResult> HitResults;
 	GetAroundPawnHitResults(Pawn, HitResults, RequiredRadius);
 
+	OutPawns.Empty();
 	for (const FHitResult& Hit : HitResults)
 	{
 		TPFPawn* AroundPawn = Cast<TPFPawn>(Hit.GetActor());
@@ -142,7 +143,7 @@ void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPF
 		// Skip if pawn role is not required
 		if (RequiredPawnRole == EPawnRole::None || Pawn->GetPawnRole(AroundPawn) == RequiredPawnRole)
 		{
-			OutPawns.Add(AroundPawn);
+			OutPawns.AddUnique(AroundPawn);
 		}
 	}
 }
