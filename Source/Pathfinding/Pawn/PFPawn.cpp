@@ -339,5 +339,5 @@ float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent co
 void APFPawn::StartShowStateWidget_Implementation()
 {
 	StateWidgetComponent->SetVisibility(true);
-	StateWidgetHideTimer = 5;
+	StateWidgetHideTimer = 3;
 }
