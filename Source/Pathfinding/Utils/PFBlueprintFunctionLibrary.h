@@ -26,6 +26,9 @@ public:
 public:
 	UFUNCTION(BlueprintCallable)
 	static bool IsPlayerStateLocal(const APlayerState* PlayerState);
+
+	UFUNCTION(BlueprintCallable)
+	static APlayerController* GetFirstLocalPlayerController(UObject* WorldContextObject);
 	
 	UFUNCTION(BlueprintCallable)
 	static ACommanderPawn* GetCommanderPawn(UObject* WorldContextObject);

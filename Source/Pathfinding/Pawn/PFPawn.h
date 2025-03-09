@@ -54,6 +54,8 @@ public:
 
 	virtual void PostInitProperties() override;
 
+	virtual void Tick(float DeltaTime) override;
+	
 protected:
 	virtual void BeginPlay() override;
 
@@ -134,6 +136,7 @@ public:
 	bool bShouldSkipDied;
 	
 public:
+	// State
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 	                         class AController* EventInstigator, AActor* DamageCauser) override;;
 
@@ -186,9 +189,22 @@ protected:
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Defense;
 
+public:
+	UFUNCTION(Unreliable, NetMulticast)
+	void StartShowStateWidget();
+	
 protected:
 	static FName StateWidgetClassName;
 
-	UPROPERTY(Category = "State", VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(Category = "Widget", VisibleAnywhere, BlueprintReadOnly)
 	UWidgetComponent* StateWidgetComponent;
+
+	UPROPERTY(Category = "Widget", EditDefaultsOnly, BlueprintReadOnly)
+	float StateWidgetHeightRatio;
+
+	UPROPERTY(Category = "Widget", EditDefaultsOnly, BlueprintReadOnly)
+	float StateWidgetScaleRatio;
+
+private:
+	float StateWidgetHideTimer;
 };

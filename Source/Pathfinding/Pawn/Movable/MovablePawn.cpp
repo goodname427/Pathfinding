@@ -41,6 +41,7 @@ AMovablePawn::AMovablePawn()
 	StaticMeshComponent->SetCanEverAffectNavigation(false);
 
 	BoxComponent->SetupAttachment(CapsuleComponent);
+	StateWidgetComponent->SetupAttachment(CapsuleComponent);
 
 	INIT_DEFAULT_SUBOBJECT(MoveCommandComponent);
 

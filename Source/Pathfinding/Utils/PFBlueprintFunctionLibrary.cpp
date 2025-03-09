@@ -33,6 +33,15 @@ bool UPFBlueprintFunctionLibrary::IsPlayerStateLocal(const APlayerState* PlayerS
 	return PlayerState == LocalPlayerState;
 }
 
+APlayerController* UPFBlueprintFunctionLibrary::GetFirstLocalPlayerController(UObject* WorldContextObject)
+{
+	if (const UWorld* World = WorldContextObject->GetWorld())
+	{
+		return World->GetFirstLocalPlayerFromController()->GetPlayerController(World);
+	}
+	return nullptr;
+}
+
 ACommanderPawn* UPFBlueprintFunctionLibrary::GetCommanderPawn(UObject* WorldContextObject)
 {
 	if (const UWorld* World = WorldContextObject->GetWorld())
@@ -128,7 +137,7 @@ bool UPFBlueprintFunctionLibrary::GetRandomReachablePointOfPawn(
 		// );
 
 		const FVector TestLocation = OutLocation + FVector(0, 0, PointAcceptedRadius);
-		
+
 		World->SweepSingleByChannel(
 			Hit,
 			TestLocation,
@@ -303,14 +312,14 @@ FBox UPFBlueprintFunctionLibrary::GetCDOActorBounds(const UObject* WorldContextO
 }
 
 void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults,
-	float RequiredRadius)
+                                                          float RequiredRadius)
 {
 	NULL_CHECK(Pawn);
 	NULL_CHECK(GEngine);
-	
+
 	UWorld* World = GEngine->GetWorldFromContextObject(Pawn, EGetWorldErrorMode::LogAndReturnNull);
 	NULL_CHECK(World);
-	
+
 	const FVector CurrentLocation = Pawn->GetActorLocation();
 
 	World->SweepMultiByChannel(

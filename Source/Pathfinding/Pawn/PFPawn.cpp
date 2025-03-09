@@ -2,6 +2,7 @@
 
 #include "PFPawn.h"
 
+#include "ActorUserWidget.h"
 #include "CommanderPawn.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
@@ -16,7 +17,7 @@ FName APFPawn::PawnBounds_ProfileName = FName("PawnBounds");
 // Sets default values
 APFPawn::APFPawn()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
 
 	INIT_DEFAULT_SUBOBJECT(RootComponent);
@@ -44,14 +45,18 @@ APFPawn::APFPawn()
 	LocationToGroundOffset = 0;
 
 	// State
-	// INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
-	// StateWidgetComponent->SetRelativeLocation(FVector::UpVector * 2);
-	// StateWidgetComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	// if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
-	// 	StateWidgetClassName))
-	// {
-	// 	StateWidgetComponent->SetWidgetClass(*WidgetClassPtr);
-	// }
+	INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
+	StateWidgetComponent->SetupAttachment(RootComponent);
+	StateWidgetComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	StateWidgetComponent->SetVisibility(false);
+	if (const TSubclassOf<UUserWidget>* WidgetClassPtr = GetDefault<UWidgetSettings>()->WidgetClasses.Find(
+		StateWidgetClassName))
+	{
+		StateWidgetComponent->SetWidgetClass(*WidgetClassPtr);
+	}
+
+	StateWidgetHeightRatio = 1.5f;
+	StateWidgetScaleRatio = 0.01f;
 
 	MaxHealth = 100;
 	Attack = 1;
@@ -66,12 +71,51 @@ void APFPawn::PostInitProperties()
 	CurrentHealth = MaxHealth;
 }
 
+void APFPawn::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if (!HasSelected() && StateWidgetHideTimer > 0)
+	{
+		StateWidgetHideTimer -= DeltaTime;
+		if (StateWidgetHideTimer <= 0)
+		{
+			StateWidgetHideTimer = 0;
+			StateWidgetComponent->SetVisibility(false);
+		}
+	}
+}
+
 void APFPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
 	SetColor(GetOwnerColor());
 	SetBoxComponentToBounds();
+
+	// if (const UClass* WidgetClass = StateWidgetComponent->GetWidgetClass()) 
+	// {
+	// 	FProperty* Property = WidgetClass->FindPropertyByName(TEXT("Pawn"));
+	// 	if (const FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+	// 	{
+	// 		if (UUserWidget* Widget = StateWidgetComponent->GetUserWidgetObject())
+	// 		{
+	// 			ObjectProperty->SetObjectPropertyValue(Widget, this);
+	// 		}
+	// 	}
+	// }
+
+	if (UUserWidget* Widget = StateWidgetComponent->GetUserWidgetObject())
+	{
+		if (Widget->Implements<UActorUserWidget>())
+		{
+			IActorUserWidget::Execute_BindActor(Widget, this);
+		}
+	}
+
+	StateWidgetComponent->SetRelativeScale3D(FVector(BoxComponent->GetScaledBoxExtent().Z * StateWidgetScaleRatio));
+	StateWidgetComponent->SetRelativeLocation(
+		BoxComponent->GetRelativeLocation() + BoxComponent->GetScaledBoxExtent() * FVector(0.f, 0.f, StateWidgetHeightRatio));
 
 	const FVector ActorLocation = GetActorLocation();
 
@@ -91,14 +135,6 @@ void APFPawn::BeginPlay()
 			SetActorLocation(Hit.Location + FVector::UpVector + LocationToGroundOffset);
 		}
 	}
-
-	// FHitResult Hit;
-	// GetWorld()->LineTraceSingleByChannel(Hit, ActorLocation + FVector::UpVector * 100, ActorLocation + FVector::DownVector * 100, ECC_Camera);
-	// if (Hit.bBlockingHit)
-	// {
-	// 	DEBUG_MESSAGE(TEXT("%s"), *(Hit.Location + FVector::UpVector - ActorLocation).ToString());
-	// 	StateWidgetComponent->SetRelativeLocation(Hit.Location + FVector::UpVector - ActorLocation);
-	// }
 }
 
 void APFPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -209,6 +245,7 @@ void APFPawn::OnSelected(ACommanderPawn* SelectCommander)
 {
 	bSelected = true;
 	StaticMeshComponent->SetRenderCustomDepth(true);
+	StateWidgetComponent->SetVisibility(true);
 	// UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetDefault<UPFGameSettings>()->PawnSelectedColor);
 }
 
@@ -216,6 +253,7 @@ void APFPawn::OnDeselected()
 {
 	bSelected = false;
 	StaticMeshComponent->SetRenderCustomDepth(false);
+	StateWidgetComponent->SetVisibility(false);
 	// UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, GetOwnerColor());
 }
 
@@ -243,6 +281,8 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 	{
 		CurrentHealth = FMath::Max(0, CurrentHealth - ActualDamage);
 
+		StartShowStateWidget();
+		
 		// died
 		if (CurrentHealth == 0)
 		{
@@ -282,7 +322,7 @@ void APFPawn::Die_Implementation()
 	{
 		OwnerPlayer->RemoveOwnedPawn(this);
 	}
-	
+
 	Destroy();
 }
 
@@ -294,4 +334,10 @@ float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent co
 	ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
 
 	return ActualDamage;
+}
+
+void APFPawn::StartShowStateWidget_Implementation()
+{
+	StateWidgetComponent->SetVisibility(true);
+	StateWidgetHideTimer = 5;
 }
