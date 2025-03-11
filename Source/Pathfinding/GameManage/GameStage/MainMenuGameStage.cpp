@@ -12,18 +12,20 @@ FName FMainMenuGameStage::WidgetName = FName("MainMenu");
 
 void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 {
-	auto SessionInterface = Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface();
-	// if (SessionInterface->IsPlayerInSession(
-	// 	NAME_GameSession, *GameInstance->GetFirstGamePlayer()->GetPreferredUniqueNetId().GetUniqueNetId()))
+	const auto SessionInterface = Online::GetSubsystem(GameInstance->GetWorld())->GetSessionInterface();
+
+	APFGameSession* GS = GameInstance->GetGameSession();
+	// [Server]
+	// The server will destroy the room and then all clients will return to main menu. 
+	if (GS)
 	{
-		APFGameSession* GS = GameInstance->GetGameSession();
-		if (GS)
-		{
-			GS->DismissRoom();
-		}
-		else
-		{
-			SessionInterface->DestroySession(
+		GS->DismissRoom();
+	}
+	// [Client]
+	// The client will break the connection and then return to main menu.
+	else
+	{
+		SessionInterface->DestroySession(
 			NAME_GameSession,
 			FOnDestroySessionCompleteDelegate::CreateLambda(
 				[](FName GameSessionName, bool bSuccess)
@@ -32,13 +34,14 @@ void FMainMenuGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 								*GameSessionName.ToString(),
 								bSuccess ? TEXT("Success") : TEXT("Failure"));
 				}
-			));
-		}
+			)
+		);
 	}
-
+	
 	if (GameInstance->GetWorld()->GetFName() != LevelName)
 	{
-		APlayerController* PC = GameInstance->GetFirstLocalPlayerController();// GameInstance->GetWorld()->GetFirstPlayerController();
+		APlayerController* PC = GameInstance->GetFirstLocalPlayerController();
+		// GameInstance->GetWorld()->GetFirstPlayerController();
 		if (PC)
 		{
 			PC->ClientTravel(GameInstance->GetURL(LevelName.ToString()), TRAVEL_Absolute);

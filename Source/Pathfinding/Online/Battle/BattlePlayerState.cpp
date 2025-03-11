@@ -26,6 +26,7 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, Resources);
 	DOREPLIFETIME(ThisClass, BaseCamps);
 	DOREPLIFETIME(ThisClass, OwnedPawns);
+	DOREPLIFETIME(ThisClass, bFailed);
 }
 
 bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) const

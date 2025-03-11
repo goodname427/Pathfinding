@@ -114,7 +114,8 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	bool HasFailed() const { return bFailed; }
-	
+
+	// [Server]
 	void Fail();
 	
 	void AddOwnedPawn(APFPawn* PawnToAdd);

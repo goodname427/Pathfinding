@@ -61,4 +61,9 @@ public:
 	void AllTransitionToPlayingStage(const FString& InLevelPathToPlay);
 	UFUNCTION(BlueprintCallable, Client, Reliable)
 	void TransitionToPlayingStage(const FString& InLevelPathToPlay);
+
+	UFUNCTION(BlueprintCallable)
+	void AllTransitionToSettlementStage();
+	UFUNCTION(BlueprintCallable, Client, Reliable)
+	void TransitionToSettlementStage(bool bFailed);
 };

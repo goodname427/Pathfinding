@@ -14,6 +14,7 @@
 #include "PFGameInstance.h"
 #include "PFUtils.h"
 #include "Building/BaseCampPawn.h"
+#include "Controller/PFPlayerController.h"
 #include "GameFramework/PlayerStart.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameManage/GameStage/MainMenuGameStage.h"
@@ -184,6 +185,15 @@ void ABattleGameMode::OnPlayerFailed(ABattlePlayerState* PS)
 
 	if (NumLivingPlayer <= 1)
 	{
-		GetGameInstance<UPFGameInstance>()->TransitionToStage<FMainMenuGameStage>();
+		if (APFPlayerController* PC = Cast<APFPlayerController>(
+			GetWorld()->GetFirstPlayerController()))
+		{
+			PC->AllTransitionToSettlementStage();
+		}
+		// fallback
+		else
+		{
+			GetGameInstance<UPFGameInstance>()->TransitionToStage<FMainMenuGameStage>();
+		}
 	}
 }

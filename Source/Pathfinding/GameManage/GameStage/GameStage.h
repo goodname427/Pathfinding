@@ -28,7 +28,7 @@ public:
 	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage1, const TSharedPtr<IGameStage>& Stage2);
 
 	template<typename TGameStage>
-	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage) { return StaticCastSharedPtr<TGameStage>(Stage).IsValid(); }
+	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage) { return IsSameStage(Stage, TGameStage().GetStageName()); }
 
 	static bool IsSameStage(const TSharedPtr<IGameStage>& Stage, FName StageName);
 };
