@@ -18,4 +18,8 @@ class PATHFINDING_API UWidgetSettings : public UDeveloperSettings
 public:
 	UPROPERTY(Config, EditAnywhere, Category = "Default")
 	TMap<FName, TSubclassOf<UUserWidget>> WidgetClasses;
+
+public:
+	UPROPERTY(Config, EditAnywhere, Category = "Sound", meta=(AllowedClasses="SoundBase"))
+	FSoftObjectPath ButtonClickSound;
 };

@@ -24,6 +24,18 @@ private:
 	UPFGameInstance* GameInstance;
 
 protected:
+	void BindSounds(UUserWidget* TargetWidget);
+
+	UPROPERTY()
+	USoundBase* ButtonClickSound;
+	UFUNCTION()
+	void PlayButtonClickSound();
+
+private:
+	UPROPERTY()
+	TSet<UUserWidget*> BindSoundWidgets;
+
+protected:
 	// Try To Get Widget Of The Specified Name
 	UUserWidget* TryGetWidget(FName WidgetName);
 	// Push The Specified Widget And Hide The Current Widget
@@ -41,7 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ClearUntil(FName WidgetName);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void Clear();
 
@@ -51,7 +63,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ShowLoadingScreen(const FString& LoadingText = TEXT(""));
-	
+
 	UFUNCTION(BlueprintCallable)
 	UUserWidget* GetCurrentWidget() const;
 
@@ -60,11 +72,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FString GetCurrentWidgetName() const;
-	
+
 private:
 	UPROPERTY()
-	TArray<UUserWidget*> Widgets;
-	
+	TArray<UUserWidget*> WidgetStack;
+
 	// The Cache of All Loaded Widgets
 	UPROPERTY()
 	TMap<FName, UUserWidget*> WidgetCache;
