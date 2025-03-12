@@ -23,12 +23,13 @@ private:
 	UPROPERTY()
 	UPFGameInstance* GameInstance;
 
-protected:
-	void BindSounds(UUserWidget* TargetWidget);
-
+public:
+	UFUNCTION(BlueprintCallable)
+	void BindSounds(UUserWidget* TargetWidget, bool bRepeat = true);
+	
 	UPROPERTY()
 	USoundBase* ButtonClickSound;
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void PlayButtonClickSound();
 
 private:
