@@ -36,6 +36,10 @@ class PATHFINDING_API UPFGameSettings : public UDeveloperSettings
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "GameStage")
+	bool bTransitionToMainMenuAtBeginning;
+	
+public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Map")
 	TArray<FMapInfo> Maps;
 
