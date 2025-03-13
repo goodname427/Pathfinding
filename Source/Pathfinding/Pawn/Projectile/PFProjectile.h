@@ -33,6 +33,9 @@ protected:
 	UProjectileMovementComponent* ProjectileMovementComponent;
 
 	FTargetRequest Request;
+
+	UPROPERTY(Category = "Projectile", EditDefaultsOnly, BlueprintReadOnly)
+	FEffectWrapper HitEffect;
 	
 public:
 	static const FName Projectile_ProfileName;

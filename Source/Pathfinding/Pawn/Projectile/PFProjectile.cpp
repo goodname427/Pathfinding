@@ -45,6 +45,8 @@ void APFProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 					this,
 					UDamageType::StaticClass()
 				);
+
+				PlayEffect(this, HitEffect);
 				
 				Destroy();
 			}
