@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AttackCommandComponent.h"
+#include "Command/AttackCommandComponent.h"
 #include "ProjectileAttackCommandComponent.generated.h"
 
 

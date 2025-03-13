@@ -374,7 +374,10 @@ void ACommanderPawn::DeselectAll()
 {
 	for (APFPawn* Pawn : SelectedPawns)
 	{
-		Pawn->OnDeselected();
+		if (Pawn != nullptr && Pawn->HasSelected())
+		{
+			Pawn->OnDeselected();
+		}
 	}
 	ServerDeselectAll();
 }

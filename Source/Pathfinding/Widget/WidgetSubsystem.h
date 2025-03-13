@@ -26,11 +26,19 @@ private:
 public:
 	UFUNCTION(BlueprintCallable)
 	void BindSounds(UUserWidget* TargetWidget, bool bRepeat = true);
+
+	UFUNCTION(BlueprintCallable)
+	void PlaySound(USoundBase* Sound);
 	
 	UPROPERTY()
 	USoundBase* ButtonClickSound;
 	UFUNCTION(BlueprintCallable)
 	void PlayButtonClickSound();
+
+	UPROPERTY()
+	USoundBase* WidgetShowSound;
+	UPROPERTY()
+	USoundBase* WidgetHideSound;
 
 private:
 	UPROPERTY()

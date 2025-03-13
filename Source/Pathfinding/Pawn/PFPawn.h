@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EffectUtils.h"
 #include "PFGameSettings.h"
 #include "Battle/BattlePlayerState.h"
 #include "Components/WidgetComponent.h"
@@ -10,6 +11,15 @@
 #include "PFPawn.generated.h"
 
 class UBoxComponent;
+
+USTRUCT(BlueprintType)
+struct FPFPawnEffectData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FEffectWrapper TakeDamage;
+};
 
 USTRUCT(BlueprintType)
 struct FPFPawnData
@@ -25,10 +35,15 @@ struct FPFPawnData
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowedClasses="Texture"))
 	UObject* Icon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FPFPawnEffectData EffectData;
+
 	FPFPawnData()
 	{
 		Name = NAME_None;
 		Icon = nullptr;
+
+		EffectData = FPFPawnEffectData();
 	}
 };
 
@@ -55,7 +70,7 @@ public:
 	virtual void PostInitProperties() override;
 
 	virtual void Tick(float DeltaTime) override;
-	
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -134,15 +149,15 @@ public:
 
 	UPROPERTY(Transient, BlueprintReadWrite)
 	bool bShouldSkipDied;
-	
+
 public:
-	// State
+	// Damage
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
 	                         class AController* EventInstigator, AActor* DamageCauser) override;;
 
 	virtual bool ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AController* EventInstigator,
 	                              AActor* DamageCauser) const override;
-	
+
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	virtual void Die();
 
@@ -151,6 +166,7 @@ protected:
 	                                      class AController* EventInstigator, AActor* DamageCauser) override;
 
 public:
+	// State
 	const FPFPawnData& GetData() const { return Data; }
 
 	UFUNCTION(BlueprintCallable)
@@ -161,7 +177,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	bool IsInvincible() const { return MaxHealth <= 0 || Defense <= 0; }
-	
+
 	float GetCurrentHealth() const { return CurrentHealth; }
 
 	float GetAttack() const { return Attack; }
@@ -190,9 +206,10 @@ protected:
 	int32 Defense;
 
 public:
+	// Widget
 	UFUNCTION(Unreliable, NetMulticast)
 	void StartShowStateWidget();
-	
+
 protected:
 	static FName StateWidgetClassName;
 
@@ -207,4 +224,12 @@ protected:
 
 private:
 	float StateWidgetHideTimer;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void PlaySound(USoundBase* Sound);
+
+protected:
+	UPROPERTY(Category = "Sound", VisibleAnywhere, BlueprintReadOnly)
+	UAudioComponent* AudioComponent;
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "EffectUtils.h"
 #include "PFPawn.h"
 #include "UObject/Object.h"
 #include "CommandComponent.generated.h"
@@ -131,6 +132,18 @@ struct FTargetRequest
 	bool IsOverrideCommandChannel() const { return OverrideCommandChannel > GCommandChannel_Default; }
 };
 
+USTRUCT(BlueprintType)
+struct FCommandEffectData
+{
+	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FEffectWrapper BeginExecute;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FEffectWrapper EndExecute;
+};
+
 #define GET_COMMAND_CHANNEL(Request, Command) (Request.IsOverrideCommandChannel()? Request.OverrideCommandChannel : Command->GetCommandChannel())
 
 USTRUCT(BlueprintType)
@@ -144,6 +157,8 @@ struct FCommandData
 	UObject* Icon;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(MultiLine=true))
 	FString Description;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FCommandEffectData EffectData;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	bool bNeedToTarget;
@@ -172,6 +187,7 @@ struct FCommandData
 		Name = NAME_None;
 		Icon = nullptr;
 		Description = TEXT("");
+		EffectData = FCommandEffectData();
 
 		RequiredTargetRadius = 100.f;
 		bNeedToTarget = true;

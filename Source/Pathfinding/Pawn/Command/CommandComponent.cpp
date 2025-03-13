@@ -7,6 +7,7 @@
 #include "ConsciousPawn.h"
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
+#include "Kismet/GameplayStatics.h"
 
 // #define COMMAND_DEBUG
 
@@ -247,6 +248,8 @@ void UCommandComponent::BeginExecute()
 	);
 #endif
 
+	PlayEffect(GetExecutePawn(), Data.EffectData.BeginExecute);
+	
 	InternalBeginExecute();
 }
 
@@ -267,6 +270,7 @@ void UCommandComponent::EndExecute(ECommandExecuteResult Result)
 	);
 #endif
 
+	PlayEffect(GetExecutePawn(), Data.EffectData.EndExecute);
 	InternalEndExecute(Result);
 
 	if (OnCommandEnd.IsBound())

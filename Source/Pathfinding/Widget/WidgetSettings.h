@@ -22,4 +22,10 @@ public:
 public:
 	UPROPERTY(Config, EditAnywhere, Category = "Sound", meta=(AllowedClasses="SoundBase"))
 	FSoftObjectPath ButtonClickSound;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Sound", meta=(AllowedClasses="SoundBase"))
+	FSoftObjectPath WidgetShowSound;
+
+	UPROPERTY(Config, EditAnywhere, Category = "Sound", meta=(AllowedClasses="SoundBase"))
+	FSoftObjectPath WidgetHideSound;
 };

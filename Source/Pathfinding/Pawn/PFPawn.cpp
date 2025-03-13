@@ -7,6 +7,7 @@
 #include "PFBlueprintFunctionLibrary.h"
 #include "PFUtils.h"
 #include "WidgetSettings.h"
+#include "Components/AudioComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
@@ -44,7 +45,7 @@ APFPawn::APFPawn()
 	bAdjustLocationToGround = true;
 	LocationToGroundOffset = 0;
 
-	// State
+	// Widget
 	INIT_DEFAULT_SUBOBJECT(StateWidgetComponent);
 	StateWidgetComponent->SetupAttachment(RootComponent);
 	StateWidgetComponent->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
@@ -58,10 +59,14 @@ APFPawn::APFPawn()
 	StateWidgetHeightRatio = 1.5f;
 	StateWidgetScaleRatio = 0.01f;
 
+	// State
 	MaxHealth = 100;
 	Attack = 1;
 	AttackSpeed = 1;
 	Defense = 1;
+
+	// Sound
+	// INIT_DEFAULT_SUBOBJECT(AudioComponent);
 }
 
 void APFPawn::PostInitProperties()
@@ -281,6 +286,7 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 	{
 		CurrentHealth = FMath::Max(0, CurrentHealth - ActualDamage);
 
+		PlayEffect(this, Data.EffectData.TakeDamage);
 		StartShowStateWidget();
 		
 		// died
@@ -334,6 +340,15 @@ float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent co
 	ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
 
 	return ActualDamage;
+}
+
+void APFPawn::PlaySound(USoundBase* Sound)
+{
+	if (Sound)
+	{
+		AudioComponent->SetSound(Sound);
+		AudioComponent->Play();
+	}
 }
 
 void APFPawn::StartShowStateWidget_Implementation()

@@ -25,6 +25,8 @@ bool UExplodeAttackCommandComponent::InternalIsArgumentsValid_Implementation() c
 
 void UExplodeAttackCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	ApplyDamageToTargetPawn();
 	
 	EndExecute(ECommandExecuteResult::Success);

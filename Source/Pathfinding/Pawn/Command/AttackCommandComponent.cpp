@@ -29,6 +29,8 @@ bool UAttackCommandComponent::InternalIsArgumentsValid_Implementation() const
 
 void UAttackCommandComponent::InternalBeginExecute_Implementation()
 {
+	AUTHORITY_CHECK();
+	
 	ApplyDamageToTargetPawn();
 	EndExecuteDelay(ECommandExecuteResult::Success, GetExecutePawn()->GetAttackDuration());
 }
