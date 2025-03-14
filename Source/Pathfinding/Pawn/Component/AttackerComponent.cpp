@@ -107,15 +107,15 @@ void UAttackerComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, con
 		}
 
 		// Notify other pawns around self
-		static TArray<AConsciousPawn*> AroundSelfPawns;
-		UPFBlueprintFunctionLibrary::GetAroundPawns<AConsciousPawn>(Attacker, AroundSelfPawns, 1000, EPawnRole::Self);
-		for (AConsciousPawn* Pawn : AroundSelfPawns)
-		{
-			const UCommandComponent* PawnCurrentCommand = Pawn->GetCurrentCommand(GCommandChannel_Default);
-			if (PawnCurrentCommand == nullptr || PawnCurrentCommand->GetCommandName() != UAttackCommandComponent::StaticCommandName)
-			{
-				Pawn->Receive(FTargetRequest::Make<UAttackCommandComponent>(CauserPawn));
-			}
-		}
+		// static TArray<AConsciousPawn*> AroundSelfPawns;
+		// UPFBlueprintFunctionLibrary::GetAroundPawns<AConsciousPawn>(Attacker, AroundSelfPawns, 1000, EPawnRole::Self);
+		// for (AConsciousPawn* Pawn : AroundSelfPawns)
+		// {
+		// 	const UCommandComponent* PawnCurrentCommand = Pawn->GetCurrentCommand(GCommandChannel_Default);
+		// 	if (PawnCurrentCommand == nullptr || PawnCurrentCommand->GetCommandName() != UAttackCommandComponent::StaticCommandName)
+		// 	{
+		// 		Pawn->Receive(FTargetRequest::Make<UAttackCommandComponent>(CauserPawn));
+		// 	}
+		// }
 	}
 }

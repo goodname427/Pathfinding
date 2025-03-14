@@ -200,6 +200,11 @@ public:
 protected:
 	UPROPERTY(Category = "State|Conscious", EditDefaultsOnly, BlueprintReadOnly)
 	FConsciousData ConsciousData;
+
+protected:
+	// Attack Notify
+	UPROPERTY(Category = "AttackNotify", EditDefaultsOnly, BlueprintReadOnly)
+	class UAttackNotifierComponent* AttackNotifierComponent;
 };
 
 template <class TCommand>

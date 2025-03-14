@@ -120,7 +120,8 @@ void APFPawn::BeginPlay()
 
 	StateWidgetComponent->SetRelativeScale3D(FVector(BoxComponent->GetScaledBoxExtent().Z * StateWidgetScaleRatio));
 	StateWidgetComponent->SetRelativeLocation(
-		BoxComponent->GetRelativeLocation() + BoxComponent->GetScaledBoxExtent() * FVector(0.f, 0.f, StateWidgetHeightRatio));
+		BoxComponent->GetRelativeLocation() + BoxComponent->GetScaledBoxExtent() * FVector(
+			0.f, 0.f, StateWidgetHeightRatio));
 
 	const FVector ActorLocation = GetActorLocation();
 
@@ -209,8 +210,13 @@ void APFPawn::SetOwner(AActor* NewOwner)
 
 void APFPawn::SetColor(const FLinearColor& InColor)
 {
-	UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(
-		StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
+	// static UMaterialInterface* FlagMaterial;
+	// if (FlagMaterial == nullptr)
+	// {
+	// 	FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial();
+	// }
+	
+	UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
 	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, InColor);
 }
 
@@ -288,7 +294,7 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 
 		PlayEffect(this, Data.EffectData.TakeDamage);
 		StartShowStateWidget();
-		
+
 		// died
 		if (CurrentHealth == 0)
 		{

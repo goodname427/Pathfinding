@@ -18,7 +18,7 @@ public:
 	APFProjectile();
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	UFUNCTION(Unreliable, NetMulticast, BlueprintCallable)
 	void Launch(const FTargetRequest& InRequest);
 
 protected:

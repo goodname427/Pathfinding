@@ -12,7 +12,8 @@ const FName APFProjectile::Projectile_ProfileName = FName("Projectile");
 // Sets default values
 APFProjectile::APFProjectile()
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+	bReplicates = true;
 
 	RootComponent = INIT_DEFAULT_SUBOBJECT(StaticMeshComponent);
 	StaticMeshComponent->SetCollisionProfileName(Projectile_ProfileName);
@@ -34,14 +35,14 @@ void APFProjectile::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 {
 	if (APFPawn* OtherPawn = Cast<APFPawn>(OtherActor))
 	{
-		if (const APFPawn* PawnInstigator = GetInstigator<APFPawn>())
+		if (APFPawn* PawnInstigator = GetInstigator<APFPawn>())
 		{
-			if (OtherPawn != PawnInstigator && (!Request.IsTargetPawnValid() || OtherPawn == Request.TargetPawn))
+			if (OtherPawn == Request.TargetPawn)
 			{
 				UGameplayStatics::ApplyDamage(
 					OtherPawn,
 					PawnInstigator->GetAttack(),
-					GetInstigatorController(),
+					PawnInstigator->GetController(),
 					this,
 					UDamageType::StaticClass()
 				);

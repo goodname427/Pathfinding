@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Component/CommandChannelComponent.h"
 #include "Command/MoveCommandComponent.h"
+#include "Component/AttackNotifierComponent.h"
 
 // Sets default values
 AConsciousPawn::AConsciousPawn(): ConsciousData()
@@ -16,6 +17,8 @@ AConsciousPawn::AConsciousPawn(): ConsciousData()
 
 	AIControllerClass = AConsciousAIController::StaticClass();
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
+
+	INIT_DEFAULT_SUBOBJECT(AttackNotifierComponent);
 }
 
 void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
