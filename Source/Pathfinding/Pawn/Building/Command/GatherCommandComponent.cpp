@@ -53,8 +53,8 @@ void UGatherCommandComponent::InternalBeginExecute_Implementation()
 	}
 
 	// Set spawn command gather location
-	const TArray<UCommandComponent*>& SpawnCommands = GetExecutePawn()->GetCommandsByName(
-		USpawnCommandComponent::StaticCommandName);
+	const TArray<UCommandComponent*>& SpawnCommands = GetExecutePawn()->GetCommandsByClass(
+		USpawnCommandComponent::StaticClass());
 	for (UCommandComponent* Command : SpawnCommands)
 	{
 		if (USpawnCommandComponent* SpawnCommand = Cast<USpawnCommandComponent>(Command))

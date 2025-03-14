@@ -270,7 +270,8 @@ public:
 
 public:
 	// Command Default Arguments
-	FName GetCommandName() const { return Data.Name; };
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	FName GetCommandName() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
 	FString GetCommandDisplayName() const;

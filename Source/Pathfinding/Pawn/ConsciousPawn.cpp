@@ -212,6 +212,26 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommands() const
 	return CommandArray;
 }
 
+const TArray<UCommandComponent*>& AConsciousPawn::GetCommandsByClass(
+	TSubclassOf<UCommandComponent> CommandClass) const
+{
+	static TArray<UCommandComponent*> CommandArray;
+	CommandList.GenerateValueArray(CommandArray);
+
+	static TArray<UCommandComponent*> CommandArrayOfSpecifyClass;
+	CommandArrayOfSpecifyClass.Reset();
+
+	for (UCommandComponent* Command : CommandArray)
+	{
+		if (Command->GetClass() == CommandClass)
+		{
+			CommandArrayOfSpecifyClass.Add(Command);
+		}
+	}
+
+	return CommandArray;
+}
+
 const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommandsForCommandListMenu() const
 {
 	static TArray<UCommandComponent*> CommandArray;

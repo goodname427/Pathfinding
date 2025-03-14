@@ -120,6 +120,9 @@ public:
 	const TArray<UCommandComponent*>& GetAllCommands() const;
 
 	UFUNCTION(BlueprintCallable)
+	const TArray<UCommandComponent*>& GetCommandsByClass(TSubclassOf<UCommandComponent> CommandClass) const;
+
+	UFUNCTION(BlueprintCallable)
 	const TArray<UCommandComponent*>& GetAllCommandsForCommandListMenu() const;
 
 	void RefreshCommandList();

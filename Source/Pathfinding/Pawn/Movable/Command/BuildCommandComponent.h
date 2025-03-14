@@ -22,7 +22,7 @@ public:
 public:
 	DECLARE_COMMAND_NAME()
 
-	virtual FString GetCommandDisplayName_Implementation() const override;
+	virtual FName GetCommandName_Implementation() const override;
 
 	virtual FString GetCommandDescription_Implementation() const override;
 

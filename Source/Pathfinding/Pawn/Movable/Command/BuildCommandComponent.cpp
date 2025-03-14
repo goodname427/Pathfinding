@@ -35,10 +35,10 @@ void UBuildCommandComponent::BeginPlay()
 	}
 }
 
-FString UBuildCommandComponent::GetCommandDisplayName_Implementation() const
+FName UBuildCommandComponent::GetCommandName_Implementation() const
 {
 	const AConsciousPawn* CDO = GetDefaultObjectToBuild();
-	return FString::Printf(TEXT("Build %s"), CDO ? *CDO->GetData().Name.ToString() : TEXT(""));
+	return FName(FString::Printf(TEXT("Build %s"), CDO ? *CDO->GetData().Name.ToString() : TEXT("")));
 }
 
 FString UBuildCommandComponent::GetCommandDescription_Implementation() const
@@ -194,7 +194,7 @@ void UBuildCommandComponent::InternalTarget_Implementation(float DeltaTime)
 		FHitResult Hit;
 		GetWorld()->LineTraceSingleByChannel(Hit, Ray.Origin, Ray.PointAt(500 * 100), ECC_Visibility);
 
-		if (Hit.bBlockingHit)
+		if (Hit.bBlockingHit && FVector::DotProduct(Hit.Normal, FVector::UpVector) > 0.99f)
 		{
 			FrameActor->GetStaticMeshComponent()->SetVisibility(true);
 			FrameActor->SetActorLocation(Hit.Location);

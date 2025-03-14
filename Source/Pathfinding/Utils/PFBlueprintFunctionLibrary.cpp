@@ -219,7 +219,7 @@ bool UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(const UObject* Worl
 
 	//DEBUG_MESSAGE(TEXT("Actor Bounds [%s]"), *ActorBounds.ToString());
 
-	// ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 10));
+	ActorBounds = ActorBounds.ShiftBy(FVector(0, 0, 100));
 
 	DrawDebugBox(
 		World,
@@ -317,7 +317,7 @@ void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, T
 	NULL_CHECK(Pawn);
 	NULL_CHECK(GEngine);
 
-	UWorld* World = GEngine->GetWorldFromContextObject(Pawn, EGetWorldErrorMode::LogAndReturnNull);
+	const UWorld* World = GEngine->GetWorldFromContextObject(Pawn, EGetWorldErrorMode::LogAndReturnNull);
 	NULL_CHECK(World);
 
 	const FVector CurrentLocation = Pawn->GetActorLocation();
@@ -327,7 +327,7 @@ void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, T
 		CurrentLocation,
 		CurrentLocation,
 		FQuat::Identity,
-		ECC_Camera,
+		ECC_GameTraceChannel1,
 		FCollisionShape::MakeSphere(RequiredRadius),
 		FCollisionQueryParams::DefaultQueryParam
 	);

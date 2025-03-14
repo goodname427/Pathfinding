@@ -42,10 +42,10 @@ const AConsciousPawn* USpawnCommandComponent::GetDefaultObjectToSpawn() const
 	return PawnClassToSpawn.Get() ? PawnClassToSpawn.GetDefaultObject() : nullptr;
 }
 
-FString USpawnCommandComponent::GetCommandDisplayName_Implementation() const
+FName USpawnCommandComponent::GetCommandName_Implementation() const
 {
 	const AConsciousPawn* CDO = GetDefaultObjectToSpawn();
-	return FString::Printf(TEXT("Spawn %s"), CDO ? *CDO->GetData().Name.ToString() : TEXT(""));
+	return FName(FString::Printf(TEXT("Spawn %s"), CDO ? *CDO->GetData().Name.ToString() : TEXT("")));
 }
 
 FString USpawnCommandComponent::GetCommandDescription_Implementation() const

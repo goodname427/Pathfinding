@@ -63,6 +63,11 @@ void UCommandComponent::UninitializeComponent()
 	}
 }
 
+FName UCommandComponent::GetCommandName_Implementation() const
+{
+	return Data.Name; 
+}
+
 FString UCommandComponent::GetCommandDescription_Implementation() const
 {
 	return Data.Description;

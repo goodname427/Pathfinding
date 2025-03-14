@@ -40,7 +40,8 @@ void ASpawnBuildingPawn::BeginPlay()
 
 bool ASpawnBuildingPawn::HasSpawnCommand() const
 {
-	return CommandList.Contains(USpawnCommandComponent::StaticCommandName);
+	return true;
+	// return CommandList.Contains(USpawnCommandComponent::StaticCommandName);
 }
 
 void ASpawnBuildingPawn::OnSelected(class ACommanderPawn* SelectCommander)
