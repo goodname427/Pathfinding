@@ -287,11 +287,12 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
                           class AController* EventInstigator, AActor* DamageCauser)
 {
 	// do not modify damage parameters after this
-	const int ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 
 	if (ActualDamage != 0.0f)
 	{
-		CurrentHealth = FMath::Max(0, CurrentHealth - ActualDamage);
+		ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
+		CurrentHealth = FMath::Max(0, FMath::CeilToInt(CurrentHealth - ActualDamage));
 
 		PlayEffect(this, Data.EffectData.TakeDamage);
 		StartShowStateWidget();
