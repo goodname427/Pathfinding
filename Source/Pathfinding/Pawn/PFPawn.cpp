@@ -350,7 +350,7 @@ float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent co
 {
 	float ActualDamage = Super::InternalTakePointDamage(Damage, PointDamageEvent, EventInstigator, DamageCauser);
 
-	ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
+	//ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
 
 	return ActualDamage;
 }
