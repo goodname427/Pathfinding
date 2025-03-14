@@ -85,15 +85,21 @@ void Delay(UObject* WorldContextObject, float Delay, TFunc Func)
 	TSharedPtr<FTimerHandle> TimerHandle = MakeShared<FTimerHandle>();
 
 	// create timer delegate
+	FWeakObjectPtr WeakContext(WorldContextObject);
 	FTimerDelegate TimerDelegate;
-	TimerDelegate.BindLambda([WorldContextObject, TimerHandle, Func]()
+	TimerDelegate.BindLambda([WeakContext, TimerHandle, Func]()
 	{
 		// check object
-		VALID_CHECK(WorldContextObject);
+		if (!WeakContext.IsValid())
+		{
+			return;
+		}
+		
+		// VALID_CHECK(WorldContextObject);
 		VALID_CHECK(GEngine);
 		
 		// get world
-		const UWorld* CurrentWorld = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::ReturnNull);
+		const UWorld* CurrentWorld = GEngine->GetWorldFromContextObject(WeakContext.Get(), EGetWorldErrorMode::ReturnNull);
 		VALID_CHECK(CurrentWorld);
 		
 		// clear timer

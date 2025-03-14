@@ -3,6 +3,10 @@
 
 #include "CommanderPawnMovementComponent.h"
 
+#include "PFUtils.h"
+#include "Components/BoxComponent.h"
+#include "Engine/LevelBounds.h"
+
 UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
 {
 	MaxSpeed = 7200.f;
@@ -15,7 +19,7 @@ UCommanderPawnMovementComponent::UCommanderPawnMovementComponent()
 }
 
 void UCommanderPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                                   FActorComponentTickFunction* ThisTickFunction)
+                                                    FActorComponentTickFunction* ThisTickFunction)
 {
 	if (ShouldSkipUpdate(DeltaTime))
 	{
@@ -82,18 +86,76 @@ void UCommanderPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 bool UCommanderPawnMovementComponent::LimitWorldBounds()
 {
-	AWorldSettings* WorldSettings = PawnOwner ? PawnOwner->GetWorldSettings() : NULL;
-	if (!WorldSettings || !WorldSettings->bEnableWorldBoundsChecks || !UpdatedComponent)
-	{
-		return false;
-	}
+	// AWorldSettings* WorldSettings = PawnOwner ? PawnOwner->GetWorldSettings() : NULL;
+	// if (!WorldSettings || !WorldSettings->bEnableWorldBoundsChecks || !UpdatedComponent)
+	// {
+	// 	return false;
+	// }
+	//
+	// if (CurrentLocation.Z < WorldSettings->KillZ)
+	// {
+	// 	Velocity.Z = FMath::Min(GetMaxSpeed(), WorldSettings->KillZ - CurrentLocation.Z + 2.0f);
+	// 	return true;
+	// }
+	NULL_CHECK_RET(PawnOwner, false);
 
 	const FVector CurrentLocation = UpdatedComponent->GetComponentLocation();
-	if (CurrentLocation.Z < WorldSettings->KillZ)
+
+	if (const UWorld* World = PawnOwner->GetWorld())
 	{
-		Velocity.Z = FMath::Min(GetMaxSpeed(), WorldSettings->KillZ - CurrentLocation.Z + 2.0f);
-		return true;
+		if (const ULevel* Level = World->GetCurrentLevel())
+		{
+			const TWeakObjectPtr<ALevelBounds> LevelBounds = Level->LevelBoundsActor;
+			if (LevelBounds.IsValid())
+			{
+				//const UBoxComponent* BoxComponent = LevelBounds->BoxComponent;
+				//const FTransform& BoxTransform = BoxComponent->GetComponentTransform();
+				const FBox Box = LevelBounds->GetComponentsBoundingBox();
+				// DEBUG_MESSAGE(TEXT("%s"), *Box.ToString());
+
+				// if (!Box.IsInside(CurrentLocation))
+				// {
+				bool HasModified = false;
+				
+				if (CurrentLocation.X > Box.Max.X)
+				{
+					Velocity.X = FMath::Min(Velocity.X, 0.0f);
+					HasModified = true;
+				}
+				else if (CurrentLocation.X < Box.Min.X)
+				{
+					Velocity.X = FMath::Max(Velocity.X, 0.0f);
+					HasModified = true;
+				}
+
+				if (CurrentLocation.Y > Box.Max.Y)
+				{
+					Velocity.Y = FMath::Min(Velocity.Y, 0.0f);
+					HasModified = true;
+				}
+				else if (CurrentLocation.Y < Box.Min.Y)
+				{
+					Velocity.Y = FMath::Max(Velocity.Y, 0.0f);
+					HasModified = true;
+				}
+
+				if (CurrentLocation.Z > Box.Max.Z)
+				{
+					Velocity.Z = FMath::Min(Velocity.Z, 0.0f);
+					HasModified = true;
+				}
+				else if (CurrentLocation.Z < Box.Min.Z)
+				{
+					Velocity.Z = FMath::Max(Velocity.Z, 0.0f);
+					HasModified = true;
+				}
+
+				return HasModified;
+				// }
+			}
+		}
 	}
+
 
 	return false;
 }
@@ -142,7 +204,7 @@ void UCommanderPawnMovementComponent::ApplyControlInputToVelocity(float DeltaTim
 }
 
 bool UCommanderPawnMovementComponent::ResolvePenetrationImpl(const FVector& Adjustment, const FHitResult& Hit,
-                                                            const FQuat& NewRotationQuat)
+                                                             const FQuat& NewRotationQuat)
 {
 	bPositionCorrected |= Super::ResolvePenetrationImpl(Adjustment, Hit, NewRotationQuat);
 	return bPositionCorrected;
