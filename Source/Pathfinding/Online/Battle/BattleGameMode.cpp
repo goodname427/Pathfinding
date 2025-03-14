@@ -146,18 +146,24 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 
 	Commander->SpawnPawn(Camp->GetBaseCampPawnClass(), CommanderLocation);
 
-	FVector GatherLocation;
+	static FVector GatherLocationOffset[] = { {1, 0, 0}, {0, 1, 0}, {-1, 0, 0}, {0, -1, 0} };
+	int32 GatherLocationIndex = 0;
+
 	for (const FDefaultPawnInfo& DefaultPawnInfo : Camp->GetDefaultPawnInfos())
 	{
-		if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
-			Commander,
-			CommanderLocation,
-			GatherLocation,
-			1000.0f
-		))
-		{
-			return;
-		}
+		// if (!UNavigationSystemV1::K2_GetRandomReachablePointInRadius(
+		// 	Commander,
+		// 	CommanderLocation,
+		// 	GatherLocation,
+		// 	1000.0f
+		// ))
+		// {
+		// 	return;
+		// }
+
+		const FVector GatherLocation = CommanderLocation + GatherLocationOffset[GatherLocationIndex] * 500;
+		GatherLocationIndex = (GatherLocationIndex + 1) % 4;
+		
 
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
