@@ -60,7 +60,7 @@ void APFProjectile::Launch_Implementation(const FTargetRequest& InRequest)
 	Request = InRequest;
 
 	FVector Direction = InRequest.GetTargetLocation() - GetActorLocation();
-	Direction.Z = 0;
+	//Direction.Z = 0;
 	Direction.Normalize();
 
 	ProjectileMovementComponent->Velocity = Direction * ProjectileMovementComponent->InitialSpeed;
