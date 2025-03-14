@@ -215,8 +215,9 @@ void APFPawn::SetColor(const FLinearColor& InColor)
 	// {
 	// 	FlagMaterial = GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial();
 	// }
-	
-	UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
+
+	UPFBlueprintFunctionLibrary::TryCreateDynamicMaterialInstanceForStaticMesh(
+		StaticMeshComponent, GetDefault<UPFGameSettings>()->LoadPawnFlagMaterial());
 	UPFBlueprintFunctionLibrary::SetStaticMeshColor(StaticMeshComponent, InColor);
 }
 
@@ -336,6 +337,11 @@ void APFPawn::Die_Implementation()
 	}
 
 	Destroy();
+}
+
+void APFPawn::DieDelay(float DelayDuration)
+{
+	Delay(this, DelayDuration, [this] { Die(); });
 }
 
 float APFPawn::InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,

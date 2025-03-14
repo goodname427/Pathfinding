@@ -49,6 +49,7 @@ void ABuildingPawn::BeginBuilding_Implementation()
 		else
 		{
 			Die();
+			return;
 		}
 	}
 	

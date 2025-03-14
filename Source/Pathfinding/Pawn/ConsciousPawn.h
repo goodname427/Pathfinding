@@ -208,6 +208,9 @@ protected:
 	// Attack Notify
 	UPROPERTY(Category = "AttackNotify", EditDefaultsOnly, BlueprintReadOnly)
 	class UAttackNotifierComponent* AttackNotifierComponent;
+
+public:
+	virtual void Die() override;
 };
 
 template <class TCommand>

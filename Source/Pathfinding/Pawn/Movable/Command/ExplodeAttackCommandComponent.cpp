@@ -28,10 +28,9 @@ void UExplodeAttackCommandComponent::InternalBeginExecute_Implementation()
 	AUTHORITY_CHECK();
 	
 	ApplyDamageToTargetPawn();
+	GetExecutePawn()->DieDelay();
 	
 	EndExecute(ECommandExecuteResult::Success);
-
-	GetExecutePawn()->Die();
 }
 
 void UExplodeAttackCommandComponent::InternalEndExecute_Implementation(ECommandExecuteResult Result)

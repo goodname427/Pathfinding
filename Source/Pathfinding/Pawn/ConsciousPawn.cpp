@@ -96,6 +96,8 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
+		VALID_CHECK(CommandToExecute);
+		
 		// DEBUG_MESSAGE(TEXT("ConsciousAIController Push Command [%s]"), *CommandToExecute->GetCommandName().ToString());
 		CommandChannel->PushCommand(CommandToExecute);
 	}
@@ -467,6 +469,34 @@ void AConsciousPawn::AddCommandChannel(UCommandChannelComponent* CommandChannel)
 			OnCommandChannelCreated.Broadcast(this);
 		}
 	}
+}
+
+void AConsciousPawn::Die()
+{
+	bShouldSkipDied = false;
+	if (OnPawnDied.IsBound())
+	{
+		OnPawnDied.Broadcast(this);
+	}
+
+	// Modify the 'bShouldSkipDied' to ture so that skipping died
+	if (bShouldSkipDied)
+	{
+		return;
+	}
+
+	// Clear all command
+	FTargetRequest ClearRequest;
+	ClearRequest.Type = ETargetRequestType::Clear;
+	ClearRequest.OverrideCommandChannel = UProgressCommandComponent::StaticCommandChannel;
+	Receive(ClearRequest);
+	
+	if (OwnerPlayer)
+	{
+		OwnerPlayer->RemoveOwnedPawn(this);
+	}
+
+	Destroy();
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

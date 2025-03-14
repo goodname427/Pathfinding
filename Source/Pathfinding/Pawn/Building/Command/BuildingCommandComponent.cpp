@@ -81,7 +81,7 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 	// Return resources
 	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
 
-	Frame->Die();
+	Frame->DieDelay();
 }
 
 void UBuildingCommandComponent::InternalBeginExecute_Implementation()
@@ -109,7 +109,7 @@ void UBuildingCommandComponent::InternalEndExecute_Implementation(ECommandExecut
 
 		Frame->GetCommander()->SpawnPawn(Frame->GetBuildingClassToBuild(), Frame->GetActorLocation());
 	
-		Frame->Die();
+		Frame->DieDelay();
 	}
 }
 

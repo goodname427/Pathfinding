@@ -124,7 +124,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 	EPawnRole GetPawnRole(const APFPawn* OtherPawn) const;
 
-private:
+protected:
 	UPROPERTY(Transient, ReplicatedUsing = OnRep_OwnerPlayer)
 	ABattlePlayerState* OwnerPlayer;
 
@@ -160,6 +160,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	virtual void Die();
+
+	// To avoid the unexpected order of function 
+	UFUNCTION(BlueprintCallable)
+	void DieDelay(float DelayDuration = 0.1f);
 
 protected:
 	virtual float InternalTakePointDamage(float Damage, struct FPointDamageEvent const& PointDamageEvent,
