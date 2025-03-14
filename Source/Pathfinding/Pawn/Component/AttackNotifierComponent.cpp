@@ -15,7 +15,7 @@ UAttackNotifierComponent::UAttackNotifierComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	OwnerPawn = nullptr;
-	NotifyRadius = 1000;
+	NotifyRadius = 25 * 100;
 }
 
 
