@@ -6,6 +6,7 @@
 #include "PFUtils.h"
 #include "Algo/Transform.h"
 #include "Building/BaseCampPawn.h"
+#include "Building/KitchenPawn.h"
 #include "Net/UnrealNetwork.h"
 
 FString ToString(const FResourceInfo& ResourceInfo)
@@ -61,6 +62,7 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, BaseCamps);
 	DOREPLIFETIME(ThisClass, OwnedPawns);
 	DOREPLIFETIME(ThisClass, bFailed);
+	DOREPLIFETIME(ThisClass, TotalFoodProducePerCycle);
 }
 
 bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) const
@@ -177,6 +179,16 @@ void ABattlePlayerState::AddOwnedPawn(APFPawn* PawnToAdd)
 	}
 
 	OwnedPawns.Add(PawnToAdd);
+
+	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToAdd))
+	{
+		TotalFoodProducePerCycle -= ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
+	}
+
+	if (const AKitchenPawn* KitchenPawn = Cast<AKitchenPawn>(PawnToAdd))
+	{
+		TotalFoodProducePerCycle += KitchenPawn->GetProducedFoodPerSecond();
+	}
 }
 
 void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
@@ -192,6 +204,16 @@ void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
 	}
 
 	OwnedPawns.Remove(PawnToRemove);
+
+	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToRemove))
+	{
+		TotalFoodProducePerCycle += ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
+	}
+
+	if (const AKitchenPawn* KitchenPawn = Cast<AKitchenPawn>(PawnToRemove))
+	{
+		TotalFoodProducePerCycle -= KitchenPawn->GetProducedFoodPerSecond();
+	}
 
 	// failure
 	if (BaseCamps.Num() == 0)

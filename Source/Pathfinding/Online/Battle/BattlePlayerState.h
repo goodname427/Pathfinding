@@ -15,9 +15,10 @@ enum class EResourceType : uint8
 {
 	None = 0,
 	Coin = 1,
+	Food = 2,
 };
 
-constexpr int32 GNumResourceType = 1;
+constexpr int32 GNumResourceType = 2;
 
 USTRUCT(BlueprintType)
 struct FResourceInfo
@@ -34,6 +35,12 @@ struct FResourceInfo
 	{
 		Type = EResourceType::None;
 		Point = 0;
+	}
+
+	FResourceInfo(EResourceType InType, int32 InPoint)
+	{
+		Type = InType;
+		Point = InPoint;
 	}
 
 	FResourceInfo(TTuple<EResourceType, int32> InTuple)
@@ -58,12 +65,21 @@ FString ToString(const TMap<EResourceType, int32>& ResourceInfos);
 UENUM()
 enum class EResourceTookReason : uint8
 {
+	//
+	// Cost
+	//
 	Spawn = 0,
 	Build = 1,
 	Fixup = 2,
+	FoodCostCycle = 3,
+
+	//
+	// Gain
+	//
 	Collect = 128,
 	Return = 129,
 	Initialize = 130,
+	Produce = 131
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPlayerFailedSignature, ABattlePlayerState*, Player);
@@ -101,6 +117,9 @@ public:
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const TArray<FResourceInfo>& ResourceInfos);
 
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const TMap<EResourceType, int32>& ResourceInfos);
+
+	UFUNCTION(BlueprintCallable)
+	float GetTotalFoodCostPerCycle() const { return TotalFoodProducePerCycle; }
 	
 protected:
 	void SetResource(EResourceType ResourceType, int32 InValue)
@@ -111,6 +130,9 @@ protected:
 protected:
 	UPROPERTY(Transient, Replicated)
 	TArray<int32> Resources;
+
+	UPROPERTY(Transient, Replicated)
+	float TotalFoodProducePerCycle = 0;
 
 public:
 	UPROPERTY(BlueprintAssignable)

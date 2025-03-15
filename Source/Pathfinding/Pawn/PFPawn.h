@@ -145,7 +145,7 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FPawnDiedSignature OnPawnDied;
+	FPawnDiedSignature OnPawnPreDied;
 
 	UPROPERTY(Transient, BlueprintReadWrite)
 	bool bShouldSkipDied;
@@ -159,8 +159,10 @@ public:
 	                              AActor* DamageCauser) const override;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	virtual void Die();
+	void Die();
 
+	virtual void OnDied() {}
+	
 	// To avoid the unexpected order of function 
 	UFUNCTION(BlueprintCallable)
 	void DieDelay(float DelayDuration = 0.1f);

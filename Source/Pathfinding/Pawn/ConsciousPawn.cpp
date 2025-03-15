@@ -26,6 +26,49 @@ void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
+void AConsciousPawn::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (!HasAuthority() || ConsciousData.FoodCostPerCycle <= 0)
+	{
+		return;
+	}
+	
+	const UWorld* World = GetWorld();
+	NULL_CHECK(World);
+	const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
+	NULL_CHECK(GameSettings);
+
+	const float HungerDamage = GameSettings->HungerDamage;
+
+	World->GetTimerManager().SetTimer(CostFoodTimer, FTimerDelegate::CreateLambda([this, HungerDamage]
+	{
+		VALID_CHECK(this);
+		
+		if (ABattlePlayerState* PS = GetOwnerPlayer())
+		{
+			VALID_CHECK(PS);
+			
+			const FResourceInfo FoodCost(EResourceType::Food, ConsciousData.FoodCostPerCycle);
+			if (PS->IsResourceEnough(FoodCost))
+			{
+				PS->TakeResource(this, EResourceTookReason::FoodCostCycle, FoodCost);
+			}
+			else
+			{
+				UGameplayStatics::ApplyDamage(
+					this,
+					HungerDamage,
+					GetController(),
+					this,
+					UDamageType::StaticClass()
+				);
+			}
+		}
+	}), GameSettings->FoodCostCycleDuration, true);
+}
+
 void AConsciousPawn::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -97,7 +140,7 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 	for (UCommandComponent* CommandToExecute : CommandsToExecute)
 	{
 		VALID_CHECK(CommandToExecute);
-		
+
 		// DEBUG_MESSAGE(TEXT("ConsciousAIController Push Command [%s]"), *CommandToExecute->GetCommandName().ToString());
 		CommandChannel->PushCommand(CommandToExecute);
 	}
@@ -110,7 +153,6 @@ void AConsciousPawn::Receive_Implementation(const FTargetRequest& Request)
 
 void AConsciousPawn::OnReceive_Implementation(const FTargetRequest& Request)
 {
-	
 }
 
 void AConsciousPawn::ResolveRequest(TArray<UCommandComponent*>& OutCommandsToExecute, const FTargetRequest& Request)
@@ -260,7 +302,7 @@ const TArray<UCommandComponent*>& AConsciousPawn::GetAllCommandsForCommandListMe
 		{
 			continue;
 		}
-		
+
 		const int32 WantsIndex = CommandArray[i]->GetWantsIndexInCommandListMenu();
 		if (WantsIndex != i && WantsIndex >= 0 && WantsIndex < CommandArray.Num())
 		{
@@ -324,7 +366,7 @@ void AConsciousPawn::RemoveCommand(UCommandComponent* CommandToRemove)
 }
 
 void AConsciousPawn::DispatchCommand_OnPushedToQueue_Implementation(UCommandComponent* Command,
-																 const FTargetRequest& Request)
+                                                                    const FTargetRequest& Request)
 {
 	if (!Command)
 		return;
@@ -333,7 +375,7 @@ void AConsciousPawn::DispatchCommand_OnPushedToQueue_Implementation(UCommandComp
 	{
 		Command->SetCommandArgumentsSkipCheck(Request);
 	}
-	
+
 	Command->OnPushedToQueue();
 }
 
@@ -358,7 +400,7 @@ void AConsciousPawn::DispatchCommand_BeginExecute_Implementation(UCommandCompone
 	{
 		Command->SetCommandArgumentsSkipCheck(Request);
 	}
-	
+
 	Command->BeginExecute();
 }
 
@@ -471,32 +513,23 @@ void AConsciousPawn::AddCommandChannel(UCommandChannelComponent* CommandChannel)
 	}
 }
 
-void AConsciousPawn::Die()
+void AConsciousPawn::OnDied()
 {
-	bShouldSkipDied = false;
-	if (OnPawnDied.IsBound())
-	{
-		OnPawnDied.Broadcast(this);
-	}
-
-	// Modify the 'bShouldSkipDied' to ture so that skipping died
-	if (bShouldSkipDied)
-	{
-		return;
-	}
-
 	// Clear all command
 	FTargetRequest ClearRequest;
 	ClearRequest.Type = ETargetRequestType::Clear;
 	ClearRequest.OverrideCommandChannel = UProgressCommandComponent::StaticCommandChannel;
 	Receive(ClearRequest);
-	
-	if (OwnerPlayer)
+
+	if (!HasAuthority())
 	{
-		OwnerPlayer->RemoveOwnedPawn(this);
+		return;
 	}
 
-	Destroy();
+	if (const UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(CostFoodTimer);
+	}
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

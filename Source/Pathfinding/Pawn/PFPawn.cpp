@@ -321,9 +321,9 @@ bool APFPawn::ShouldTakeDamage(float Damage, FDamageEvent const& DamageEvent, AC
 void APFPawn::Die_Implementation()
 {
 	bShouldSkipDied = false;
-	if (OnPawnDied.IsBound())
+	if (OnPawnPreDied.IsBound())
 	{
-		OnPawnDied.Broadcast(this);
+		OnPawnPreDied.Broadcast(this);
 	}
 
 	// Modify the 'bShouldSkipDied' to ture so that skipping died
@@ -331,6 +331,8 @@ void APFPawn::Die_Implementation()
 	{
 		return;
 	}
+
+	OnDied();
 
 	if (OwnerPlayer)
 	{

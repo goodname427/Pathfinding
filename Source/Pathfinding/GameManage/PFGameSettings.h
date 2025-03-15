@@ -38,7 +38,7 @@ class PATHFINDING_API UPFGameSettings : public UDeveloperSettings
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "GameStage")
 	bool bTransitionToMainMenuAtBeginning;
-	
+
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Map")
 	TArray<FMapInfo> Maps;
@@ -50,9 +50,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Camp")
 	const UCamp* GetRandomlyCamp() const;
 
-	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Camp")
+public:
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Resource")
 	TMap<EResourceType, int32> InitializedResource;
-	
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Resource", meta=(ClampMin = 0.01))
+	float FoodCostCycleDuration;
+
+	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Resource", meta=(ClampMin = 0.01))
+	float HungerDamage;
+
 public:
 	UPROPERTY(Config, EditDefaultsOnly, BlueprintReadOnly, Category = "Color")
 	TArray<FLinearColor> PlayerColors;

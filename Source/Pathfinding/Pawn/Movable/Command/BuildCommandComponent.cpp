@@ -17,7 +17,7 @@ UBuildCommandComponent::UBuildCommandComponent(): FrameActor(nullptr)
 
 	Data.Name = StaticCommandName;
 	Data.bNeedEverCheckWhileMoving = false;
-	Data.RequiredTargetRadius = 200;
+	Data.RequiredTargetRadius = 300;
 }
 
 void UBuildCommandComponent::BeginPlay()
