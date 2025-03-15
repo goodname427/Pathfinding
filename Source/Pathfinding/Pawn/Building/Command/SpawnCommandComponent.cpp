@@ -51,7 +51,9 @@ FName USpawnCommandComponent::GetCommandName_Implementation() const
 FString USpawnCommandComponent::GetCommandDescription_Implementation() const
 {
 	const AConsciousPawn* CDO = GetDefaultObjectToSpawn();
-	return CDO? CDO->GetData().Description : TEXT("");
+	NULL_CHECK_RET(CDO, TEXT(""));
+	
+	return FString::Printf(TEXT("%s\n%s"), *ToString(CDO->GetConsciousData().ResourceCost), *CDO->GetData().Description);
 }
 
 UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const

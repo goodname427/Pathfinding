@@ -4,8 +4,42 @@
 #include "BattlePlayerState.h"
 
 #include "PFUtils.h"
+#include "Algo/Transform.h"
 #include "Building/BaseCampPawn.h"
 #include "Net/UnrealNetwork.h"
+
+FString ToString(const FResourceInfo& ResourceInfo)
+{
+	return FString::Printf(TEXT("%s:%d"), *UEnum::GetValueAsString(ResourceInfo.Type).Replace(TEXT("EResourceType::"), TEXT("")), ResourceInfo.Point);
+}
+
+FString ToString(const TArray<FResourceInfo>& ResourceInfos)
+{
+	FString Result;
+	for (int32 i = 0; i < ResourceInfos.Num(); i++)
+	{
+		Result += ToString(ResourceInfos[i]);
+		if (i != ResourceInfos.Num() - 1)
+			Result += TEXT(", ");
+	}
+
+	return Result;
+}
+
+FString ToString(const TMap<EResourceType, int32>& ResourceInfos)
+{
+	FString Result;
+	int32 i = 0;
+	for (auto Pair : ResourceInfos)
+	{
+		Result += ToString(FResourceInfo(Pair));
+		if (i != ResourceInfos.Num() - 1)
+			Result += TEXT(", ");
+		i++;
+	}
+
+	return Result;
+}
 
 ABattlePlayerState::ABattlePlayerState()
 {
@@ -113,9 +147,9 @@ void ABattlePlayerState::Fail()
 	{
 		return;
 	}
-	
+
 	bFailed = true;
-	
+
 	for (APFPawn* OwnedPawn : OwnedPawns)
 	{
 		OwnedPawn->Die();
@@ -136,7 +170,7 @@ void ABattlePlayerState::AddOwnedPawn(APFPawn* PawnToAdd)
 	{
 		return;
 	}
-	
+
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToAdd))
 	{
 		BaseCamps.Add(BaseCampPawn);
@@ -151,7 +185,7 @@ void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
 	{
 		return;
 	}
-		
+
 	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToRemove))
 	{
 		BaseCamps.Remove(BaseCampPawn);

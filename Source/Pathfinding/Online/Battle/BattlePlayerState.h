@@ -51,6 +51,10 @@ struct FResourceInfo
 	}
 };
 
+FString ToString(const FResourceInfo& ResourceInfo);
+FString ToString(const TArray<FResourceInfo>& ResourceInfos);
+FString ToString(const TMap<EResourceType, int32>& ResourceInfos);
+
 UENUM()
 enum class EResourceTookReason : uint8
 {

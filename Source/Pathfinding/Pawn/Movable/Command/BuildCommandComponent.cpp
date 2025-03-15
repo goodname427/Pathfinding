@@ -44,7 +44,9 @@ FName UBuildCommandComponent::GetCommandName_Implementation() const
 FString UBuildCommandComponent::GetCommandDescription_Implementation() const
 {
 	const AConsciousPawn* CDO = GetDefaultObjectToBuild();
-	return CDO ? CDO->GetData().Description : TEXT("");
+	NULL_CHECK_RET(CDO, TEXT(""));
+	
+	return FString::Printf(TEXT("%s\n%s"), *ToString(CDO->GetConsciousData().ResourceCost), *CDO->GetData().Description);
 }
 
 UObject* UBuildCommandComponent::GetCommandIcon_Implementation() const

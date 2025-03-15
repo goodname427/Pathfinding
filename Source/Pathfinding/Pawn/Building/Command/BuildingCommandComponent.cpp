@@ -38,6 +38,11 @@ bool UBuildingCommandComponent::InternalIsCommandEnable_Implementation() const
 	{
 		return false;
 	}
+
+	if (!Frame->GetCommander()->GetPlayerState<ABattlePlayerState>())
+	{
+		return false;
+	}
 	
 	return true;
 }
