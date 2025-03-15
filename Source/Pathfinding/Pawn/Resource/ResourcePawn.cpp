@@ -26,6 +26,13 @@ void AResourcePawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& 
 	DOREPLIFETIME(ThisClass, ResourcePoint);
 }
 
+void AResourcePawn::PostInitProperties()
+{
+	MaxHealth = ResourcePoint;
+	
+	Super::PostInitProperties();
+}
+
 bool AResourcePawn::CollectBy(UCollectorComponent* Collector)
 {
 	if (ResourceData.Type == EResourceType::None || ResourcePoint <= 0)
@@ -47,6 +54,8 @@ bool AResourcePawn::CollectBy(UCollectorComponent* Collector)
 
 	Collector->SetCollectedResourcePoint(Collector->GetCollectedResource().Point + ActualPoint);
 	ResourcePoint -= ActualPoint;
+
+	CurrentHealth = ResourcePoint;
 
 	if (ResourcePoint <= 0)
 	{

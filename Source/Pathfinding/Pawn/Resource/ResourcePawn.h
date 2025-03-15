@@ -31,6 +31,9 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+protected:
+	virtual void PostInitProperties() override;
+	
 public:
 	bool CollectBy(UCollectorComponent* Collector);
 
