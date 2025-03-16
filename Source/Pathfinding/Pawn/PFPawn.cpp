@@ -57,7 +57,7 @@ APFPawn::APFPawn()
 	}
 
 	StateWidgetHeightRatio = 1.5f;
-	StateWidgetScaleRatio = 0.01f;
+	StateWidgetScaleRatio = 0.005f;
 
 	// State
 	MaxHealth = 100;
@@ -118,7 +118,8 @@ void APFPawn::BeginPlay()
 		}
 	}
 
-	StateWidgetComponent->SetRelativeScale3D(FVector(BoxComponent->GetScaledBoxExtent().Z * StateWidgetScaleRatio));
+	const FVector BoxExtent = BoxComponent->GetScaledBoxExtent();
+	StateWidgetComponent->SetRelativeScale3D(FVector(BoxExtent.Size() * StateWidgetScaleRatio));
 	StateWidgetComponent->SetRelativeLocation(
 		BoxComponent->GetRelativeLocation() + BoxComponent->GetScaledBoxExtent() * FVector(
 			0.f, 0.f, StateWidgetHeightRatio));
