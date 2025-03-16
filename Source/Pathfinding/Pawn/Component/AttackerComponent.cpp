@@ -16,6 +16,9 @@ UAttackerComponent::UAttackerComponent()
 	AttackCommandComponent = nullptr;
 	Attacker = nullptr;
 
+	bActiveAttack = false;
+	HuntingRadiusScale = 1.2f;
+
 	// ...
 }
 
@@ -24,14 +27,15 @@ void UAttackerComponent::BeginPlay()
 	Super::BeginPlay();
 	if (Attacker == nullptr)
 	{
-		Attacker = GetOwner<AConsciousPawn>();	
+		Attacker = GetOwner<AConsciousPawn>();
 	}
-	
+
 	if (AttackCommandComponent == nullptr)
 	{
 		if (Attacker)
 		{
-			AttackCommandComponent = Cast<UAttackCommandComponent>(Attacker->GetComponentByClass(UAttackCommandComponent::StaticClass()));
+			AttackCommandComponent = Cast<UAttackCommandComponent>(
+				Attacker->GetComponentByClass(UAttackCommandComponent::StaticClass()));
 		}
 	}
 
@@ -44,19 +48,26 @@ void UAttackerComponent::BeginPlay()
 	if (GetOwnerRole() == ROLE_Authority)
 	{
 		AttackCommandComponent->OnCommandEnd.AddDynamic(this, &ThisClass::OnAttackCommandEnd);
-		AttackCommandComponent->OnCommandPoppedFromQueue.AddDynamic(this, &ThisClass::OnAttackCommandPoppedFromQueue);
 
 		Attacker->OnTakeAnyDamage.AddDynamic(this, &ThisClass::OnTakeAnyDamage);
 	}
 }
 
 void UAttackerComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                       FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-
-	
+	if (bActiveAttack && Attacker->GetCurrentCommand(GCommandChannel_Default) != AttackCommandComponent)
+	{
+		// DEBUG_MESSAGE(TEXT("Attacker [%s] Active Attack"), *Attacker->GetName());
+		APFPawn* AroundEnemyPawn = UPFBlueprintFunctionLibrary::GetAroundPawn<APFPawn>(
+			Attacker, AttackCommandComponent->GetRequiredTargetRadius() * HuntingRadiusScale, EPawnRole::Enemy);
+		if (AroundEnemyPawn)
+		{
+			Attacker->Receive(FTargetRequest(AttackCommandComponent, AroundEnemyPawn));
+		}
+	}
 }
 
 void UAttackerComponent::OnAttackCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)
@@ -75,29 +86,24 @@ void UAttackerComponent::OnAttackCommandEnd(UCommandComponent* CommandComponent,
 	}
 	else
 	{
-		APFPawn* AroundEnemyPawns = UPFBlueprintFunctionLibrary::GetAroundPawn<APFPawn>(Attacker, 1000, EPawnRole::Enemy);
-		if (AroundEnemyPawns)
+		APFPawn* AroundEnemyPawn = UPFBlueprintFunctionLibrary::GetAroundPawn<APFPawn>(
+			Attacker, AttackCommandComponent->GetRequiredTargetRadius() * HuntingRadiusScale, EPawnRole::Enemy);
+		if (AroundEnemyPawn)
 		{
-			Attacker->Receive(FTargetRequest(AttackCommandComponent, AroundEnemyPawns));
+			Attacker->Receive(FTargetRequest(AttackCommandComponent, AroundEnemyPawn));
 		}
 	}
 }
 
-void UAttackerComponent::OnAttackCommandPoppedFromQueue(UCommandComponent* CommandComponent,
-	ECommandPoppedReason Reason)
-{
-	
-}
-
 void UAttackerComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
-	AController* InstigatedBy, AActor* DamageCauser)
+                                         AController* InstigatedBy, AActor* DamageCauser)
 {
 	// Skip if damage causer is not a pawn
-	APFPawn* CauserPawn = Cast<APFPawn>(DamageCauser);
+	APFPawn* CauserPawn = InstigatedBy ? Cast<APFPawn>(InstigatedBy->GetPawn()) : nullptr;
 	NULL_CHECK(CauserPawn);
 
 	const EPawnRole CauserRole = Attacker->GetPawnRole(CauserPawn);
-	
+
 	// Hit back when receive damage from enemy
 	if (CauserRole == EPawnRole::Enemy)
 	{
@@ -105,17 +111,5 @@ void UAttackerComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, con
 		{
 			Attacker->Receive(FTargetRequest(AttackCommandComponent, CauserPawn));
 		}
-
-		// Notify other pawns around self
-		// static TArray<AConsciousPawn*> AroundSelfPawns;
-		// UPFBlueprintFunctionLibrary::GetAroundPawns<AConsciousPawn>(Attacker, AroundSelfPawns, 1000, EPawnRole::Self);
-		// for (AConsciousPawn* Pawn : AroundSelfPawns)
-		// {
-		// 	const UCommandComponent* PawnCurrentCommand = Pawn->GetCurrentCommand(GCommandChannel_Default);
-		// 	if (PawnCurrentCommand == nullptr || PawnCurrentCommand->GetCommandName() != UAttackCommandComponent::StaticCommandName)
-		// 	{
-		// 		Pawn->Receive(FTargetRequest::Make<UAttackCommandComponent>(CauserPawn));
-		// 	}
-		// }
 	}
 }

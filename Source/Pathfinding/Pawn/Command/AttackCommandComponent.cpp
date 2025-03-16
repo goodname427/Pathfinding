@@ -17,6 +17,11 @@ UAttackCommandComponent::UAttackCommandComponent()
 	Data.WantsIndexInCommandListMenu = 1;
 }
 
+float UAttackCommandComponent::GetRequiredTargetRadius_Implementation() const
+{
+	return GetExecutePawn()->GetAttackRadius();
+}
+
 bool UAttackCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetExecutePawn()->CanAttack();

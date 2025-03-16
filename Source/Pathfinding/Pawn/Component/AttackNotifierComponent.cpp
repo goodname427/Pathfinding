@@ -42,7 +42,6 @@ void UAttackNotifierComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damag
 {
 	// Skip if damage causer is not a pawn
 	APFPawn* CauserPawn = InstigatedBy ? Cast<APFPawn>(InstigatedBy->GetPawn()) : nullptr;
-	// DEBUG_MESSAGE(TEXT("[%s] Take Damage from [%s]"), *OwnerPawn->GetName(), *GetNameSafe(CauserPawn));
 	NULL_CHECK(CauserPawn);
 
 	const EPawnRole CauserRole = OwnerPawn->GetPawnRole(CauserPawn);

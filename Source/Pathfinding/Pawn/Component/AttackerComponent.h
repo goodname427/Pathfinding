@@ -24,10 +24,7 @@ protected:
 protected:
 	UFUNCTION()
 	void OnAttackCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result);
-
-	UFUNCTION()
-	void OnAttackCommandPoppedFromQueue(UCommandComponent* CommandComponent, ECommandPoppedReason Reason);
-
+	
 	UFUNCTION()
 	void OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
@@ -37,4 +34,11 @@ public:
 
 	UPROPERTY()
 	AConsciousPawn* Attacker;
+
+protected:
+	UPROPERTY(Category = "Attacker", EditDefaultsOnly)
+	bool bActiveAttack;
+	
+	UPROPERTY(Category = "Attacker", EditDefaultsOnly)
+	float HuntingRadiusScale;
 };

@@ -30,6 +30,11 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
+float UCollectCommandComponent::GetRequiredTargetRadius_Implementation() const
+{
+	return GetExecutePawn()->GetAttackRadius();
+}
+
 bool UCollectCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;

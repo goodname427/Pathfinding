@@ -12,6 +12,9 @@ class PATHFINDING_API UConsciousPawnMovementComponent : public UPawnMovementComp
 public:
 	UConsciousPawnMovementComponent();
 
+protected:
+	virtual void BeginPlay() override;
+	
 private:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;

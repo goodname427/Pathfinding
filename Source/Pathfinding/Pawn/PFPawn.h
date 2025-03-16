@@ -192,6 +192,10 @@ public:
 
 	float GetAttackDuration() const { return AttackSpeed <= 0 ? 0 : 1.f / AttackSpeed; }
 
+	float GetAttackRadius() const { return AttackRadius; }
+
+	float GetMoveSpeed() const { return MoveSpeed; }
+
 protected:
 	UPROPERTY(Category = "State", EditDefaultsOnly, BlueprintReadOnly)
 	FPFPawnData Data;
@@ -203,13 +207,19 @@ protected:
 	int32 MaxHealth;
 
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
+	int32 Defense;
+	
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Attack;
 
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	float AttackSpeed;
 
+	UPROPERTY(Category = "State" , EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
+	float AttackRadius;
+
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
-	int32 Defense;
+	float MoveSpeed;
 
 public:
 	// Widget

@@ -3,6 +3,7 @@
 
 #include "ConsciousPawnMovementComponent.h"
 
+#include "PFPawn.h"
 #include "PFUtils.h"
 #include "Components/CapsuleComponent.h"
 
@@ -15,6 +16,18 @@ UConsciousPawnMovementComponent::UConsciousPawnMovementComponent()
 	bPositionCorrected = false;
 
 	ResetMoveState();
+}
+
+void UConsciousPawnMovementComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (const APFPawn* Pawn = Cast<APFPawn>(GetOwner()))
+	{
+		MaxSpeed = Pawn->GetMoveSpeed();
+		Acceleration = MaxSpeed * 5;
+		Deceleration = MaxSpeed * 10;
+	}
 }
 
 void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,

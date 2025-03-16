@@ -28,6 +28,11 @@ bool UTransportCommandComponent::CanTransport(const ABaseCampPawn* BaseCamp) con
 	return GetExecutePawn()->GetPawnRole(BaseCamp) == EPawnRole::Self;
 }
 
+float UTransportCommandComponent::GetRequiredTargetRadius_Implementation() const
+{
+	return GetExecutePawn()->GetAttackRadius();
+}
+
 bool UTransportCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;

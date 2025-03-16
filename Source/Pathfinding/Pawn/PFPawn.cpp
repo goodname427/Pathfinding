@@ -61,9 +61,12 @@ APFPawn::APFPawn()
 
 	// State
 	MaxHealth = 100;
+	Defense = 1;
 	Attack = 1;
 	AttackSpeed = 1;
-	Defense = 1;
+	AttackRadius = 100;
+
+	MoveSpeed = 24 * 100;
 
 	// Sound
 	// INIT_DEFAULT_SUBOBJECT(AudioComponent);

@@ -10,7 +10,6 @@
 
 UProjectileAttackCommandComponent::UProjectileAttackCommandComponent()
 {
-	Data.RequiredTargetRadius = 500;
 }
 
 void UProjectileAttackCommandComponent::ApplyDamageToTargetPawn_Implementation()
