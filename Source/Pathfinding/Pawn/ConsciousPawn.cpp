@@ -30,43 +30,30 @@ void AConsciousPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!HasAuthority() || ConsciousData.FoodCostPerCycle <= 0)
+	if (HasAuthority() && ConsciousData.FoodCostPerCycle <= 0)
 	{
-		return;
-	}
-	
-	const UWorld* World = GetWorld();
-	NULL_CHECK(World);
-	const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
-	NULL_CHECK(GameSettings);
-
-	const float HungerDamage = GameSettings->HungerDamage;
-
-	World->GetTimerManager().SetTimer(CostFoodTimer, FTimerDelegate::CreateLambda([this, HungerDamage]
-	{
-		VALID_CHECK(this);
-		
-		if (ABattlePlayerState* PS = GetOwnerPlayer())
+		if (const UWorld* World = GetWorld())
 		{
-			VALID_CHECK(PS);
-			
-			const FResourceInfo FoodCost(EResourceType::Food, ConsciousData.FoodCostPerCycle);
-			if (PS->IsResourceEnough(FoodCost))
-			{
-				PS->TakeResource(this, EResourceTookReason::FoodCostCycle, FoodCost);
-			}
-			else
-			{
-				UGameplayStatics::ApplyDamage(
-					this,
-					HungerDamage,
-					GetController(),
-					this,
-					UDamageType::StaticClass()
-				);
-			}
+			const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
+
+			World->GetTimerManager().SetTimer(
+				CostFoodTimer,
+				FTimerDelegate::CreateUObject(this, &AConsciousPawn::CostFood),
+				GameSettings ? GameSettings->FoodCostCycleDuration : 10,
+				true
+			);
 		}
-	}), GameSettings->FoodCostCycleDuration, true);
+	}
+}
+
+void AConsciousPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (const UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(CostFoodTimer);
+	}
 }
 
 void AConsciousPawn::PostInitializeComponents()
@@ -520,15 +507,33 @@ void AConsciousPawn::OnDied()
 	ClearRequest.Type = ETargetRequestType::Clear;
 	ClearRequest.OverrideCommandChannel = UProgressCommandComponent::StaticCommandChannel;
 	Receive(ClearRequest);
+}
 
-	if (!HasAuthority())
-	{
-		return;
-	}
+void AConsciousPawn::CostFood()
+{
+	// VALID_CHECK(this);
 
-	if (const UWorld* World = GetWorld())
+	if (ABattlePlayerState* PS = GetOwnerPlayer())
 	{
-		World->GetTimerManager().ClearTimer(CostFoodTimer);
+		// VALID_CHECK(PS);
+
+		const FResourceInfo FoodCost(EResourceType::Food, ConsciousData.FoodCostPerCycle);
+		if (PS->IsResourceEnough(FoodCost))
+		{
+			PS->TakeResource(this, EResourceTookReason::FoodCostCycle, FoodCost);
+		}
+		else
+		{
+			const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
+
+			UGameplayStatics::ApplyDamage(
+				this,
+				GameSettings ? GameSettings->HungerDamage : 10.0f,
+				GetController(),
+				this,
+				UDamageType::StaticClass()
+			);
+		}
 	}
 }
 

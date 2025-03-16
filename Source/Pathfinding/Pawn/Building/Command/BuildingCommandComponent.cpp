@@ -39,11 +39,6 @@ bool UBuildingCommandComponent::InternalIsCommandEnable_Implementation() const
 		return false;
 	}
 
-	if (!Frame->GetCommander()->GetPlayerState<ABattlePlayerState>())
-	{
-		return false;
-	}
-	
 	return true;
 }
 
@@ -64,15 +59,17 @@ UObject* UBuildingCommandComponent::GetCommandIcon_Implementation() const
 void UBuildingCommandComponent::InternalPushedToQueue_Implementation()
 {
 	// DEBUG_FUNC_FLAG();
-	
+
 	AUTHORITY_CHECK();
 
 	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
-	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->GetConsciousData();
-	ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>();
-
-	// Consume resources
-	PS->TakeResource(this, EResourceTookReason::Build, ConsciousData.ResourceCost);
+	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->
+	                                             GetConsciousData();
+	if (ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>())
+	{
+		// Consume resources
+		PS->TakeResource(this, EResourceTookReason::Build, ConsciousData.ResourceCost);
+	}
 }
 
 void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandPoppedReason Reason)
@@ -80,11 +77,13 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 	AUTHORITY_CHECK();
 
 	ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
-	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->GetConsciousData();
-	ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>();
-
-	// Return resources
-	PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
+	const FConsciousData& ConsciousData = Frame->GetBuildingClassToBuild()->GetDefaultObject<AConsciousPawn>()->
+	                                             GetConsciousData();
+	if (ABattlePlayerState* PS = Frame->GetCommander()->GetPlayerState<ABattlePlayerState>())
+	{
+		// Return resources
+		PS->TakeResource(this, EResourceTookReason::Return, ConsciousData.ResourceCost);
+	}
 
 	Frame->DieDelay();
 }
@@ -92,7 +91,7 @@ void UBuildingCommandComponent::InternalPoppedFromQueue_Implementation(ECommandP
 void UBuildingCommandComponent::InternalBeginExecute_Implementation()
 {
 	Super::InternalBeginExecute_Implementation();
-	
+
 	ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
 	Frame->GetStaticMeshComponent()->SetCollisionProfileName(UCollisionProfile::Pawn_ProfileName);
 	Frame->GetBoxComponent()->SetCollisionProfileName(APFPawn::PawnBounds_ProfileName);
@@ -113,7 +112,7 @@ void UBuildingCommandComponent::InternalEndExecute_Implementation(ECommandExecut
 		ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
 
 		Frame->GetCommander()->SpawnPawn(Frame->GetBuildingClassToBuild(), Frame->GetActorLocation());
-	
+
 		Frame->DieDelay();
 	}
 }
@@ -126,6 +125,6 @@ void UBuildingCommandComponent::InternalExecute_Implementation(float DeltaTime)
 		Color.A = GetNormalizedProgress();
 		Frame->SetColor(Color);
 	}
-	
+
 	Super::InternalExecute_Implementation(DeltaTime);
 }

@@ -12,42 +12,41 @@ AKitchenPawn::AKitchenPawn()
 	ProducedFoodPerSecond = 1;
 }
 
-// Called when the game starts or when spawned
 void AKitchenPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (!HasAuthority())
+	if (HasAuthority())
 	{
-		return;
-	}
-
-	if (const UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().SetTimer(ProducedFoodTimerHandle, FTimerDelegate::CreateLambda([this]
+		if (const UWorld* World = GetWorld())
 		{
-			VALID_CHECK(this);
-			
-			if (ABattlePlayerState* PS = GetOwnerPlayer())
-			{
-				VALID_CHECK(PS);
-				PS->TakeResource(this, EResourceTookReason::Produce, FResourceInfo(EResourceType::Food, ProducedFoodPerSecond));
-			}
-		}), 1.f, true);
-	}	
+			World->GetTimerManager().SetTimer(
+				ProducedFoodTimerHandle,
+				FTimerDelegate::CreateUObject(this, &AKitchenPawn::ProduceFood),
+				1.f,
+				true
+			);
+		}
+	}
 }
 
-void AKitchenPawn::OnDied()
+void AKitchenPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
-	Super::OnDied();
-
-	if (!HasAuthority())
-	{
-		return;
-	}
+	Super::EndPlay(EndPlayReason);
 
 	if (const UWorld* World = GetWorld())
 	{
 		World->GetTimerManager().ClearTimer(ProducedFoodTimerHandle);
+	}
+}
+
+void AKitchenPawn::ProduceFood()
+{
+	// VALID_CHECK(this);
+
+	if (ABattlePlayerState* PS = GetOwnerPlayer())
+	{
+		// VALID_CHECK(PS);
+		PS->TakeResource(this, EResourceTookReason::Produce, FResourceInfo(EResourceType::Food, ProducedFoodPerSecond));
 	}
 }

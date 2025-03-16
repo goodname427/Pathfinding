@@ -168,7 +168,7 @@ void ABattleGameMode::SpawnDefaultPawnsForCommander(ACommanderPawn* Commander)
 		for (int32 i = 0; i < DefaultPawnInfo.Num; i++)
 		{
 			AConsciousPawn* Pawn = Commander->SpawnPawnFrom<AConsciousPawn>(
-				PS->GetFirstBaseCamp(), DefaultPawnInfo.Class);
+				PS->GetFirstPawn<ABaseCampPawn>(), DefaultPawnInfo.Class);
 			if (Pawn)
 			{
 				Pawn->Receive(FTargetRequest::Make<UMoveCommandComponent>(GatherLocation));

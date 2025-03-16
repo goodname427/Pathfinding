@@ -81,6 +81,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
 	virtual void PostInitializeComponents() override;
 
 public:
@@ -202,7 +204,6 @@ protected:
 
 public:
 	// Conscious Data
-	UFUNCTION(BlueprintCallable)
 	const FConsciousData& GetConsciousData() const { return ConsciousData; }
 
 protected:
@@ -216,6 +217,10 @@ protected:
 
 protected:
 	virtual void OnDied() override;
+
+protected:
+	UFUNCTION()
+	void CostFood();
 
 private:
 	FTimerHandle CostFoodTimer;

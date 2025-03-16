@@ -17,12 +17,16 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	virtual void OnDied() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 public:
 	UFUNCTION(BlueprintCallable)
 	int32 GetProducedFoodPerSecond() const { return ProducedFoodPerSecond; }
 
+protected:
+	UFUNCTION()
+	void ProduceFood();
+	
 protected:
 	UPROPERTY(Category = "Kitchen", EditDefaultsOnly, BlueprintReadOnly, meta=(ClampMin="0"))
 	int32 ProducedFoodPerSecond;

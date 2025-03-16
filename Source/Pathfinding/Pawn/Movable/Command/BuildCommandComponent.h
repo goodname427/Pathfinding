@@ -8,7 +8,6 @@
 #include "Command/CommandComponent.h"
 #include "BuildCommandComponent.generated.h"
 
-
 UCLASS(ClassGroup=(Command), meta=(BlueprintSpawnableComponent))
 class PATHFINDING_API UBuildCommandComponent : public UCommandComponent
 {

@@ -59,7 +59,6 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ThisClass, Resources);
-	DOREPLIFETIME(ThisClass, BaseCamps);
 	DOREPLIFETIME(ThisClass, OwnedPawns);
 	DOREPLIFETIME(ThisClass, bFailed);
 	DOREPLIFETIME(ThisClass, TotalFoodProducePerCycle);
@@ -156,8 +155,7 @@ void ABattlePlayerState::Fail()
 	{
 		OwnedPawn->Die();
 	}
-
-	BaseCamps.Empty();
+	
 	OwnedPawns.Empty();
 
 	if (OnPlayerFailed.IsBound())
@@ -172,14 +170,10 @@ void ABattlePlayerState::AddOwnedPawn(APFPawn* PawnToAdd)
 	{
 		return;
 	}
-
-	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToAdd))
-	{
-		BaseCamps.Add(BaseCampPawn);
-	}
-
+	
 	OwnedPawns.Add(PawnToAdd);
 
+	// Update TotalFoodProducePerCycle
 	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToAdd))
 	{
 		TotalFoodProducePerCycle -= ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
@@ -197,14 +191,10 @@ void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
 	{
 		return;
 	}
-
-	if (ABaseCampPawn* BaseCampPawn = Cast<ABaseCampPawn>(PawnToRemove))
-	{
-		BaseCamps.Remove(BaseCampPawn);
-	}
-
+	
 	OwnedPawns.Remove(PawnToRemove);
 
+	// Update TotalFoodProducePerCycle
 	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToRemove))
 	{
 		TotalFoodProducePerCycle += ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
@@ -216,39 +206,57 @@ void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
 	}
 
 	// failure
-	if (BaseCamps.Num() == 0)
+	if (!HasPawn<ABaseCampPawn>())
 	{
 		Fail();
 	}
 }
 
-ABaseCampPawn* ABattlePlayerState::GetFirstBaseCamp() const
+bool ABattlePlayerState::HasPawn(TSubclassOf<APFPawn> PawnClass) const
 {
-	if (BaseCamps.Num() > 0)
+	return GetFirstPawn(PawnClass) != nullptr;
+}
+
+APFPawn* ABattlePlayerState::GetFirstPawn(TSubclassOf<APFPawn> PawnClass) const
+{
+	TArray<APFPawn*> Pawns;
+	for (APFPawn* Pawn : OwnedPawns)
 	{
-		return BaseCamps[0];
+		if (Pawn->IsA(PawnClass))
+		{
+			return Pawn;
+		}
 	}
 
 	return nullptr;
 }
 
-ABaseCampPawn* ABattlePlayerState::GetNearestBaseCamp(AActor* Actor) const
+APFPawn* ABattlePlayerState::GetNearestPawn(AActor* Actor, TSubclassOf<APFPawn> PawnClass) const
 {
-	if (BaseCamps.Num() == 0)
+	TArray<APFPawn*> Pawns; 
+	for (APFPawn* Pawn : OwnedPawns)
+	{
+		if (Pawn->IsA(PawnClass))
+		{
+			Pawns.Add(Pawn);
+		}
+	}
+
+	if (Pawns.Num() == 0)
 	{
 		return nullptr;
 	}
 
 	const FVector Location = Actor->GetActorLocation();
-	ABaseCampPawn* NearestBaseCamp = BaseCamps[0];
+	APFPawn* NearestBaseCamp = Pawns[0];
 	float Distance = FVector::Dist(Location, NearestBaseCamp->GetActorLocation());
 
-	for (int32 i = 1; i < BaseCamps.Num(); i++)
+	for (int32 i = 1; i < Pawns.Num(); i++)
 	{
-		const float CurrentDistance = FVector::Dist(Location, BaseCamps[i]->GetActorLocation());
+		const float CurrentDistance = FVector::Dist(Location, Pawns[i]->GetActorLocation());
 		if (CurrentDistance < Distance)
 		{
-			NearestBaseCamp = BaseCamps[i];
+			NearestBaseCamp = Pawns[i];
 			Distance = CurrentDistance;
 		}
 	}

@@ -100,6 +100,16 @@ bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 		return false;
 	}
 
+	const FBuildingData& BuildingData = PawnClassToBuild.GetDefaultObject()->GetBuildingData();
+	
+	for (auto Class : BuildingData.RequiredBuildingClasses)
+	{
+		if (!PS->HasPawn(Class))
+		{
+			return false;
+		}
+	}
+
 	const FConsciousData& ConsciousData = PawnClassToBuild.GetDefaultObject()->GetConsciousData();
 
 	return PS->IsResourceEnough(ConsciousData.ResourceCost);

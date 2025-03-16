@@ -179,7 +179,7 @@ void UCollectorComponent::TransportResource(bool bLastTransposingFailed)
 		return;
 	}
 	
-	ABaseCampPawn* BaseCamp = Collector->GetOwnerPlayer()->GetNearestBaseCamp(Collector);
+	ABaseCampPawn* BaseCamp = Collector->GetOwnerPlayer()->GetNearestPawn<ABaseCampPawn>(Collector);
 	
 	FTargetRequest TransportRequest(TransportCommandComponent, BaseCamp);
 	{

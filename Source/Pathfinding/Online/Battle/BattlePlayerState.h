@@ -100,6 +100,9 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
+	//
+	// Resource
+	//
 	UFUNCTION(BlueprintCallable)
 	int32 GetResource(EResourceType ResourceType) const { return Resources[static_cast<int32>(ResourceType) - 1]; }
 
@@ -135,6 +138,9 @@ protected:
 	float TotalFoodProducePerCycle = 0;
 
 public:
+	//
+	// Pawn
+	//
 	UPROPERTY(BlueprintAssignable)
 	FPlayerFailedSignature OnPlayerFailed;
 	
@@ -148,18 +154,36 @@ public:
 	void RemoveOwnedPawn(APFPawn* PawnToRemove);
 
 	UFUNCTION(BlueprintCallable)
-	ABaseCampPawn* GetFirstBaseCamp() const;
+	bool HasPawn(TSubclassOf<APFPawn> PawnClass) const;
 
+	template<class TPFPawn>
+	bool HasPawn() const
+	{
+		return HasPawn(TPFPawn::StaticClass());
+	}
+	
 	UFUNCTION(BlueprintCallable)
-	ABaseCampPawn* GetNearestBaseCamp(AActor* Actor) const;
+	APFPawn* GetFirstPawn(TSubclassOf<APFPawn> PawnClass) const;
+
+	template<class TPFPawn>
+	TPFPawn* GetFirstPawn() const
+	{
+		return  Cast<TPFPawn>(GetFirstPawn(TPFPawn::StaticClass()));
+	}
+	
+	UFUNCTION(BlueprintCallable)
+	APFPawn* GetNearestPawn(AActor* Actor, TSubclassOf<APFPawn> PawnClass) const;
+
+	template<class TPFPawn>
+	TPFPawn* GetNearestPawn(AActor* Actor) const
+	{
+		return Cast<TPFPawn>(GetNearestPawn(Actor, TPFPawn::StaticClass()));
+	}
 
 protected:
 	UPROPERTY(Transient, Replicated)
 	bool bFailed = false;
 	
-	UPROPERTY(Transient, Replicated)
-	TArray<ABaseCampPawn*> BaseCamps;
-
 	UPROPERTY(Transient, Replicated)
 	TArray<APFPawn*> OwnedPawns;
 };
