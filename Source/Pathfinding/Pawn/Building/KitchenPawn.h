@@ -28,7 +28,7 @@ protected:
 	void ProduceFood();
 	
 protected:
-	UPROPERTY(Category = "Kitchen", EditDefaultsOnly, BlueprintReadOnly, meta=(ClampMin="0"))
+	UPROPERTY(Category = "State|Kitchen", EditDefaultsOnly, BlueprintReadOnly, meta=(ClampMin="0"))
 	int32 ProducedFoodPerSecond;
 
 private:
