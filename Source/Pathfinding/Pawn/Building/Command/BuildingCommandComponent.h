@@ -20,7 +20,7 @@ public:
 public:
 	DECLARE_COMMAND_NAME()
 
-	virtual bool InternalIsCommandEnable_Implementation() const override;
+	virtual bool InternalIsCommandEnable_Implementation(FString& OutDisableReason) const override;
 	
 	virtual float GetProgressDuration_Implementation() const override;
 

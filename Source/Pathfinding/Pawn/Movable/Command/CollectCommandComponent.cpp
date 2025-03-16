@@ -30,7 +30,7 @@ bool UCollectCommandComponent::CanCollect(const AResourcePawn* ResourcePawn) con
 	return ResourceTypesToAllowCollecting.Contains(ResourcePawn->GetResourceType());
 }
 
-bool UCollectCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UCollectCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;
 }

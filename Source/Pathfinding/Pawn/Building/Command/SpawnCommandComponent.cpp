@@ -62,9 +62,9 @@ UObject* USpawnCommandComponent::GetCommandIcon_Implementation() const
 	return CDO? CDO->GetData().Icon : nullptr;
 }
 
-bool USpawnCommandComponent::InternalIsCommandEnable_Implementation() const
+bool USpawnCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
-	if (!Super::InternalIsCommandEnable_Implementation())
+	if (!Super::InternalIsCommandEnable_Implementation(OutDisableReason))
 	{
 		return false;
 	}
@@ -82,7 +82,13 @@ bool USpawnCommandComponent::InternalIsCommandEnable_Implementation() const
 
 	const FConsciousData& ConsciousData = PawnClassToSpawn.GetDefaultObject()->GetConsciousData();
 	
-	return PS->IsResourceEnough(ConsciousData.ResourceCost);
+	if (!PS->IsResourceEnough(ConsciousData.ResourceCost))
+	{
+		OutDisableReason = TEXT("Resource not enough");
+		return false;
+	}
+
+	return true;
 }
 
 void USpawnCommandComponent::InternalPushedToQueue_Implementation()

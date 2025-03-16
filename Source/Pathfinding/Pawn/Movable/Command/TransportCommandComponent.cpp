@@ -28,7 +28,7 @@ bool UTransportCommandComponent::CanTransport(const ABaseCampPawn* BaseCamp) con
 	return GetExecutePawn()->GetPawnRole(BaseCamp) == EPawnRole::Self;
 }
 
-bool UTransportCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UTransportCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetComponentFromExecutePawn<UCollectorComponent>() != nullptr && GetExecutePlayerState() != nullptr;
 }

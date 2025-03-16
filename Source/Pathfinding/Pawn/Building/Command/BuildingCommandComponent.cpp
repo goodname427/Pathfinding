@@ -21,7 +21,7 @@ UBuildingCommandComponent::UBuildingCommandComponent()
 	Data.bHiddenInCommandListMenu = true;
 }
 
-bool UBuildingCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UBuildingCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	const ABuildingFramePawn* Frame = GetExecutePawn<ABuildingFramePawn>();
 	if (!Frame)

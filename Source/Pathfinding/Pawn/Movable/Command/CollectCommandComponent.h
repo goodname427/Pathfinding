@@ -24,7 +24,7 @@ public:
 	bool CanCollect(const AResourcePawn* ResourcePawn) const;
 	
 protected:
-	virtual bool InternalIsCommandEnable_Implementation() const override;
+	virtual bool InternalIsCommandEnable_Implementation(FString& OutDisableReason) const override;
 	
 	virtual bool InternalIsArgumentsValid_Implementation() const override;
 	

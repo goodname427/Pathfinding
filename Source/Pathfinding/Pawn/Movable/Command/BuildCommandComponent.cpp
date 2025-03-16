@@ -87,7 +87,7 @@ bool UBuildCommandComponent::IsValidLocationToBuild(const FVector& Location) con
 	return UPFBlueprintFunctionLibrary::IsLocationEmptyAndOnGround(this, ActorBounds);
 }
 
-bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UBuildCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	if (!PawnClassToBuild.Get())
 	{
@@ -101,18 +101,28 @@ bool UBuildCommandComponent::InternalIsCommandEnable_Implementation() const
 	}
 
 	const FBuildingData& BuildingData = PawnClassToBuild.GetDefaultObject()->GetBuildingData();
-	
 	for (auto Class : BuildingData.RequiredBuildingClasses)
 	{
+		if (Class == nullptr)
+		{
+			continue;
+		}
+		
 		if (!PS->HasPawn(Class))
 		{
+			OutDisableReason = FString::Printf(TEXT("Required %s"), *Class->GetDefaultObject<ABuildingPawn>()->GetData().Name.ToString());
 			return false;
 		}
 	}
 
 	const FConsciousData& ConsciousData = PawnClassToBuild.GetDefaultObject()->GetConsciousData();
+	if (!PS->IsResourceEnough(ConsciousData.ResourceCost))
+	{
+		OutDisableReason = TEXT("Resource not enough");
+		return false;
+	}
 
-	return PS->IsResourceEnough(ConsciousData.ResourceCost);
+	return true;
 }
 
 void UBuildCommandComponent::InternalBeginExecute_Implementation()

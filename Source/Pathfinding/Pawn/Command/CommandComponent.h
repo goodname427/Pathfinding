@@ -349,11 +349,13 @@ public:
 	/// 6.Wait for end
 	///	- Ended by abort -> OnPoppedFromQueue -> EndExecute
 	///	- Ended by failed Or success -> EndExecute
-	
+
+	// Check before set arguments
+	bool IsCommandEnable(bool bCheckBeforeExecute = false) const;
 	
 	// Check before set arguments
 	UFUNCTION(BlueprintCallable)
-	bool IsCommandEnable(bool bCheckBeforeExecute = false) const;
+	bool IsCommandEnable(FString& OutDisableReason, bool bCheckBeforeExecute = false) const;
 
 	// Skip the arguments check
 	UFUNCTION(BlueprintCallable)
@@ -395,7 +397,7 @@ private:
 
 protected:
 	UFUNCTION(BlueprintNativeEvent)
-	bool InternalIsCommandEnable() const;
+	bool InternalIsCommandEnable(FString& OutDisableReason) const;
 
 	// Internal Implementation
 	UFUNCTION(BlueprintNativeEvent)

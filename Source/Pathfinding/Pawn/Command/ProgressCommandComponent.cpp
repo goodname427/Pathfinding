@@ -32,7 +32,7 @@ float UProgressCommandComponent::GetProgressDuration_Implementation() const
 	return ProgressDuration;
 }
 
-bool UProgressCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UProgressCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetProgressDuration() >= 0;
 }

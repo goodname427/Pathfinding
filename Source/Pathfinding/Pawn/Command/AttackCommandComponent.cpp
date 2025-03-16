@@ -17,7 +17,7 @@ UAttackCommandComponent::UAttackCommandComponent()
 	Data.WantsIndexInCommandListMenu = 1;
 }
 
-bool UAttackCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UAttackCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetExecutePawn()->CanAttack();
 }

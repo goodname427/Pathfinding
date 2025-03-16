@@ -135,12 +135,18 @@ ACommanderPawn* UCommandComponent::GetExecuteCommander() const
 
 bool UCommandComponent::IsCommandEnable(bool bCheckBeforeExecute) const
 {
+	FString Dumb;
+	return IsCommandEnable(Dumb, bCheckBeforeExecute);
+}
+
+bool UCommandComponent::IsCommandEnable(FString& OutDisableReason, bool bCheckBeforeExecute) const
+{
 	if (bCheckBeforeExecute && !Data.bCommandEnableCheckBeforeExecute)
 	{
 		return true;
 	}
 
-	return GetExecutePawn() != nullptr && InternalIsCommandEnable();
+	return GetExecutePawn() != nullptr && InternalIsCommandEnable(OutDisableReason);
 }
 
 void UCommandComponent::SetCommandArgumentsSkipCheck(const FTargetRequest& InRequest)
@@ -375,7 +381,7 @@ void UCommandComponent::InternalBeginTarget_Implementation()
 {
 }
 
-bool UCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return true;
 }

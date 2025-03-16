@@ -26,7 +26,7 @@ bool UFixupCommandComponent::CanFixup(const ABuildingPawn* Building) const
 	return GetExecutePawn()->GetPawnRole(Building) == EPawnRole::Self;
 }
 
-bool UFixupCommandComponent::InternalIsCommandEnable_Implementation() const
+bool UFixupCommandComponent::InternalIsCommandEnable_Implementation(FString& OutDisableReason) const
 {
 	return GetExecutePlayerState() != nullptr;
 }
