@@ -14,7 +14,7 @@ UAttackCommandComponent::UAttackCommandComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	Data.Name = StaticCommandName;
-	Data.WantsIndexInCommandListMenu = 1;
+	// Data.WantsIndexInCommandListMenu = 1;
 }
 
 float UAttackCommandComponent::GetRequiredTargetRadius_Implementation() const

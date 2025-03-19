@@ -7,11 +7,14 @@
 #include "Algo/Transform.h"
 #include "Building/BaseCampPawn.h"
 #include "Building/KitchenPawn.h"
+#include "Movable/Command/CostCommandComponent.h"
 #include "Net/UnrealNetwork.h"
 
 FString ToString(const FResourceInfo& ResourceInfo)
 {
-	return FString::Printf(TEXT("%s:%d"), *UEnum::GetValueAsString(ResourceInfo.Type).Replace(TEXT("EResourceType::"), TEXT("")), ResourceInfo.Point);
+	return FString::Printf(
+		TEXT("%s:%d"), *UEnum::GetValueAsString(ResourceInfo.Type).Replace(TEXT("EResourceType::"), TEXT("")),
+		ResourceInfo.Point);
 }
 
 FString ToString(const TArray<FResourceInfo>& ResourceInfos)
@@ -61,7 +64,7 @@ void ABattlePlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 	DOREPLIFETIME(ThisClass, Resources);
 	DOREPLIFETIME(ThisClass, OwnedPawns);
 	DOREPLIFETIME(ThisClass, bFailed);
-	DOREPLIFETIME(ThisClass, TotalFoodProducePerCycle);
+	DOREPLIFETIME(ThisClass, TotalFoodProducePerSeconds);
 }
 
 bool ABattlePlayerState::IsResourceEnough(const FResourceInfo& ResourceInfo) const
@@ -155,7 +158,7 @@ void ABattlePlayerState::Fail()
 	{
 		OwnedPawn->Die();
 	}
-	
+
 	OwnedPawns.Empty();
 
 	if (OnPlayerFailed.IsBound())
@@ -170,18 +173,23 @@ void ABattlePlayerState::AddOwnedPawn(APFPawn* PawnToAdd)
 	{
 		return;
 	}
-	
+
 	OwnedPawns.Add(PawnToAdd);
 
-	// Update TotalFoodProducePerCycle
+	// Update TotalFoodProducePerSeconds
 	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToAdd))
 	{
-		TotalFoodProducePerCycle -= ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
-	}
+		if (const UCostCommandComponent* CostCommandComponent = Cast<UCostCommandComponent>(
+			ConsciousPawn->GetCommandByName(UCostCommandComponent::StaticCommandName)))
+		{
+			TotalFoodProducePerSeconds -= CostCommandComponent->GetCostCountPerSecond();
+		}
 
-	if (const AKitchenPawn* KitchenPawn = Cast<AKitchenPawn>(PawnToAdd))
-	{
-		TotalFoodProducePerCycle += KitchenPawn->GetProducedFoodPerSecond();
+		if (const UProduceCommandComponent* ProduceCommandComponent = Cast<UProduceCommandComponent>(
+			ConsciousPawn->GetCommandByName(UProduceCommandComponent::StaticCommandName)))
+		{
+			TotalFoodProducePerSeconds += ProduceCommandComponent->GetProducedCountPerSecond();
+		}
 	}
 }
 
@@ -191,18 +199,23 @@ void ABattlePlayerState::RemoveOwnedPawn(APFPawn* PawnToRemove)
 	{
 		return;
 	}
-	
+
 	OwnedPawns.Remove(PawnToRemove);
 
-	// Update TotalFoodProducePerCycle
+	// Update TotalFoodProducePerSeconds
 	if (const AConsciousPawn* ConsciousPawn = Cast<AConsciousPawn>(PawnToRemove))
 	{
-		TotalFoodProducePerCycle += ConsciousPawn->GetConsciousData().FoodCostPerCycle / GetDefault<UPFGameSettings>()->FoodCostCycleDuration;
-	}
+		if (const UCostCommandComponent* CostCommandComponent = Cast<UCostCommandComponent>(
+			ConsciousPawn->GetCommandByName(UCostCommandComponent::StaticCommandName)))
+		{
+			TotalFoodProducePerSeconds += CostCommandComponent->GetCostCountPerSecond();
+		}
 
-	if (const AKitchenPawn* KitchenPawn = Cast<AKitchenPawn>(PawnToRemove))
-	{
-		TotalFoodProducePerCycle -= KitchenPawn->GetProducedFoodPerSecond();
+		if (const UProduceCommandComponent* ProduceCommandComponent = Cast<UProduceCommandComponent>(
+			ConsciousPawn->GetCommandByName(UProduceCommandComponent::StaticCommandName)))
+		{
+			TotalFoodProducePerSeconds -= ProduceCommandComponent->GetProducedCountPerSecond();
+		}
 	}
 
 	// failure
@@ -233,7 +246,7 @@ APFPawn* ABattlePlayerState::GetFirstPawn(TSubclassOf<APFPawn> PawnClass) const
 
 APFPawn* ABattlePlayerState::GetNearestPawn(AActor* Actor, TSubclassOf<APFPawn> PawnClass) const
 {
-	TArray<APFPawn*> Pawns; 
+	TArray<APFPawn*> Pawns;
 	for (APFPawn* Pawn : OwnedPawns)
 	{
 		if (Pawn->IsA(PawnClass))

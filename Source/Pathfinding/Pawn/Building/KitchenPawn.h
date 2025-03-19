@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BuildingPawn.h"
+#include "Command/ProduceCommandComponent.h"
 #include "KitchenPawn.generated.h"
 
 UCLASS()
@@ -13,24 +14,8 @@ class PATHFINDING_API AKitchenPawn : public ABuildingPawn
 
 public:
 	AKitchenPawn();
-
-protected:
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
-public:
-	UFUNCTION(BlueprintCallable)
-	int32 GetProducedFoodPerSecond() const { return ProducedFoodPerSecond; }
-
-protected:
-	UFUNCTION()
-	void ProduceFood();
 	
 protected:
-	UPROPERTY(Category = "State|Kitchen", EditDefaultsOnly, BlueprintReadOnly, meta=(ClampMin="0"))
-	int32 ProducedFoodPerSecond;
-
-private:
-	FTimerHandle ProducedFoodTimerHandle;
+	UPROPERTY(Category = "Produce", VisibleDefaultsOnly, BlueprintReadOnly)
+	UProduceCommandComponent* ProduceCommandComponent;
 };

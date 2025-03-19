@@ -8,6 +8,8 @@
 #include "Movement/ConsciousPawnMovementComponent.h"
 #include "MovablePawn.generated.h"
 
+class UCostCommandComponent;
+
 UCLASS()
 class PATHFINDING_API AMovablePawn : public AConsciousPawn
 {
@@ -39,4 +41,7 @@ protected:
 
 	UPROPERTY(Category = "Movable", VisibleAnywhere, BlueprintReadOnly)
 	UMoveCommandComponent* MoveCommandComponent;
+
+	UPROPERTY(Category = "Movable", VisibleAnywhere, BlueprintReadOnly)
+	UCostCommandComponent* CostCommandComponent;
 };

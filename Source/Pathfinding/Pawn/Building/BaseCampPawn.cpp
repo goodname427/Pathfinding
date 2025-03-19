@@ -4,12 +4,15 @@
 #include "BaseCampPawn.h"
 
 #include "PFUtils.h"
+#include "Command/ProduceCommandComponent.h"
 #include "Movable/Component/CollectorComponent.h"
 
 
 // Sets default values
 ABaseCampPawn::ABaseCampPawn()
 {
+	INIT_DEFAULT_SUBOBJECT(ProduceCommandComponent);
+	ProduceCommandComponent->ProducedCountPerCycle = 5;
 }
 
 void ABaseCampPawn::TransportBy(UCollectorComponent* Collector)

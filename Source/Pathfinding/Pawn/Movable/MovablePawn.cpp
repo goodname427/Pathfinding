@@ -4,6 +4,7 @@
 #include "MovablePawn.h"
 
 #include "PFUtils.h"
+#include "Command/CostCommandComponent.h"
 #include "Components/BoxComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -44,10 +45,12 @@ AMovablePawn::AMovablePawn()
 	StateWidgetComponent->SetupAttachment(CapsuleComponent);
 
 	INIT_DEFAULT_SUBOBJECT(MoveCommandComponent);
-
+	
 	ConsciousData.AllowedCreateMethod = TO_FLAG(EAllowedCreateMethod::Spawn);
 	ConsciousData.ResourceCost = {{EResourceType::Coin, 1}};
 	ConsciousData.CreateDuration = 1.0f;
+	
+	INIT_DEFAULT_SUBOBJECT(CostCommandComponent);
 }
 
 void AMovablePawn::Tick(float DeltaSeconds)

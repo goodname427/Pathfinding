@@ -7,6 +7,8 @@
 #include "Movable/CollectorPawn.h"
 #include "BaseCampPawn.generated.h"
 
+class UProduceCommandComponent;
+
 UCLASS()
 class PATHFINDING_API ABaseCampPawn : public ASpawnBuildingPawn
 {
@@ -18,4 +20,8 @@ public:
 
 public:
 	void TransportBy(UCollectorComponent* Collector);
+
+protected:
+	UPROPERTY(Category = "Produce", VisibleDefaultsOnly, BlueprintReadOnly)
+	UProduceCommandComponent* ProduceCommandComponent;
 };

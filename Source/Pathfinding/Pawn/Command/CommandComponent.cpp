@@ -9,7 +9,7 @@
 #include "PFUtils.h"
 #include "Kismet/GameplayStatics.h"
 
-#define COMMAND_DEBUG
+// #define COMMAND_DEBUG
 
 FTargetRequest::FTargetRequest(UCommandComponent* InCommand) : FTargetRequest()
 {

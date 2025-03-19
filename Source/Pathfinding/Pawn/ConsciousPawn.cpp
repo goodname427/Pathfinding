@@ -26,36 +26,6 @@ void AConsciousPawn::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>&
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
-void AConsciousPawn::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (HasAuthority() && ConsciousData.FoodCostPerCycle <= 0)
-	{
-		if (const UWorld* World = GetWorld())
-		{
-			const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
-
-			World->GetTimerManager().SetTimer(
-				CostFoodTimer,
-				FTimerDelegate::CreateUObject(this, &AConsciousPawn::CostFood),
-				GameSettings ? GameSettings->FoodCostCycleDuration : 10,
-				true
-			);
-		}
-	}
-}
-
-void AConsciousPawn::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-
-	if (const UWorld* World = GetWorld())
-	{
-		World->GetTimerManager().ClearTimer(CostFoodTimer);
-	}
-}
-
 void AConsciousPawn::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
@@ -504,34 +474,6 @@ void AConsciousPawn::OnDied()
 	ClearRequest.Type = ETargetRequestType::Clear;
 	ClearRequest.OverrideCommandChannel = UProgressCommandComponent::StaticCommandChannel;
 	Receive(ClearRequest);
-}
-
-void AConsciousPawn::CostFood()
-{
-	// VALID_CHECK(this);
-
-	if (ABattlePlayerState* PS = GetOwnerPlayer())
-	{
-		// VALID_CHECK(PS);
-
-		const FResourceInfo FoodCost(EResourceType::Food, ConsciousData.FoodCostPerCycle);
-		if (PS->IsResourceEnough(FoodCost))
-		{
-			PS->TakeResource(this, EResourceTookReason::FoodCostCycle, FoodCost);
-		}
-		else
-		{
-			const UPFGameSettings* GameSettings = GetDefault<UPFGameSettings>();
-
-			UGameplayStatics::ApplyDamage(
-				this,
-				GameSettings ? GameSettings->HungerDamage : 10.0f,
-				GetController(),
-				this,
-				UDamageType::StaticClass()
-			);
-		}
-	}
 }
 
 UCommandComponent* AConsciousPawn::ResolveRequestWithoutName_Implementation(const FTargetRequest& Request)

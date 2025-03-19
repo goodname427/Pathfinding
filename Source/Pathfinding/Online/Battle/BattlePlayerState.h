@@ -122,7 +122,7 @@ public:
 	void TakeResource(UObject* Source, EResourceTookReason TookReason, const TMap<EResourceType, int32>& ResourceInfos);
 
 	UFUNCTION(BlueprintCallable)
-	float GetTotalFoodCostPerCycle() const { return TotalFoodProducePerCycle; }
+	float GetTotalFoodCostPerCycle() const { return TotalFoodProducePerSeconds; }
 	
 protected:
 	void SetResource(EResourceType ResourceType, int32 InValue)
@@ -135,7 +135,7 @@ protected:
 	TArray<int32> Resources;
 
 	UPROPERTY(Transient, Replicated)
-	float TotalFoodProducePerCycle = 0;
+	float TotalFoodProducePerSeconds = 0;
 
 public:
 	//

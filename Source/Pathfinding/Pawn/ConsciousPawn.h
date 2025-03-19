@@ -40,9 +40,6 @@ struct FConsciousData
 		meta = (ClampMin = 0, EditCondition = "AllowedCreateMethod != 0", EditConditionHides))
 	float CreateDuration;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (ClampMin = 0))
-	int32 FoodCostPerCycle;
-
 	bool IsAllowedToCreate() const { return AllowedCreateMethod != 0; }
 
 	bool IsAllowedToCreate(EAllowedCreateMethod Method) const
@@ -79,10 +76,6 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 protected:
-	virtual void BeginPlay() override;
-
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-
 	virtual void PostInitializeComponents() override;
 
 public:
@@ -217,13 +210,6 @@ protected:
 
 protected:
 	virtual void OnDied() override;
-
-protected:
-	UFUNCTION()
-	void CostFood();
-
-private:
-	FTimerHandle CostFoodTimer;
 };
 
 template <class TCommand>
