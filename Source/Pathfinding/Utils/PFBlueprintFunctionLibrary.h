@@ -73,9 +73,12 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	static FBox GetCDOActorBounds(const UObject* WorldContextObject, TSubclassOf<AActor> ActorClass, bool bNonColliding = false);
-
+	
 	template<class TPFPawn>
 	static TPFPawn* GetAroundPawn(const APFPawn* Pawn, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None);
+
+	template<class TPFPawn>
+	static void GetAroundPawns(const APFPawn* Pawn, const FVector Location, TArray<TPFPawn*>& OutPawns, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None);
 	
 	template<class TPFPawn>
 	static void GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius, EPawnRole RequiredPawnRole = EPawnRole::None);
@@ -86,6 +89,9 @@ public:
 		GetAroundPawns<APFPawn>(Pawn, OutPawns, RequiredRadius, RequiredPawnRole);
 	}
 
+	UFUNCTION(BlueprintCallable)
+	static void GetAroundPawnHitResultsAtLocation(const APFPawn* Pawn, const FVector Location, TArray<FHitResult>& OutHitResults, float RequiredRadius);
+	
 	UFUNCTION(BlueprintCallable)
 	static void GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults, float RequiredRadius);
 };
@@ -122,11 +128,11 @@ TPFPawn* UPFBlueprintFunctionLibrary::GetAroundPawn(const APFPawn* Pawn, float R
 }
 
 template <class TPFPawn>
-void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius,
-	EPawnRole RequiredPawnRole)
+void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, const FVector Location,
+	TArray<TPFPawn*>& OutPawns, float RequiredRadius, EPawnRole RequiredPawnRole)
 {
 	static TArray<FHitResult> HitResults;
-	GetAroundPawnHitResults(Pawn, HitResults, RequiredRadius);
+	GetAroundPawnHitResultsAtLocation(Pawn, Location,HitResults, RequiredRadius);
 
 	OutPawns.Empty();
 	for (const FHitResult& Hit : HitResults)
@@ -149,4 +155,11 @@ void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPF
 			OutPawns.AddUnique(AroundPawn);
 		}
 	}
+}
+
+template <class TPFPawn>
+void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius,
+	EPawnRole RequiredPawnRole)
+{
+	
 }

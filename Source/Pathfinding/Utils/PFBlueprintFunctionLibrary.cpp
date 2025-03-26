@@ -311,26 +311,30 @@ FBox UPFBlueprintFunctionLibrary::GetCDOActorBounds(const UObject* WorldContextO
 	return ActorBounds;
 }
 
-void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults,
-                                                          float RequiredRadius)
+void UPFBlueprintFunctionLibrary::GetAroundPawnHitResultsAtLocation(const APFPawn* Pawn, const FVector Location,
+	TArray<FHitResult>& OutHitResults, float RequiredRadius)
 {
 	NULL_CHECK(Pawn);
 	NULL_CHECK(GEngine);
 
 	const UWorld* World = GEngine->GetWorldFromContextObject(Pawn, EGetWorldErrorMode::LogAndReturnNull);
 	NULL_CHECK(World);
-
-	const FVector CurrentLocation = Pawn->GetActorLocation();
-
+	
 	World->SweepMultiByChannel(
 		OutHitResults,
-		CurrentLocation,
-		CurrentLocation,
+		Location,
+		Location,
 		FQuat::Identity,
 		ECC_GameTraceChannel1,
 		FCollisionShape::MakeSphere(RequiredRadius),
 		FCollisionQueryParams::DefaultQueryParam
 	);
+}
+
+void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults,
+                                                          float RequiredRadius)
+{
+	return GetAroundPawnHitResultsAtLocation(Pawn, Pawn->GetActorLocation(), OutHitResults, RequiredRadius);
 }
 
 // UUserWidget* UPFBlueprintFunctionLibrary::CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass,
