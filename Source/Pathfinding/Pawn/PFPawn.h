@@ -184,16 +184,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsInvincible() const { return MaxHealth <= 0 || Defense <= 0; }
 
-	float GetCurrentHealth() const { return CurrentHealth; }
+	int32 GetCurrentHealth() const { return CurrentHealth; }
 
-	float GetAttack() const { return Attack; }
+	int32 GetMaxHealth() const { return MaxHealth; }
+	
+	int32 GetAttack() const { return Attack; }
 
 	float GetAttackSpeed() const { return AttackSpeed; }
 
 	float GetAttackDuration() const { return AttackSpeed <= 0 ? 0 : 1.f / AttackSpeed; }
-
+	
+	float GetDefensePenetration() const { return DefensePenetration; }
+	
 	float GetAttackRadius() const { return AttackRadius; }
-
+	
 	float GetMoveSpeed() const { return MoveSpeed; }
 
 protected:
@@ -211,13 +215,16 @@ protected:
 	
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	int32 Attack;
-
+	
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	float AttackSpeed;
 
+	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0, ClampMax = 1))
+	float DefensePenetration;
+	
 	UPROPERTY(Category = "State" , EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	float AttackRadius;
-
+	
 	UPROPERTY(Category = "State", EditAnywhere, BlueprintReadWrite, Replicated, meta = (ClampMin = 0))
 	float MoveSpeed;
 

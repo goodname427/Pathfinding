@@ -295,7 +295,11 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 
 	if (ActualDamage != 0.0f)
 	{
-		ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / Defense));
+		// damage
+		const APFPawn* PawnInstigator = EventInstigator->GetPawn<APFPawn>();
+
+		const int32 ActualDefense = FMath::CeilToInt(Defense * (PawnInstigator ? (1.0f - PawnInstigator->DefensePenetration) : 1.0f)); 
+		ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / ActualDefense));
 		CurrentHealth = FMath::Max(0, FMath::CeilToInt(CurrentHealth - ActualDamage));
 
 		PlayEffect(this, Data.EffectData.TakeDamage);
