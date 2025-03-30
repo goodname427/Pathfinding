@@ -94,6 +94,13 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	static void GetAroundPawnHitResults(const APFPawn* Pawn, TArray<FHitResult>& OutHitResults, float RequiredRadius);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	static FString AppendNewLineIfStringNotEmpty(const FString& A, const FString& B);
+
+	UFUNCTION(BlueprintCallable)
+	static FString BreakStringByPunctuation(const FString& InString);
 };
 
 template <class TPFPawn>

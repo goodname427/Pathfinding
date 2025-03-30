@@ -337,6 +337,34 @@ void UPFBlueprintFunctionLibrary::GetAroundPawnHitResults(const APFPawn* Pawn, T
 	return GetAroundPawnHitResultsAtLocation(Pawn, Pawn->GetActorLocation(), OutHitResults, RequiredRadius);
 }
 
+FString UPFBlueprintFunctionLibrary::AppendNewLineIfStringNotEmpty(const FString& A, const FString& B)
+{
+	if (B.IsEmpty())
+	{
+		return A;
+	}
+
+	return FString::Printf(TEXT("%s\n%s"), *A, *B);
+}
+
+FString UPFBlueprintFunctionLibrary::BreakStringByPunctuation(const FString& InString)
+{
+	FString Result = InString;
+	// define punctuation characters
+	const TArray<TCHAR> PunctuationChars = { '.', '!', '?', ';', ',' };
+
+	for (int32 Index = Result.Len() - 1; Index >= 0; --Index)
+	{
+		if (PunctuationChars.Contains(Result[Index]))
+		{
+			// insert a new line after the punctuation character
+			Result.InsertAt(Index + 1, TEXT("\n"));
+		}
+	}
+
+	return Result;
+}
+
 // UUserWidget* UPFBlueprintFunctionLibrary::CreateAndAddWidgetTo(UObject* WorldContextObject, TSubclassOf<UUserWidget> WidgetClass,
 // 	TArray<UUserWidget*>& WidgetArray, UPanelWidget* ParentPanelWidget)
 // {
