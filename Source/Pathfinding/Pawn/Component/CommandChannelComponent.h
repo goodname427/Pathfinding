@@ -56,7 +56,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCommandChannelUpdatedSignature, UCo
 { \
 	if (AConsciousPawn* ConsciousPawn = GetConsciousPawnOwner()) \
 	{ \
-		ConsciousPawn->DispatchCommand_##FunctionName(##__VA_ARGS__); \
+		ConsciousPawn->DispatchCommand_##FunctionName(__VA_ARGS__); \
 	} \
 }
 /**

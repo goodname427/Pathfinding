@@ -7,13 +7,9 @@
 #include "PFOnlineSession.h"
 #include "Engine/GameInstance.h"
 #include "Blueprint/UserWidget.h"
-#include "GameStage/GameStage.h"
 #include "PFGameInstance.generated.h"
 
 class IGameStage;
-
-
-
 
 /**
  * 
@@ -78,7 +74,7 @@ public:
 };
 
 template <typename TGameStage>
-inline bool UPFGameInstance::IsCurrentStage() const
+bool UPFGameInstance::IsCurrentStage() const
 {
 	return IGameStage::IsSameStage<TGameStage>(CurrentStage);
 }

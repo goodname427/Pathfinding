@@ -30,7 +30,7 @@ while(0)
 // BIND
 //
 
-#define FAST_BIND_AXIS(AxisName) PlayerInputComponent->BindAxis(#AxisName, this, &ThisClass::##AxisName)
+#define FAST_BIND_AXIS(AxisName) PlayerInputComponent->BindAxis(#AxisName, this, &ThisClass::AxisName)
 
 #define FAST_BIND_ACTION(ActionName) \
 DOWHILE_WRAP_OPEN \

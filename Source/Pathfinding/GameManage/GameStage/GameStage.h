@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PFGameInstance.h"
-
 class FRoomGameStage;
 class FMainMenuGameStage;
 class FStartupGameStage;
+
+class UPFGameInstance;
 
 /**
  *
@@ -17,7 +17,7 @@ protected:
 
 public:
 	virtual FName GetStageName() const = 0;
-	virtual bool CanTransition(class UPFGameInstance* GameInstance, FString& OutErrorMessage) { return true; } 
+	virtual bool CanTransition(UPFGameInstance* GameInstance, FString& OutErrorMessage) { return true; } 
 	virtual void OnExitStage(UPFGameInstance* GameInstance) {};
 	virtual void OnEnterStage(UPFGameInstance* GameInstance) {};
 	virtual void OnPostLogin(UPFGameInstance* GameInstance, APlayerController* NewPlayer) {};
