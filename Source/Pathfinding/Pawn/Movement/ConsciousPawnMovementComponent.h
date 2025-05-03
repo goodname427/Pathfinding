@@ -99,4 +99,17 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Movement|Ground", meta = (AllowPrivateAccess = "true"))
 	float MaxGroundStickForce = 20.0f;
+
+public:
+	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
+	bool bEnableAvoid = true;
+
+	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
+	float AvoidRadius = 500.0f;
+
+	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
+	float AvoidForceScale = 0.1f;
+
+	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
+	float AvoidThreshold = 10.0f;
 };

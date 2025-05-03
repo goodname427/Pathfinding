@@ -3,6 +3,8 @@
 
 #include "ConsciousPawnMovementComponent.h"
 
+#include "DrawDebugHelpers.h"
+#include "PFBlueprintFunctionLibrary.h"
 #include "PFPawn.h"
 #include "PFUtils.h"
 #include "Components/CapsuleComponent.h"
@@ -67,6 +69,43 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 	else
 	{
 		Velocity = FVector::ZeroVector;
+	}
+
+	// Avoid other actors
+	if (bEnableAvoid)
+	{
+		FVector Right = UpdatedComponent->GetRightVector();
+		FVector Location = UpdatedComponent->GetComponentLocation();
+		FVector FinalAvoidForce = FVector::ZeroVector;
+		
+		TArray<AConsciousPawn*> AroundActors;
+		UPFBlueprintFunctionLibrary::GetAroundPawns(Cast<APFPawn>(PawnOwner), AroundActors, AvoidRadius);
+		for (AActor* Actor : AroundActors)
+		{
+			UConsciousPawnMovementComponent* OtherMovement = Cast<UConsciousPawnMovementComponent>(Actor->GetComponentByClass(StaticClass()));
+			if (OtherMovement)
+			{
+				FVector OtherVelocity = OtherMovement->Velocity;
+				FVector OtherLocation = OtherMovement->UpdatedComponent->GetComponentLocation();
+
+				float VS = FVector::DotProduct(Velocity.GetSafeNormal(), OtherVelocity.GetSafeNormal());
+				VS = FMath::Pow(VS, AvoidThreshold);
+
+				float Same = VS > 0;
+				float Big = Velocity.Size() > OtherVelocity.Size();
+
+				FVector Direction = OtherLocation - Location;
+				float Back = FVector::DotProduct(Direction, Velocity) > 0;
+				
+				float Distance = FVector::Dist(OtherLocation, Location);
+				FVector AvoidForce = Back * Big * Same * FMath::Abs(VS) * Right / FMath::Max(Distance, 100.f);
+				FinalAvoidForce += AvoidForce;
+			}
+		}
+
+		FinalAvoidForce *= AvoidForceScale * AroundActors.Num();
+		Velocity += FinalAvoidForce;
+		DrawDebugLine(GetWorld(), Location, Location + FinalAvoidForce, FColor::Red, false, 1.0f);
 	}
 
 	// Move actor

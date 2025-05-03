@@ -168,5 +168,10 @@ template <class TPFPawn>
 void UPFBlueprintFunctionLibrary::GetAroundPawns(const APFPawn* Pawn, TArray<TPFPawn*>& OutPawns, float RequiredRadius,
 	EPawnRole RequiredPawnRole)
 {
+	if (Pawn == nullptr)
+	{
+		return;
+	}
 	
+	GetAroundPawns<TPFPawn>(Pawn, Pawn->GetActorLocation(), OutPawns, RequiredRadius, RequiredPawnRole);
 }
