@@ -90,22 +90,21 @@ void UConsciousPawnMovementComponent::TickComponent(float DeltaTime, enum ELevel
 
 				float VS = FVector::DotProduct(Velocity.GetSafeNormal(), OtherVelocity.GetSafeNormal());
 				VS = FMath::Pow(VS, AvoidThreshold);
-
-				float Same = VS > 0;
-				float Big = Velocity.Size() > OtherVelocity.Size();
+				
+				bool bBig = Velocity.Size() > OtherVelocity.Size();
 
 				FVector Direction = OtherLocation - Location;
-				float Back = FVector::DotProduct(Direction, Velocity) > 0;
+				bool bBack = FVector::DotProduct(Direction, Velocity) > 0;
 				
 				float Distance = FVector::Dist(OtherLocation, Location);
-				FVector AvoidForce = Back * Big * Same * FMath::Abs(VS) * Right / FMath::Max(Distance, 100.f);
+				FVector AvoidForce = ((VS < 0) || (bBig && bBack)) ? (FMath::Abs(VS) * Right / FMath::Max(Distance, 100.f)) : FVector::ZeroVector;
 				FinalAvoidForce += AvoidForce;
 			}
 		}
 
 		FinalAvoidForce *= AvoidForceScale * AroundActors.Num();
 		Velocity += FinalAvoidForce;
-		DrawDebugLine(GetWorld(), Location, Location + FinalAvoidForce, FColor::Red, false, 1.0f);
+		DrawDebugLine(GetWorld(), Location, Location + FinalAvoidForce * 5, FColor::Red, false, 1.0f);
 	}
 
 	// Move actor

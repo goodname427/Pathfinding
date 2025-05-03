@@ -108,7 +108,7 @@ public:
 	float AvoidRadius = 500.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
-	float AvoidForceScale = 0.1f;
+	float AvoidForceScale = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "Movement|Avoid", meta = (AllowPrivateAccess = "true"))
 	float AvoidThreshold = 10.0f;
