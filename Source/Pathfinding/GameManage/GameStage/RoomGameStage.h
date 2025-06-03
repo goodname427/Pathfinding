@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "GameStage.h"
+#include "PFGameSession.h"
 #include "PFGameSettings.h"
-#include "GameFramework/GameSession.h"
 
 enum class RoomType
 {

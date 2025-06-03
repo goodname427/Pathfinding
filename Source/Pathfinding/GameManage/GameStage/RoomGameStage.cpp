@@ -71,11 +71,7 @@ void FRoomGameStage::OnEnterStage(UPFGameInstance* GameInstance)
 		GameSession->JoinRoom(RoomIndexToJoin, FOnJoinSessionCompleteDelegate::CreateLambda(
 			                      [GameInstance, this](FName InSessionName, EOnJoinSessionCompleteResult::Type InResult)
 			                      {
-				                      if (InResult == EOnJoinSessionCompleteResult::Success)
-				                      {
-					                      GameSession->TravelToRoom();
-				                      }
-				                      else
+				                      if (InResult != EOnJoinSessionCompleteResult::Success || !GameSession->TravelToRoom())
 				                      {
 					                      GameInstance->TransitionToStage<FMainMenuGameStage>();
 				                      }

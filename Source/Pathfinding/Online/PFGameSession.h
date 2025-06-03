@@ -45,6 +45,9 @@ SessionInterface.Pin()->ClearOn##ActionName##CompleteDelegate_Handle(On##ActionN
 #define GAME_SESSION_CHECK() \
 	if (!IsReady()) return
 
+#define GAME_SESSION_CHECK_RETURN(ReturnValue) \
+	if (!IsReady()) return ReturnValue
+
 /**
  * 
  */
@@ -95,7 +98,7 @@ public:
 	void FindRooms();
 	
 	UFUNCTION(BlueprintCallable)
-	void TravelToRoom();
+	bool TravelToRoom();
 
 	UFUNCTION(BlueprintCallable)
 	void StartRoom();

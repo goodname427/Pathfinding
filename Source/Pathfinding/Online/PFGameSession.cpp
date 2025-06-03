@@ -12,6 +12,7 @@
 #include "GameFramework/GameSession.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Kismet/GameplayStatics.h"
+#include "GameStage/MainMenuGameStage.h"
 
 
 FSessionSearchResult::FSessionSearchResult(): PingInMS(0), NumCurrentPlayer(0), NumMaxPlayer(0)
@@ -247,25 +248,30 @@ void APFGameSession::FindRooms()
 	);
 }
 
-void APFGameSession::TravelToRoom()
+bool APFGameSession::TravelToRoom()
 {
-	GAME_SESSION_CHECK();
+	GAME_SESSION_CHECK_RETURN(false);
 
 	FString URL;
-	if (SessionInterface.Pin()->GetResolvedConnectString(SessionName, URL))
+	if (!SessionInterface.Pin()->GetResolvedConnectString(NAME_GameSession, URL))
 	{
-		APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
-		if (PC)
-		{
-			TSharedPtr<FDelegateHandle> Handle = MakeShared<FDelegateHandle>();
-			*Handle = GEngine->OnTravelFailure().AddLambda([Handle](UWorld* World, ETravelFailure::Type TravelFailureType, const FString& ReasonString)
-			{
-				//DEBUG_MESSAGE(TEXT("OnTravelFailure"));
-				GEngine->OnTravelFailure().Remove(*Handle);
-			});
-			PC->ClientTravel(URL, TRAVEL_Absolute);
-		}
+		URL = "127.0.0.1:7777";
 	}
+
+	APlayerController* PC = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PC)
+	{
+		TSharedPtr<FDelegateHandle> Handle = MakeShared<FDelegateHandle>();
+		*Handle = GEngine->OnTravelFailure().AddLambda([Handle](UWorld* World, ETravelFailure::Type TravelFailureType, const FString& ReasonString)
+		{
+			//DEBUG_MESSAGE(TEXT("OnTravelFailure"));
+			GEngine->OnTravelFailure().Remove(*Handle);
+		});
+		PC->ClientTravel(URL, TRAVEL_Absolute);
+		return true;
+	}
+
+	return false;
 }
 
 void APFGameSession::StartRoom()
