@@ -54,18 +54,33 @@ void UCollectorComponent::BeginPlay()
 	{
 		Collector->OnReceivedRequest.AddDynamic(this, &ThisClass::OnReceivedRequest);
 		
-		CollectCommandComponent->OnCommandEnd.AddDynamic(this, &ThisClass::OnCollectCommandEnd);
-		CollectCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
-			this, &ThisClass::OnCollectCommandPoppedFromQueue);
-		TransportCommandComponent->OnCommandEnd.AddDynamic(this, &ThisClass::OnTransportCommandEnd);
-		TransportCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
-			this, &ThisClass::OnTransportCommandPoppedFromQueue);
+		CollectCommandComponent->OnCommandBegin.AddDynamic(this, &ThisClass::OnCollectCommandBegin);
+		// CollectCommandComponent->OnCommandEnd.AddDynamic(this, &ThisClass::OnCollectCommandEnd);
+		// CollectCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
+		// 	this, &ThisClass::OnCollectCommandPoppedFromQueue);
+		// TransportCommandComponent->OnCommandEnd.AddDynamic(this, &ThisClass::OnTransportCommandEnd);
+		// TransportCommandComponent->OnCommandPoppedFromQueue.AddDynamic(
+		// 	this, &ThisClass::OnTransportCommandPoppedFromQueue);
 	}
 	// else
 	// {
 	// 	DestroyComponent();
 	// 	return;
 	// }
+}
+
+void UCollectorComponent::TickComponent(float DeltaTime, ELevelTick TickType,
+	FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		if (NextResourceToCollect && IsValid(Collector) && Collector->GetCurrentCommand(GCommandChannel_Default) == nullptr)
+		{
+			CollectOrTransportResource(NextResourceToCollect);
+		}
+	}
 }
 
 
@@ -81,7 +96,7 @@ void UCollectorComponent::SetCollectedResourceType(EResourceType NewResourceType
 
 void UCollectorComponent::OnReceivedRequest(AConsciousPawn* ConsciousPawn, const FTargetRequest& Request)
 {
-	if (Request.Type == ETargetRequestType::StartNew)
+	if (Request.Type != ETargetRequestType::Append)
 	{
 		NextResourceToCollect = nullptr;
 	}
@@ -138,6 +153,10 @@ void UCollectorComponent::FindAndRecordNextResourceToCollect(AResourcePawn* Curr
 
 void UCollectorComponent::CollectOrTransportResource(AResourcePawn* CurrentCollectedResource)
 {
+	VALID_CHECK(Collector);
+	VALID_CHECK(CollectCommandComponent);
+	VALID_CHECK(TransportCommandComponent);
+	
 	FindAndRecordNextResourceToCollect(CurrentCollectedResource);
 	if (IsCollectedResourceFull())
 	{
@@ -187,19 +206,12 @@ void UCollectorComponent::TransportResource(bool bLastTransposingFailed)
 	}
 
 	Collector->Receive(TransportRequest);
+}
 
-	// auto Receive = [this, TransportRequest]{ Collector->Receive(TransportRequest); };
-	//
-	// if (bLastTransposingFailed)
-	// {
-	// 	// Delay the transport request to prevent stack overflow caused by recursive calling.
-	// 	Delay(this, 0.1f, Receive);
-	// 	// UDelayHelper::Delay(this, 0.1f, Receive);
-	// }
-	// else
-	// {
-	// 	Receive();
-	// }
+void UCollectorComponent::OnCollectCommandBegin(UCommandComponent* CommandComponent)
+{
+	VALID_CHECK(CommandComponent);
+	NextResourceToCollect = CommandComponent->GetRequest().GetTargetPawn<AResourcePawn>();
 }
 
 void UCollectorComponent::OnCollectCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)

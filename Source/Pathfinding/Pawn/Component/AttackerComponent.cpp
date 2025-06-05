@@ -58,7 +58,7 @@ void UAttackerComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bActiveAttack && Attacker->GetCurrentCommand(GCommandChannel_Default) != AttackCommandComponent)
+	if (bActiveAttack && IsValid(Attacker) && Attacker->GetCurrentCommand(GCommandChannel_Default) != AttackCommandComponent)
 	{
 		// DEBUG_MESSAGE(TEXT("Attacker [%s] Active Attack"), *Attacker->GetName());
 		APFPawn* AroundEnemyPawn = UPFBlueprintFunctionLibrary::GetAroundPawn<APFPawn>(
@@ -68,10 +68,21 @@ void UAttackerComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 			Attacker->Receive(FTargetRequest(AttackCommandComponent, AroundEnemyPawn));
 		}
 	}
+
+	RecursiveCount = 0;
 }
 
 void UAttackerComponent::OnAttackCommandEnd(UCommandComponent* CommandComponent, ECommandExecuteResult Result)
 {
+	VALID_CHECK(CommandComponent);
+	VALID_CHECK(Attacker);
+	VALID_CHECK(AttackCommandComponent);
+	
+	if (!RecursiveCheck())
+	{
+		return;
+	}
+	
 	if (Result == ECommandExecuteResult::Aborted)
 	{
 		return;
@@ -98,9 +109,17 @@ void UAttackerComponent::OnAttackCommandEnd(UCommandComponent* CommandComponent,
 void UAttackerComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
                                          AController* InstigatedBy, AActor* DamageCauser)
 {
+	VALID_CHECK(Attacker);
+	VALID_CHECK(AttackCommandComponent);
+	
+	if (!RecursiveCheck())
+	{
+		return;
+	}
+	
 	// Skip if damage causer is not a pawn
 	APFPawn* CauserPawn = InstigatedBy ? Cast<APFPawn>(InstigatedBy->GetPawn()) : nullptr;
-	NULL_CHECK(CauserPawn);
+	VALID_CHECK(CauserPawn);
 
 	const EPawnRole CauserRole = Attacker->GetPawnRole(CauserPawn);
 
@@ -112,4 +131,14 @@ void UAttackerComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, con
 			Attacker->Receive(FTargetRequest(AttackCommandComponent, CauserPawn));
 		}
 	}
+}
+
+bool UAttackerComponent::RecursiveCheck()
+{
+	if (++RecursiveCount > MaxRecursiveCountPerFrame)
+	{
+		return false;
+	}
+
+	return true;
 }

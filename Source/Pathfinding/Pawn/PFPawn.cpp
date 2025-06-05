@@ -296,9 +296,9 @@ float APFPawn::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageE
 	if (ActualDamage != 0.0f)
 	{
 		// damage
-		const APFPawn* PawnInstigator = EventInstigator->GetPawn<APFPawn>();
+		const APFPawn* PawnInstigator = IsValid(EventInstigator) ? EventInstigator->GetPawn<APFPawn>() : nullptr;
 
-		const int32 ActualDefense = FMath::CeilToInt(Defense * (PawnInstigator ? (1.0f - PawnInstigator->DefensePenetration) : 1.0f)); 
+		const int32 ActualDefense = IsValid(PawnInstigator) ? FMath::CeilToInt(Defense * (PawnInstigator ? (1.0f - PawnInstigator->DefensePenetration) : 1.0f)) : Defense; 
 		ActualDamage = FMath::Max(1, FMath::CeilToInt(ActualDamage / ActualDefense));
 		CurrentHealth = FMath::Max(0, FMath::CeilToInt(CurrentHealth - ActualDamage));
 

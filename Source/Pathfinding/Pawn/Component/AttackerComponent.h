@@ -28,6 +28,8 @@ protected:
 	UFUNCTION()
 	void OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType, AController* InstigatedBy, AActor* DamageCauser);
 
+	bool RecursiveCheck();
+	
 public:
 	UPROPERTY()
 	UAttackCommandComponent* AttackCommandComponent;
@@ -41,4 +43,10 @@ protected:
 	
 	UPROPERTY(Category = "Attacker", EditDefaultsOnly)
 	float HuntingRadiusScale;
+
+	UPROPERTY(Category = "Attacker", EditDefaultsOnly)
+	int32 MaxRecursiveCountPerFrame = 5;
+
+private:
+	int32 RecursiveCount = 0;
 };

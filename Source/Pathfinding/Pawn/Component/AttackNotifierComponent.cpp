@@ -40,9 +40,11 @@ void UAttackNotifierComponent::BeginPlay()
 void UAttackNotifierComponent::OnTakeAnyDamage(AActor* DamagedActor, float Damage, const UDamageType* DamageType,
 	AController* InstigatedBy, AActor* DamageCauser)
 {
+	VALID_CHECK(OwnerPawn);
+	
 	// Skip if damage causer is not a pawn
 	APFPawn* CauserPawn = InstigatedBy ? Cast<APFPawn>(InstigatedBy->GetPawn()) : nullptr;
-	NULL_CHECK(CauserPawn);
+	VALID_CHECK(CauserPawn);
 
 	const EPawnRole CauserRole = OwnerPawn->GetPawnRole(CauserPawn);
 	
